@@ -31,8 +31,6 @@ Constraints:
 - direct_user_id2 (DIRECT only)
 - group_creator_id (GROUP only)
 - is_closed (GROUP only)
-- last_seq
-- last_message_at
 - created_at
 
 Constraints / Invariants:
@@ -44,15 +42,15 @@ Constraints / Invariants:
 ## conversation_members
 - conversation_id
 - user_id
-- last_read_seq
+- last_read_message_id
 
 
 ## messages
+- id
 - conversation_id
 - type = USER | EVENT
 - event_type = GROUP_CREATED | USER_INVITED | USER_LEFT | USER_REMOVED | GROUP_CLOSED (EVENT type only)
 - event_data (EVENT type only)
-- seq
 - sender_id (USER type only)
 - content (USER type only)
 - created_at
