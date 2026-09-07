@@ -1,5 +1,6 @@
 package com.jason7599.cacotalk.auth;
 
+import com.jason7599.cacotalk.auth.dto.AuthUserResponse;
 import com.jason7599.cacotalk.auth.dto.LoginRequest;
 import com.jason7599.cacotalk.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -54,6 +56,13 @@ public class AuthController {
         }
 
         clearSessionCookie(response);
+    }
+
+    // Looks cursed as for now
+    // Explanation for confused future me: See SessionAuthenticationFilter
+    @GetMapping("/me")
+    public AuthUserResponse getAuthUser(@AuthenticationPrincipal AuthUser user) {
+        return new AuthUserResponse(user.userId());
     }
 
     private void setSessionCookie(
