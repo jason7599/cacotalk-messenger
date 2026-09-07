@@ -59,4 +59,8 @@ public class AuthService {
 
         return sessionService.create(user.getId());
     }
+
+    public void logout(String token) {
+        sessionService.delete(token);
+    }
 }
