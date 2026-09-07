@@ -8,6 +8,6 @@ Rest in Peace, CocaTalk.
 
 CacoTalk is being rebuilt from the ground up with a stronger focus on clear documentation and maintainability.
 
-For design documents, schema notes, API plans and ARD style devlogs, see the [docs](./docs) directory.
+For design documents, schema notes, API plans and ADR style devlogs, see the [docs](./docs) directory.
 
 This README will be expanded as the application becomes more complete.
