@@ -38,7 +38,7 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
             sessionService.resolveUserId(token).ifPresent(userId -> {
                 SecurityContextHolder.getContext().setAuthentication(
                         new UsernamePasswordAuthenticationToken(
-                                new AuthUser(userId),
+                                new AuthUser(userId), // @AuthenticationPrincipal
                                 null,
                                 List.of())
                 );
