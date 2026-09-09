@@ -1,25 +1,17 @@
-import { useEffect, useState } from "react";
-import { getAuthUser, type AuthUserResponse } from "../features/auth/authApi";
+import AuthPage from "../pages/AuthPage";
+import LoadingScreen from "../components/LoadingScreen";
+import MainPage from "../pages/MainPage";
+import { useAuth } from "../features/auth/AuthProvider";
 
 export default function App() {
-	const [authUser, setAuthUser] = useState<AuthUserResponse | null>(null);
-	const [loading, setLoading] = useState(true);
+	const { user, loadingUser } = useAuth();
 
-	useEffect(() => {
-		async function loadAuthUser() {
-			try {
-				setAuthUser((await getAuthUser()));
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		loadAuthUser();
-	}, []);
-
-	if (loading) {
-		return <div>Loading...</div>;
+	if (loadingUser) {
+		return <LoadingScreen title="VERIFYING YOUR SOUL"/>;
 	}
 
-	return authUser ? <div>{authUser.userId}</div> : <div>idiot</div>;
+	return user 
+		? <MainPage />
+		: <AuthPage />
+	;
 };

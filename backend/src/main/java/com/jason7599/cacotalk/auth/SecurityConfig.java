@@ -1,6 +1,8 @@
 package com.jason7599.cacotalk.auth;
 
+import com.jason7599.cacotalk.auth.session.SessionAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.HttpBasicC
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,10 +22,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.frontend-origin}")
     private String frontendOrigin;
+
+    private final SessionAuthenticationFilter sessionAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -31,6 +37,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // TODO: configure CSRF protection before frontend integration / production
                 .httpBasic(HttpBasicConfigurer::disable)
                 .formLogin(FormLoginConfigurer::disable)
+
+                .addFilterBefore(
+                        sessionAuthenticationFilter,
+                        AuthorizationFilter.class
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login", "/auth/logout").permitAll()
                         .anyRequest().authenticated()
