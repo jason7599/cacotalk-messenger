@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getAuthUser, type AuthUserResponse } from "./authApi";
+import { getAuthUser, logout as logoutApi, type AuthUserResponse } from "./authApi";
 
 type AuthContextValue = {
     user: AuthUserResponse | null;
     loadingUser: boolean;
     refreshUser: () => Promise<void>;
-    setUser: (user: AuthUserResponse | null) => void;
+    logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<AuthUserResponse | null>(null);
@@ -21,6 +21,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.log(err);
             throw err;
         }
+    }
+
+    async function logout() {
+        await logoutApi();
+        setUser(null);
     }
 
     // init load
@@ -42,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 user,
                 loadingUser,
                 refreshUser,
-                setUser,
+                logout,
             }}
         >
             {children}
