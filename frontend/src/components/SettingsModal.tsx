@@ -122,7 +122,7 @@ export default function SettingsModal() {
 
                         <div className="flex-1">
                             <p className="font-bold text-[#eee2d5]">
-                                BLOCKED USERS
+                                MANAGE BANISHED SOULS
                             </p>
 
                             <p className="mt-1 text-xs leading-relaxed text-[#9f8581]">

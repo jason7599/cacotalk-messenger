@@ -1,7 +1,13 @@
-import { MessageSquare, Users, Settings } from "lucide-react";
+import {
+    MessageSquare,
+    Users,
+    Settings,
+} from "lucide-react";
+
 import { useState } from "react";
 import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
+import cacotalkEmblem from "../assets/cacotalk-logo.png";
 
 export default function Sidebar() {
     const [panel, setPanel] =
@@ -35,6 +41,7 @@ export default function Sidebar() {
 
     return (
         <aside className="flex h-screen">
+            {/* icon rail */}
             <nav
                 className="
                     flex w-20 flex-col items-center
@@ -45,25 +52,17 @@ export default function Sidebar() {
             >
                 <div
                     className="
-                        mb-8 w-14
-                        border-2 border-[#e02632]
+                        mb-8 grid h-14 w-14 place-items-center
+                        border-2 border-[#64141b]
                         bg-[#190b0d]
-                        px-1 py-2
-                        text-center
                         shadow-[4px_4px_0_#48090e]
                     "
                 >
-                    <div className="text-[8px] font-bold tracking-[0.28em] text-[#a71924]">
-                        CACO
-                    </div>
-
-                    <div className="text-3xl font-black leading-none tracking-[-0.08em] text-[#e02632]">
-                        C
-                    </div>
-
-                    <div className="mt-1 text-[6px] tracking-[0.18em] text-[#7f6668]">
-                        TERMINAL
-                    </div>
+                    <img
+                        src={cacotalkEmblem}
+                        alt=""
+                        className="h-12 w-12 object-contain"
+                    />
                 </div>
 
                 <div className="flex w-full flex-col gap-3 px-2">
@@ -116,17 +115,63 @@ export default function Sidebar() {
                 </div>
             </nav>
 
+            {/* active subsystem */}
             <section
                 className="
-                    w-80
+                    flex w-80 flex-col
                     border-r-2 border-[#64141b]
                     bg-[#190b0d]
+                    text-[#eee2d5]
                 "
             >
-                {panel === "conversations"
-                    ? <div>Conversations</div>
-                    : <div>Contacts</div>
-                }
+                <header
+                    className="
+                        border-b-2 border-[#4b1b1f]
+                        bg-[#100708]
+                        px-5 py-4
+                    "
+                >
+                    <p className="mb-1 text-[10px] tracking-[0.22em] text-[#a71924]">
+                        COMMUNICATIONS // ACTIVE
+                    </p>
+
+                    <div className="flex items-end justify-between gap-4">
+                        <h2 className="text-xl font-black tracking-[-0.02em]">
+                            {panel === "conversations"
+                                ? "TRANSMISSIONS"
+                                : "SOUL DIRECTORY"}
+                        </h2>
+
+                        <span className="text-[9px] tracking-[0.16em] text-[#7f6668]">
+                            UNIT 01
+                        </span>
+                    </div>
+                </header>
+
+                <div className="flex-1 overflow-y-auto">
+                    {panel === "conversations" ? (
+                        <div className="p-4">
+                            Conversations
+                        </div>
+                    ) : (
+                        <div className="p-4">
+                            Contacts
+                        </div>
+                    )}
+                </div>
+
+                <footer
+                    className="
+                        border-t border-[#4b1b1f]
+                        bg-[#100708]
+                        px-4 py-2
+                        text-[9px]
+                        tracking-[0.16em]
+                        text-[#7f6668]
+                    "
+                >
+                    CACOTALK // INFERNAL RELAY
+                </footer>
             </section>
         </aside>
     );

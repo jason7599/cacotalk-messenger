@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { login, register } from "../features/auth/authApi";
 import { AxiosError } from "axios";
 import { useAuth } from "../features/auth/AuthProvider";
+import cacotalkLogo from "../assets/cacotalk-logo.png";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;
@@ -88,10 +89,11 @@ export default function AuthPage() {
             <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center">
 
                 <header className="mb-8 text-center">
-                    <h1 className="text-6xl font-black tracking-[-0.06em] text-[#e02632] drop-shadow-[4px_4px_0_#48090e] sm:text-7xl">
-                        CACOTALK
-                    </h1>
-
+                    <img
+                        src={cacotalkLogo}
+                        alt="CACOTALK"
+                        className="h-60 w-80 object-contain"
+                    />
                     <p className="mt-3 text-xs tracking-[0.35em] text-[#9f8581]">
                         MESSENGER FROM DOWN BELOW
                     </p>
