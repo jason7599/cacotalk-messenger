@@ -1,6 +1,9 @@
-import { useAuth } from "../features/auth/AuthProvider"
+import Sidebar from "../components/Sidebar";
 
 export default function MainPage() {
-    const { user } = useAuth();
-    return <h1>hi {user?.userId}</h1>
+    return (
+        <div>
+            <Sidebar />
+        </div>
+    )
 }
