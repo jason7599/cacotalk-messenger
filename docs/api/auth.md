@@ -1,4 +1,4 @@
-# API
+# Auth Api
 
 ## Register
 

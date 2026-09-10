@@ -23,6 +23,7 @@ The initial goal is to build a small, simple yet reliable and maintainable messa
 
 #### Blocks
 - Users can block other users.
+- Blocking a user will remove the user from the contacts list.
 - Users can view and manage their list of blocked users.
 - The blocked user is not directly notified of the action.
 
@@ -61,9 +62,10 @@ HTTP + WebSocket\
 ↓\
 Spring Boot backend\
 ↓\
-PostgreSQL database
+PostgreSQL database + Redis
 
-Redis may be introduced later.
+PostgreSQL is used for persistent application data such as user, converstations, messages, etc.\
+Redis is used for session storage.
 
 ## 4. Initial Domain Model
 
@@ -170,7 +172,7 @@ User scrolls toward the beginning of the loaded message history\
 → frontend prepends the older messages to the conversation history
 
 
-## 6. Technical Decisions
+## 6. Low-Level Architecture
 
 | Area | Current Decision |
 |---|---|
@@ -178,5 +180,5 @@ User scrolls toward the beginning of the loaded message history\
 | Frontend | React |
 | Database | PostgreSQL |
 | Real-time communication | STOMP over WebSocket |
-| Authentication | TBD |
-| Deployment | TBD |
+| Authentication | Sessions using Redis |
+| Deployment | Docker Compose |

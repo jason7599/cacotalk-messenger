@@ -17,11 +17,11 @@ Constraints:
 
 
 ## blocks
-- blocker_id
+- user_id
 - blocked_id
 
 Constraints:
-- Forbid `blocker_id = blocked_id`
+- Forbid `user_id = blocked_id`
 
 
 ## conversations
@@ -56,8 +56,5 @@ Constraints / Invariants:
 - created_at
 
 Constraints / Invariants:
-- `seq` is unique within a conversation
-- Messages are ordered by `seq`, not by `created_at`
-- `seq` values are assigned monotonically within each conversation
 - EVENT messages are created by the system as part of conversation state changes
 - `event_data` contains event-specific metadata and is expected to be stored as JSONB.
