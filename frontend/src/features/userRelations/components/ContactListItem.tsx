@@ -34,10 +34,6 @@ export default function ContactListItem({ contact }: ContactListItemProps) {
                     <p className="truncate text-sm font-bold text-[#eee2d5]">
                         {contact.username}
                     </p>
-
-                    <span className="text-[8px] tracking-[0.14em] text-[#7f6668]">
-                        SOUL #{contact.userId}
-                    </span>
                 </div>
 
                 <p className="mt-1 text-[10px] tracking-[0.12em] text-[#7f6668]">
