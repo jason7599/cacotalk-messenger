@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./frontend/src/assets/cacotalk-logo.png" width="300">
+</p>
+
 # CacoTalk-Messenger
 
 CacoTalk is a real-time web messaging application currently in early development. 
