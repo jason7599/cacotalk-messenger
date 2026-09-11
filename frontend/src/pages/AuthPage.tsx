@@ -3,6 +3,7 @@ import { apiLogin, apiRegister } from "../features/auth/authApi";
 import { AxiosError } from "axios";
 import { useAuth } from "../features/auth/AuthProvider";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
+import { getErrorMessage } from "../shared/apiClient";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;
@@ -74,12 +75,7 @@ export default function AuthPage() {
             }
             await refreshUser();
         } catch (err) {
-            // TODO: improve error flow
-            if (err instanceof AxiosError) {
-                setError(err.response?.data ?? "SOMETHING WENT WRONG.");
-                return;
-            }
-            setError("SOMETHING WENT WRONG.");
+            setError(getErrorMessage(err));
         } finally {
             setIsLoading(false);
         }

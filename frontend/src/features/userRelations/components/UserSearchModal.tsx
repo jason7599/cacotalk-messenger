@@ -4,7 +4,7 @@ import { useContactsStore } from "../contactsStore";
 import { apiSearchUsers } from "../userRelationsApi";
 import type { UserSearchResponse } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
-import { AxiosError } from "axios";
+import { getErrorMessage } from "../../../shared/apiClient";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;
 const SEARCH_QUERY_MAX_LENGTH = 32;
@@ -63,13 +63,13 @@ export default function UserSearchModal() {
 
                 setResults(users);
                 setHasSearched(true);
-            } catch {
+            } catch (err) {
                 if (searchId !== searchIdRef.current) {
                     return;
                 }
 
                 setResults([]);
-                setError("SEARCH FAILED.");
+                setError(getErrorMessage(err));
                 setHasSearched(true);
             } finally {
                 if (searchId === searchIdRef.current) {
@@ -95,11 +95,7 @@ export default function UserSearchModal() {
                 )
             );
         } catch (err) {
-            if (err instanceof AxiosError) {
-                setError(err.response?.data ?? "SOMETHING WENT WRONG.");
-                return;
-            }
-            setError("SOMETHING WENT WRONG.");
+            setError(getErrorMessage(err));
         }
     }
 
