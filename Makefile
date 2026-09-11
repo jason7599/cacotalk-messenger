@@ -3,3 +3,6 @@ db:
 
 redis:
 	docker compose exec redis redis-cli
+
+redis-scan:
+	docker compose exec redis redis-cli SCAN 0

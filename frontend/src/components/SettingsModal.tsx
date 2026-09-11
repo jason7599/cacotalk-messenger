@@ -2,10 +2,11 @@ import { ChevronRight, LogOut, ShieldBan, X } from "lucide-react";
 import { useAuth } from "../features/auth/AuthProvider";
 import { useModal } from "./ModalProvider";
 import { useState } from "react";
+import BlockedUsersModal from "../features/userRelations/components/BlockedUsersModal";
 
 export default function SettingsModal() {
     const { logout } = useAuth();
-    const { closeModal } = useModal();
+    const { openModal, closeModal } = useModal();
 
     const [confirmLogout, setConfirmLogout] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
@@ -88,9 +89,7 @@ export default function SettingsModal() {
                     <button
                         type="button"
                         disabled={loggingOut}
-                        onClick={() => {
-                            // TODO: open blocked users view
-                        }}
+                        onClick={() => openModal(<BlockedUsersModal /> )}
                         className="
                             group flex w-full items-center gap-4
                             border-2 border-[#4b1b1f]

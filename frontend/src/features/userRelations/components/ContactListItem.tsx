@@ -1,11 +1,15 @@
 import { MessageSquare, MoreVertical } from "lucide-react";
 import type { UserResponse } from "../../../shared/types";
+import { useModal } from "../../../components/ModalProvider";
+import ContactActionsModal from "./ContactActionsModal";
 
 type ContactListItemProps = {
     contact: UserResponse;
 };
 
 export default function ContactListItem({ contact }: ContactListItemProps) {
+    const { openModal } = useModal();
+
     return (
         <div
             className="
@@ -50,6 +54,7 @@ export default function ContactListItem({ contact }: ContactListItemProps) {
             >
                 <button
                     type="button"
+                    // TODO: dm 
                     aria-label={`Message ${contact.username}`}
                     className="
                         grid h-8 w-8 place-items-center
@@ -66,6 +71,7 @@ export default function ContactListItem({ contact }: ContactListItemProps) {
 
                 <button
                     type="button"
+                    onClick={() => openModal(<ContactActionsModal contact={contact} />)}
                     aria-label={`More actions for ${contact.username}`}
                     className="
                         grid h-8 w-8 place-items-center

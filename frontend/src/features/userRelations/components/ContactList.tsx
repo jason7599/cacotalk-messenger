@@ -1,12 +1,25 @@
-import { Search, UserPlus } from "lucide-react";
+import { Search, SearchX, Skull, UserPlus } from "lucide-react";
 import ContactListItem from "./ContactListItem";
 import { useContactsStore } from "../contactsStore";
 import { useModal } from "../../../components/ModalProvider";
 import UserSearchModal from "./UserSearchModal";
+import { useMemo, useState } from "react";
 
 export default function ContactList() {
     const { openModal } = useModal();
     const contacts = useContactsStore((state) => state.contacts);
+
+    const [query, setQuery] = useState("");
+
+    const filtered = useMemo(() => {
+        const normalized = query.trim().toLowerCase();
+
+        if (!normalized) {
+            return contacts;
+        }
+
+        return contacts.filter((c) => c.username.toLowerCase().includes(normalized));
+    }, [contacts, query]);
 
     return (
         <div className="flex h-full min-h-0 flex-col">
@@ -53,6 +66,8 @@ export default function ContactList() {
 
                         <input
                             type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
                             placeholder="LOCATE A SOUL..."
                             className="
                                 min-w-0 flex-1
@@ -90,12 +105,61 @@ export default function ContactList() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-                {contacts.map(contact => (
-                    <ContactListItem
-                        key={contact.userId}
-                        contact={contact}
-                    />
-                ))}
+                {filtered.length === 0 ? (
+                    <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
+                        {contacts.length === 0 ? (
+                            <>
+                                <div
+                                    className="
+                                        mb-3 grid h-12 w-12 place-items-center
+                                        border-2 border-[#64141b]
+                                        bg-[#100708]
+                                        text-[#a71924]
+                                        shadow-[3px_3px_0_#48090e]
+                                    "
+                                >
+                                    <Skull size={22} strokeWidth={2.2} />
+                                </div>
+
+                                <p className="text-xs font-bold tracking-[0.12em] text-[#9f8581]">
+                                    NO SOULS ON RECORD
+                                </p>
+
+                                <p className="mt-1 text-[10px] text-[#7f6668]">
+                                    YOUR CIRCLE OF DAMNATION IS EMPTY.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div
+                                    className="
+                                        mb-3 grid h-12 w-12 place-items-center
+                                        border-2 border-[#4b1b1f]
+                                        bg-[#0c0506]
+                                        text-[#7f6668]
+                                    "
+                                >
+                                    <SearchX size={22} />
+                                </div>
+
+                                <p className="text-xs font-bold tracking-[0.12em] text-[#9f8581]">
+                                    NO MATCHING SOULS
+                                </p>
+
+                                <p className="mt-1 text-[10px] text-[#7f6668]">
+                                    THE DIRECTORY YIELDS NOTHING.
+                                </p>
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    filtered.map((contact) => (
+                        <ContactListItem
+                            key={contact.userId}
+                            contact={contact}
+                        />
+                    ))
+                )}
             </div>
 
             <footer

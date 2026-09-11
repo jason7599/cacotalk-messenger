@@ -4,6 +4,7 @@ import { useContactsStore } from "../contactsStore";
 import { apiSearchUsers } from "../userRelationsApi";
 import type { UserSearchResponse } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
+import { AxiosError } from "axios";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;
 const SEARCH_QUERY_MAX_LENGTH = 32;
@@ -93,8 +94,12 @@ export default function UserSearchModal() {
                         : result
                 )
             );
-        } catch {
-            setError("FAILED TO ADD SOUL.");
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data ?? "SOMETHING WENT WRONG.");
+                return;
+            }
+            setError("SOMETHING WENT WRONG.");
         }
     }
 
