@@ -4,6 +4,44 @@
 
 The request does not contain a valid authenticated session.
 
+## Search Users
+
+Searches for users by username.
+
+The authenticated user is excluded from the results.
+
+Search results are limited to 20 users and are not paginated.
+
+### Request
+
+```
+GET /users/search?query={query}
+```
+
+The query must contain at least 3 characters after trimming whitespace.
+
+### Response
+
+#### `200 OK`
+
+```json
+[
+  {
+    "userId": 12,
+    "username": "alice",
+    "relation": "CONTACT"
+  },
+]
+```
+
+`relation` represents the authenticated user's relationship with the returned user.
+- `NONE` — The user is neither a contact nor blocked.
+- `CONTACT` — The user is already in the authenticated user's contacts.
+- `BLOCKED` — The user is blocked by the authenticated user.
+
+The relationship in the opposite direction is not considered.
+
+
 ## Get Contacts
 
 Returns the authenticated user's contacts.
