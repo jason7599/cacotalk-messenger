@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { apiLogin, apiRegister } from "../features/auth/authApi";
-import { AxiosError } from "axios";
 import { useAuth } from "../features/auth/AuthProvider";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
 import { getErrorMessage } from "../shared/apiClient";
