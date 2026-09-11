@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { getAuthUser, logout as logoutApi, type AuthUserResponse } from "./authApi";
 
 type AuthContextValue = {
@@ -10,7 +10,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: ReactNode })  {
     const [user, setUser] = useState<AuthUserResponse | null>(null);
     const [loadingUser, setLoadingUser] = useState(true);
 

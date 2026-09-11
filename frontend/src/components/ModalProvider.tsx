@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import Modal from "./Modal";
 
 type ModalContextValue = {
@@ -8,7 +8,7 @@ type ModalContextValue = {
 
 export const ModalContext = createContext<ModalContextValue | null>(null);
 
-export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function ModalProvider({ children }: { children: ReactNode }) {
     const [content, setContent] = useState<ReactNode | null>(null);
 
     const openModal = useCallback((content: ReactNode) => {
