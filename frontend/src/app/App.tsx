@@ -12,7 +12,7 @@ export default function App() {
 	}
 
 	if (!user) {
-		return <AuthPage />
+		return <AuthPage />;
 	}
 
 	return (

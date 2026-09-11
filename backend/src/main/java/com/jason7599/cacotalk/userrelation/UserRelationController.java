@@ -21,12 +21,11 @@ public class UserRelationController {
     }
 
     @PostMapping("/contacts/{targetId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void addContact(
+    public UserResponse addContact(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable long targetId
     ) {
-        userRelationService.addContact(user.userId(), targetId);
+        return userRelationService.addContact(user.userId(), targetId);
     }
 
     @DeleteMapping("/contacts/{targetId}")
@@ -44,12 +43,11 @@ public class UserRelationController {
     }
 
     @PostMapping("/blocks/{targetId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void blockUser(
+    public UserResponse blockUser(
             @AuthenticationPrincipal AuthUser user,
             @PathVariable long targetId
     ) {
-        userRelationService.blockUser(user.userId(), targetId);
+        return userRelationService.blockUser(user.userId(), targetId);
     }
 
     @DeleteMapping("/blocks/{targetId}")

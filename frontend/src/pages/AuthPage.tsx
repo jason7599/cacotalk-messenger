@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { login, register } from "../features/auth/authApi";
+import { apiLogin, apiRegister } from "../features/auth/authApi";
 import { AxiosError } from "axios";
 import { useAuth } from "../features/auth/AuthProvider";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
@@ -68,12 +68,13 @@ export default function AuthPage() {
 
         try {
             if (isLogin) {
-                await login({ username, password });
+                await apiLogin({ username, password });
             } else {
-                await register({ username, password });
+                await apiRegister({ username, password });
             }
             await refreshUser();
         } catch (err) {
+            // TODO: improve error flow
             if (err instanceof AxiosError) {
                 setError(err.response?.data ?? "SOMETHING WENT WRONG.");
                 return;

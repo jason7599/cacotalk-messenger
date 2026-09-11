@@ -1,10 +1,11 @@
 package com.jason7599.cacotalk.userrelation;
 
 import com.jason7599.cacotalk.exceptions.ApiException;
+import com.jason7599.cacotalk.user.UserEntity;
+import com.jason7599.cacotalk.user.UserRepository;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,14 @@ import java.util.List;
 public class UserRelationService {
 
     private final UserRelationRepository userRelationRepository;
+    private final UserRepository userRepository;
 
     public List<UserResponse> getContacts(long userId) {
         return userRelationRepository.getContacts(userId);
     }
 
     @Transactional
-    public void addContact(long userId, long targetId) {
+    public UserResponse addContact(long userId, long targetId) {
         if (userId == targetId) {
             throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot add self as contact.");
         }
@@ -31,11 +33,12 @@ public class UserRelationService {
             throw new ApiException(HttpStatus.CONFLICT, "Cannot add a blocked user as a contact.");
         }
 
-        try {
-            userRelationRepository.addContact(userId, targetId);
-        } catch (DataIntegrityViolationException e) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Target user not found.");
-        }
+        UserEntity target = userRepository.findById(targetId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
+
+        userRelationRepository.addContact(userId, targetId);
+
+        return new UserResponse(target);
     }
 
     @Transactional
@@ -53,17 +56,18 @@ public class UserRelationService {
 
     // TODO: WebSocket event
     @Transactional
-    public void blockUser(long userId, long targetId) {
+    public UserResponse blockUser(long userId, long targetId) {
         if (userId == targetId) {
             throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot block self");
         }
 
-        try {
-            userRelationRepository.removeContact(userId, targetId);
-            userRelationRepository.addBlock(userId, targetId);
-        } catch (DataIntegrityViolationException e) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Target user not found.");
-        }
+        UserEntity target = userRepository.findById(targetId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
+
+        userRelationRepository.removeContact(userId, targetId);
+        userRelationRepository.addBlock(userId, targetId);
+
+        return new UserResponse(target);
     }
 
     // TODO: WebSocket event

@@ -1,5 +1,9 @@
 # User Relation API
 
+#### `401 Unauthorized`
+
+The request does not contain a valid authenticated session.
+
 ## Get Contacts
 
 Returns the authenticated user's contacts.
@@ -27,10 +31,6 @@ GET /users/me/contacts
 ]
 ```
 
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.
-
 
 ## Add Contact
 
@@ -41,7 +41,14 @@ POST /users/me/contacts/{targetId}
 ```
 ### Response
 
-#### `204 No Content`
+#### `200 OK`
+
+```json
+{
+  "userId": 12,
+  "username": "alice"
+}
+```
 
 The user was successfully added as a contact, or already existed.
 
@@ -56,10 +63,6 @@ The target user does not exist.
 #### `409 Conflict`
 
 The authenticated user has blocked the target user.
-
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.
 
 
 ## Remove Contact
@@ -79,10 +82,6 @@ DELETE /users/me/contacts/{targetId}
 The contact was removed successfully.
 
 Same behavior when the relationship does not exist, making it idempotent.
-
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.
 
 
 ## Get Blocked Users
@@ -109,10 +108,6 @@ GET /users/me/blocks
 ```
 
 
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.
-
 ## Block User
 
 Blocks another user.
@@ -127,7 +122,14 @@ POST /users/me/blocks/{targetId}
 
 ### Response
 
-#### `204 No Content`
+#### `200 OK`
+
+```json
+{
+  "userId": 12,
+  "username": "alice"
+}
+```
 
 The user was successfully blocked, or was already blocked.
 
@@ -138,10 +140,6 @@ User tried to block self.
 #### `404 Not Found`
 
 The target user does not exist.
-
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.
 
 
 ## Unblock User
@@ -160,6 +158,3 @@ DELETE /users/me/blocks/{targetId}
 
 The block was removed successfully, or block didn't exist
 
-#### `401 Unauthorized`
-
-The request does not contain a valid authenticated session.

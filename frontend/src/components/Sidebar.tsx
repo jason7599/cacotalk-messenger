@@ -1,9 +1,4 @@
-import {
-    MessageSquare,
-    Users,
-    Settings,
-} from "lucide-react";
-
+import { MessageSquare, Users, Settings, } from "lucide-react";
 import { useState } from "react";
 import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
@@ -70,11 +65,10 @@ export default function Sidebar() {
                         type="button"
                         onClick={() => setPanel("conversations")}
                         aria-label="Conversations"
-                        className={`${navButton} ${
-                            panel === "conversations"
+                        className={`${navButton} ${panel === "conversations"
                                 ? activeButton
                                 : inactiveButton
-                        }`}
+                            }`}
                     >
                         {panel === "conversations" && (
                             <span className="absolute -left-2 top-2 h-7 w-1 bg-[#e02632]" />
@@ -87,11 +81,10 @@ export default function Sidebar() {
                         type="button"
                         onClick={() => setPanel("contacts")}
                         aria-label="Contacts"
-                        className={`${navButton} ${
-                            panel === "contacts"
+                        className={`${navButton} ${panel === "contacts"
                                 ? activeButton
                                 : inactiveButton
-                        }`}
+                            }`}
                     >
                         {panel === "contacts" && (
                             <span className="absolute -left-2 top-2 h-7 w-1 bg-[#e02632]" />

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getAuthUser, logout as logoutApi, type AuthUserResponse } from "./authApi";
+import { apiGetAuthUser, apiLogout, type AuthUserResponse } from "./authApi";
 
 type AuthContextValue = {
     user: AuthUserResponse | null;
@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode })  {
 
     async function refreshUser() {
         try {
-            setUser((await getAuthUser()));
+            setUser((await apiGetAuthUser()));
         } catch (err) {
             console.log(err);
             throw err;
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode })  {
     }
 
     async function logout() {
-        await logoutApi();
+        await apiLogout();
         setUser(null);
     }
 

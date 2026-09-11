@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiGetBlockedUsers, apiGetContacts } from "../features/userRelations/userRelationsApi";
+import { useContactsStore } from "../features/userRelations/contactsStore";
+import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStore";
 
 type BootstrapStatus = "loading" | "ready" | "error";
 
@@ -16,11 +19,22 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         async function bootstrap() {
             try {
-                
+                // TODO: connect websocket
 
+                const [
+                    contacts,
+                    blockedUsers,
+                ] = await Promise.all([
+                    apiGetContacts(),
+                    apiGetBlockedUsers(),
+                ]);
+                
+                useContactsStore.getState().setContacts(contacts);
+                useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
 
                 setStatus("ready");
-            } catch {
+            } catch (err) {
+                // TODO: gotta differentiate between websocket error and api error
                 setStatus("error");
             }
         }
