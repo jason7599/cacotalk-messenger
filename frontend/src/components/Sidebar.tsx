@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
 import cacotalkEmblem from "../assets/cacotalk-logo.png";
+import ContactList from "../features/userRelations/components/ContactList";
 
 export default function Sidebar() {
     const [panel, setPanel] =
@@ -66,8 +67,8 @@ export default function Sidebar() {
                         onClick={() => setPanel("conversations")}
                         aria-label="Conversations"
                         className={`${navButton} ${panel === "conversations"
-                                ? activeButton
-                                : inactiveButton
+                            ? activeButton
+                            : inactiveButton
                             }`}
                     >
                         {panel === "conversations" && (
@@ -82,8 +83,8 @@ export default function Sidebar() {
                         onClick={() => setPanel("contacts")}
                         aria-label="Contacts"
                         className={`${navButton} ${panel === "contacts"
-                                ? activeButton
-                                : inactiveButton
+                            ? activeButton
+                            : inactiveButton
                             }`}
                     >
                         {panel === "contacts" && (
@@ -108,64 +109,19 @@ export default function Sidebar() {
                 </div>
             </nav>
 
-            {/* active subsystem */}
             <section
                 className="
-                    flex w-80 flex-col
+                    flex w-110 flex-col
                     border-r-2 border-[#64141b]
                     bg-[#190b0d]
                     text-[#eee2d5]
                 "
             >
-                <header
-                    className="
-                        border-b-2 border-[#4b1b1f]
-                        bg-[#100708]
-                        px-5 py-4
-                    "
-                >
-                    <p className="mb-1 text-[10px] tracking-[0.22em] text-[#a71924]">
-                        COMMUNICATIONS // ACTIVE
-                    </p>
-
-                    <div className="flex items-end justify-between gap-4">
-                        <h2 className="text-xl font-black tracking-[-0.02em]">
-                            {panel === "conversations"
-                                ? "TRANSMISSIONS"
-                                : "SOUL DIRECTORY"}
-                        </h2>
-
-                        <span className="text-[9px] tracking-[0.16em] text-[#7f6668]">
-                            UNIT 01
-                        </span>
-                    </div>
-                </header>
-
-                <div className="flex-1 overflow-y-auto">
-                    {panel === "conversations" ? (
-                        <div className="p-4">
-                            Conversations
-                        </div>
-                    ) : (
-                        <div className="p-4">
-                            Contacts
-                        </div>
-                    )}
-                </div>
-
-                <footer
-                    className="
-                        border-t border-[#4b1b1f]
-                        bg-[#100708]
-                        px-4 py-2
-                        text-[9px]
-                        tracking-[0.16em]
-                        text-[#7f6668]
-                    "
-                >
-                    CACOTALK // INFERNAL RELAY
-                </footer>
+                {panel === "conversations"
+                    ? <div>hi</div>
+                    : <ContactList />
+                }
             </section>
-        </aside>
+        </aside >
     );
 }
