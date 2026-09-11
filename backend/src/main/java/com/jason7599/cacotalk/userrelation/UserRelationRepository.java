@@ -30,8 +30,9 @@ public class UserRelationRepository {
         );
     }
 
-    public void addContact(long userId, long targetId) {
-        jdbc.update("""
+    // returns 1 on insert, 0 on silent conflict
+    public int addContact(long userId, long targetId) {
+        return jdbc.update("""
                 INSERT INTO contacts (user_id, contact_id)
                 VALUES (?, ?)
                 ON CONFLICT DO NOTHING
