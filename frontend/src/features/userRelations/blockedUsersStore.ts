@@ -4,7 +4,7 @@ import { apiBlockUser, apiUnblockUser } from "./userRelationsApi";
 import { useContactsStore } from "./contactsStore";
 
 type BlockedUsersState = {
-    blockedUsers: Record<number, UserResponse>;
+    blockedUsers: UserResponse[];
     pendingIds: Set<number>;
 
     // Local synchronization
@@ -18,38 +18,44 @@ type BlockedUsersState = {
     unblockUser: (userId: number) => Promise<void>;
 };
 
+function sortBlockedUsers(blockedUsers: UserResponse[]) {
+    return blockedUsers.sort((a, b) =>
+        a.username.localeCompare(b.username)
+    );
+}
+
 export const useBlockedUsersStore = create<BlockedUsersState>((set, get) => ({
-    blockedUsers: {},
+    blockedUsers: [],
     pendingIds: new Set(),
 
     setBlockedUsers: (blockedUsers) => {
         set({
-            blockedUsers: Object.fromEntries(
-                blockedUsers.map((user) => [user.userId, user])
-            )
+            blockedUsers: sortBlockedUsers([...blockedUsers])
         });
     },
 
     upsertLocal: (blockedUser) => {
         set((state) => ({
-            blockedUsers: {
-                ...state.blockedUsers,
-                [blockedUser.userId]: blockedUser
-            }
+            blockedUsers: sortBlockedUsers([
+                ...state.blockedUsers.filter(
+                    (existing) => existing.userId !== blockedUser.userId
+                ),
+                blockedUser
+            ])
         }));
     },
 
     removeLocal: (userId) => {
-        set((state) => {
-            const blockedUsers = { ...state.blockedUsers };
-            delete blockedUsers[userId];
-            return { blockedUsers };
-        });
+        set((state) => ({
+            blockedUsers: state.blockedUsers.filter(
+                (user) => user.userId !== userId
+            )
+        }));
     },
 
     reset: () => {
         set({
-            blockedUsers: {},
+            blockedUsers: [],
             pendingIds: new Set()
         });
     },
@@ -58,6 +64,7 @@ export const useBlockedUsersStore = create<BlockedUsersState>((set, get) => ({
         set((state) => {
             const pendingIds = new Set(state.pendingIds);
             pendingIds.add(userId);
+
             return { pendingIds };
         });
 
@@ -66,11 +73,12 @@ export const useBlockedUsersStore = create<BlockedUsersState>((set, get) => ({
 
             get().upsertLocal(blockedUser);
 
-            useContactsStore.getState().removeLocal(userId); // remove from contacts list
+            useContactsStore.getState().removeLocal(userId);
         } finally {
             set((state) => {
                 const pendingIds = new Set(state.pendingIds);
                 pendingIds.delete(userId);
+
                 return { pendingIds };
             });
         }

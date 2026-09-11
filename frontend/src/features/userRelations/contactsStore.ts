@@ -3,7 +3,7 @@ import type { UserResponse } from "../../shared/types";
 import { apiAddContact, apiRemoveContact } from "./userRelationsApi";
 
 type ContactsState = {
-    contacts: Record<number, UserResponse>;
+    contacts: UserResponse[];
     addingIds: Set<number>;
 
     // Local synchronization
@@ -17,38 +17,44 @@ type ContactsState = {
     removeContact: (contactId: number) => Promise<void>;
 };
 
+function sortContacts(contacts: UserResponse[]) {
+    return contacts.sort((a, b) =>
+        a.username.localeCompare(b.username)
+    );
+}
+
 export const useContactsStore = create<ContactsState>((set, get) => ({
-    contacts: {},
+    contacts: [],
     addingIds: new Set(),
 
     setContacts: (contacts) => {
         set({
-            contacts: Object.fromEntries(
-                contacts.map((contact) => [contact.userId, contact])
-            )
+            contacts: sortContacts([...contacts])
         });
     },
 
     upsertLocal: (contact) => {
         set((state) => ({
-            contacts: {
-                ...state.contacts,
-                [contact.userId]: contact
-            }
+            contacts: sortContacts([
+                ...state.contacts.filter(
+                    (existing) => existing.userId !== contact.userId
+                ),
+                contact
+            ])
         }));
     },
 
     removeLocal: (contactId) => {
-        set((state) => {
-            const contacts = { ...state.contacts };
-            delete contacts[contactId];
-            return { contacts };
-        });
+        set((state) => ({
+            contacts: state.contacts.filter(
+                (contact) => contact.userId !== contactId
+            )
+        }));
     },
 
     reset: () => {
         set({
-            contacts: {},
+            contacts: [],
             addingIds: new Set()
         });
     },
@@ -58,17 +64,18 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
         set((state) => {
             const addingIds = new Set(state.addingIds);
             addingIds.add(contactId);
+
             return { addingIds };
         });
 
         try {
             const contact = await apiAddContact(contactId);
-
             get().upsertLocal(contact);
         } finally {
             set((state) => {
                 const addingIds = new Set(state.addingIds);
                 addingIds.delete(contactId);
+
                 return { addingIds };
             });
         }
@@ -76,7 +83,6 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
 
     removeContact: async (contactId) => {
         await apiRemoveContact(contactId);
-
         get().removeLocal(contactId);
     }
 }));

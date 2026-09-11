@@ -1,17 +1,9 @@
 import { Search, UserPlus } from "lucide-react";
 import ContactListItem from "./ContactListItem";
 import { useContactsStore } from "../contactsStore";
-import { useMemo } from "react";
 
 export default function ContactList() {
-    const contactsById = useContactsStore((state) => state.contacts);
-    const contacts = useMemo(
-        () =>
-            Object.values(contactsById).sort((a, b) =>
-                a.username.localeCompare(b.username)
-            ),
-        [contactsById]
-    );
+    const contacts = useContactsStore((state) => state.contacts);
 
     return (
         <div className="flex h-full min-h-0 flex-col">
