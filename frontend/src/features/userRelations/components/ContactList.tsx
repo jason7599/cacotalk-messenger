@@ -1,8 +1,11 @@
 import { Search, UserPlus } from "lucide-react";
 import ContactListItem from "./ContactListItem";
 import { useContactsStore } from "../contactsStore";
+import { useModal } from "../../../components/ModalProvider";
+import UserSearchModal from "./UserSearchModal";
 
 export default function ContactList() {
+    const { openModal } = useModal();
     const contacts = useContactsStore((state) => state.contacts);
 
     return (
@@ -66,6 +69,7 @@ export default function ContactList() {
                     <button
                         type="button"
                         aria-label="Add contact"
+                        onClick={() => openModal(<UserSearchModal />)}
                         className="
                             grid w-11 place-items-center
                             border-2 border-[#64141b]
