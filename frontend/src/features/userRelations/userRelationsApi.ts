@@ -1,5 +1,6 @@
 import api from "../../shared/apiClient";
-import type { UserResponse, UserSearchResponse } from "../../shared/types";
+import type { UserResponse } from "../../shared/types";
+import type { UserSearchResponse } from "./types";
 
 export async function apiSearchUsers(query: string): Promise<UserSearchResponse[]> {
     return (await api.get(`/users/search?query=${query}`)).data;

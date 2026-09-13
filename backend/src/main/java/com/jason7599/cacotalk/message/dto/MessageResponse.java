@@ -16,10 +16,11 @@ public record MessageResponse(
         EventMessageType eventType,
         JsonNode eventData,
         String content,
-        Instant createdAt
+        Instant createdAt,
+        UUID clientId
 ) {
-    public MessageResponse(MessageEntity e) {
-        this(
+    public static MessageResponse fromEntity(MessageEntity e) {
+        return new MessageResponse(
                 e.getId(),
                 e.getConversationId(),
                 e.getSenderId(),
@@ -27,7 +28,8 @@ public record MessageResponse(
                 e.getEventType(),
                 e.getEventData(),
                 e.getContent(),
-                e.getCreatedAt()
+                e.getCreatedAt(),
+                e.getClientId()
         );
     }
 }

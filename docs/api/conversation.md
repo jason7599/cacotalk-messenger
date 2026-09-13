@@ -24,7 +24,7 @@ GET /conversations/me
 ```
 [
   {
-    "id": UUID,
+    "id": string,
     "type": "DIRECT" | "GROUP",
     "membersPreview": string[],
     "memberCount": number,
@@ -33,11 +33,10 @@ GET /conversations/me
     "isClosed": boolean,
     "lastReadMessageId": number | null,
     "createdAt": string,
-    "lastMessage": MessageResponse | null
-  }
+    "lastMessage": MessageResponse
+  },
 ]
 ```
-
 - `membersPreview` contains the usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user.
 - `memberCount` does not include the authenticated user. e.g., A direct conversation has a `memberCount` of 1, not 2.
 - `blockStatus` is only used for direct conversations and is `null` for group conversations.
@@ -45,3 +44,4 @@ GET /conversations/me
 - `groupCreatorId` is only used for group conversations and is `null` for direct conversations.
 - `isClosed` is only meaningful for group conversations and is always `false` for direct conversations.
 - `lastReadMessageId` is `null` if the authenticated user has not yet read any messages in the conversation.
+- `lastMessage` uses the standard `MessageResponse` shape defined in the [Message API documentation](./message.md).

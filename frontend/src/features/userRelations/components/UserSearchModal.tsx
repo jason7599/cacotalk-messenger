@@ -2,9 +2,9 @@ import { Search, UserPlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useContactsStore } from "../contactsStore";
 import { apiSearchUsers } from "../userRelationsApi";
-import type { UserSearchResponse } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiClient";
+import type { UserSearchResponse } from "../types";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;
 const SEARCH_QUERY_MAX_LENGTH = 32;

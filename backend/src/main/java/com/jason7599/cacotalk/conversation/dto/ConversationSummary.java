@@ -54,7 +54,8 @@ public record ConversationSummary(
                                 proj.getLastMessageEventType() != null ? EventMessageType.valueOf(proj.getLastMessageEventType()) : null,
                                 proj.getLastMessageEventData(),
                                 proj.getLastMessageContent(),
-                                proj.getLastMessageCreatedAt()
+                                proj.getLastMessageCreatedAt(),
+                                null // clientId doesn't matter in summaries
                         )
                         : null
         );
