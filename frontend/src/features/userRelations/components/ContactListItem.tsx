@@ -1,10 +1,10 @@
 import { MessageSquare, MoreVertical } from "lucide-react";
-import type { UserResponse } from "../../../shared/types";
+import type { UserSummary } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
 import ContactActionsModal from "./ContactActionsModal";
 
 type ContactListItemProps = {
-    contact: UserResponse;
+    contact: UserSummary;
 };
 
 export default function ContactListItem({ contact }: ContactListItemProps) {

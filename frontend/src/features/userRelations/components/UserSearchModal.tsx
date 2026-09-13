@@ -4,7 +4,7 @@ import { useContactsStore } from "../contactsStore";
 import { apiSearchUsers } from "../userRelationsApi";
 import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiClient";
-import type { UserSearchResponse } from "../types";
+import type { UserSearchResult } from "../types";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;
 const SEARCH_QUERY_MAX_LENGTH = 32;
@@ -17,7 +17,7 @@ export default function UserSearchModal() {
     const addingIds = useContactsStore((state) => state.addingIds);
 
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<UserSearchResponse[]>([]);
+    const [results, setResults] = useState<UserSearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export default function UserSearchModal() {
         };
     }, [query]);
 
-    async function handleAdd(user: UserSearchResponse) {
+    async function handleAdd(user: UserSearchResult) {
         try {
             await addContact(user.userId);
 

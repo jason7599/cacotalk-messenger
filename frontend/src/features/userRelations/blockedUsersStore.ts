@@ -1,15 +1,15 @@
 import { create } from "zustand";
-import type { UserResponse } from "../../shared/types";
+import type { UserSummary } from "../../shared/types";
 import { apiBlockUser, apiUnblockUser } from "./userRelationsApi";
 import { useContactsStore } from "./contactsStore";
 
 type BlockedUsersState = {
-    blockedUsers: UserResponse[];
+    blockedUsers: UserSummary[];
     pendingIds: Set<number>;
 
     // Local synchronization
-    setBlockedUsers: (blockedUsers: UserResponse[]) => void;
-    upsertLocal: (blockedUser: UserResponse) => void;
+    setBlockedUsers: (blockedUsers: UserSummary[]) => void;
+    upsertLocal: (blockedUser: UserSummary) => void;
     removeLocal: (userId: number) => void;
     reset: () => void;
 
@@ -18,7 +18,7 @@ type BlockedUsersState = {
     unblockUser: (userId: number) => Promise<void>;
 };
 
-function sortBlockedUsers(blockedUsers: UserResponse[]) {
+function sortBlockedUsers(blockedUsers: UserSummary[]) {
     return blockedUsers.sort((a, b) =>
         a.username.localeCompare(b.username)
     );
