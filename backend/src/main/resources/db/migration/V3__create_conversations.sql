@@ -1,7 +1,7 @@
 CREATE TABLE conversations (
     id UUID PRIMARY KEY,
 
-    type VARCHAR(10) NOT NULL CHECK (type IN ('DIRECT', 'GROUP')),
+    type TEXT NOT NULL CHECK (type IN ('DIRECT', 'GROUP')),
 
     direct_user_id1 BIGINT REFERENCES users(id),
     direct_user_id2 BIGINT REFERENCES users(id),

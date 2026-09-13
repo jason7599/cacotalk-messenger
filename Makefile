@@ -1,3 +1,9 @@
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
 db:
 	docker compose exec postgres psql -U jux cacotalk
 

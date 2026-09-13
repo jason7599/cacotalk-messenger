@@ -54,6 +54,7 @@ Constraints / Invariants:
 - sender_id (USER type only)
 - content (USER type only)
 - created_at
+- client_id
 
 Constraints / Invariants:
 - EVENT messages are created by the system as part of conversation state changes
