@@ -27,7 +27,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     LEFT JOIN blocks b
         ON b.user_id = :requesterId
         AND b.blocked_id = u.id
-    WHERE u.id <> :requesterId AND u.username LIKE LOWER(:query) || '%'
+    WHERE u.id <> :requesterId
+        AND u.username LIKE LOWER(:query) || '%'
     ORDER BY u.username
     LIMIT :limit
     """, nativeQuery = true)

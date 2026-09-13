@@ -28,6 +28,7 @@ public class DevDataService {
 
     private final UserRepository userRepository;
     private final UserRelationRepository userRelationRepository;
+
     private final JdbcTemplate jdbcTemplate;
     private final RedisConnectionFactory redisConnectionFactory;
     private final DevQueries devQueries;
@@ -115,5 +116,6 @@ public class DevDataService {
             return false;
         }
     }
+
 
 }
