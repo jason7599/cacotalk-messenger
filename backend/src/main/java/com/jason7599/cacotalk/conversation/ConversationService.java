@@ -18,6 +18,11 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final UserRepository userRepository;
 
+    public ConversationMembership requireMembership(UUID conversationId, long userId) {
+        return conversationRepository.getMembership(conversationId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.FORBIDDEN, "Not a member of this conversation."));
+    }
+
     public List<ConversationSummary> getConversationSummaries(long userId) {
         return conversationRepository.getConversationSummaries(userId)
                 .stream()

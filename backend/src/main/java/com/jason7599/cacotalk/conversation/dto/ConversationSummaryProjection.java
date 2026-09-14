@@ -1,5 +1,9 @@
 package com.jason7599.cacotalk.conversation.dto;
 
+import com.jason7599.cacotalk.conversation.ConversationType;
+import com.jason7599.cacotalk.conversation.DirectBlockStatus;
+import com.jason7599.cacotalk.message.EventMessageType;
+import com.jason7599.cacotalk.message.MessageType;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
@@ -7,12 +11,12 @@ import java.util.UUID;
 
 public interface ConversationSummaryProjection {
     UUID getConversationId();
-    String getConversationType();
+    ConversationType getConversationType();
 
     String[] getMembersPreview();
     int getMemberCount();
 
-    String getBlockStatus();
+    DirectBlockStatus getBlockStatus();
 
     Long getGroupCreatorId();
     boolean getIsClosed();
@@ -24,8 +28,8 @@ public interface ConversationSummaryProjection {
     Long getLastMessageId();
     Long getLastMessageSenderId();
     String getLastMessageSenderName();
-    String getLastMessageType();
-    String getLastMessageEventType();
+    MessageType getLastMessageType();
+    EventMessageType getLastMessageEventType();
     JsonNode getLastMessageEventData();
     String getLastMessageContent();
     Instant getLastMessageCreatedAt();

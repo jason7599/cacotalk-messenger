@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @Profile("dev")
@@ -19,5 +20,17 @@ public class DevQueries {
                 "SELECT id FROM users",
                 Long.class
         );
+    }
+
+    public long countMessages(UUID conversationId) {
+        Long res = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                FROM messages
+                WHERE conversation_id = ?
+                """,
+                Long.class,
+                conversationId
+        );
+        return res != null ? res : 0L;
     }
 }

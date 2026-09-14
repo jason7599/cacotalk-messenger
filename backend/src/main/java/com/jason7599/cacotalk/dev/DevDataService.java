@@ -1,8 +1,13 @@
 package com.jason7599.cacotalk.dev;
 
+import com.jason7599.cacotalk.conversation.ConversationRepository;
+import com.jason7599.cacotalk.message.MessageEntity;
+import com.jason7599.cacotalk.message.MessageRepository;
 import com.jason7599.cacotalk.user.UserEntity;
 import com.jason7599.cacotalk.user.UserRepository;
+import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.userrelation.UserRelationRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @Profile("dev")
@@ -28,6 +34,8 @@ public class DevDataService {
 
     private final UserRepository userRepository;
     private final UserRelationRepository userRelationRepository;
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
 
     private final JdbcTemplate jdbcTemplate;
     private final RedisConnectionFactory redisConnectionFactory;
@@ -60,7 +68,7 @@ public class DevDataService {
             try {
                 String username;
                 do {
-                    username = UsernameFaker.generate();
+                    username = DevDataFaker.username();
                 } while (username.equals(DEV_USERNAME));
 
                 UserEntity user = new UserEntity(
@@ -103,6 +111,38 @@ public class DevDataService {
         return created;
     }
 
+    @Transactional
+    public long seedMessages(UUID conversationId, int messageCount) {
+        if (messageCount <= 0) {
+            throw new IllegalArgumentException("messageCount must be greater than 0");
+        }
+
+        List<Long> memberIds = conversationRepository.getAllMembers(conversationId)
+                .stream().map(UserResponse::userId).toList();
+
+        if (memberIds.isEmpty()) {
+            throw new IllegalStateException("Conversation has no members");
+        }
+
+        long lastMessageId = 0;
+        while (messageCount-- > 0) {
+            MessageEntity message = MessageEntity.user(
+                    conversationId,
+                    memberIds.get(RANDOM.nextInt(memberIds.size())),
+                    DevDataFaker.message(),
+                    UUID.randomUUID()
+            );
+
+            lastMessageId = messageRepository.save(message).getId();
+        }
+
+        for (long memberId : memberIds) {
+            conversationRepository.updateLastReadMessageId(conversationId, memberId, lastMessageId);
+        }
+
+        return devQueries.countMessages(conversationId);
+    }
+
     private boolean createDev() {
         try {
             userRepository.saveAndFlush(
@@ -116,6 +156,4 @@ public class DevDataService {
             return false;
         }
     }
-
-
 }

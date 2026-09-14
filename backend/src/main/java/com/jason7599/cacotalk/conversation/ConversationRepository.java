@@ -1,6 +1,7 @@
 package com.jason7599.cacotalk.conversation;
 
 import com.jason7599.cacotalk.conversation.dto.ConversationSummaryProjection;
+import com.jason7599.cacotalk.user.dto.UserResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -129,5 +130,30 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         FROM UNNEST(:userIds) user_id
         ON CONFLICT (conversation_id, user_id) DO NOTHING
     """, nativeQuery = true)
-    int insertMembers(UUID conversationId, long[] userIds);
+    void insertMembers(UUID conversationId, long[] userIds);
+
+    @Query(value = """
+        SELECT last_read_message_id
+        FROM conversation_members
+        WHERE conversation_id = :conversationId AND user_id = :userId
+    """, nativeQuery = true)
+    Optional<ConversationMembership> getMembership(UUID conversationId, long userId);
+
+    @Query(value = """
+        SELECT
+            u.id AS userId,
+            u.username
+        FROM conversation_members cm
+        JOIN users u ON cm.user_id = u.id
+        WHERE cm.conversation_id = :conversationId
+    """, nativeQuery = true)
+    List<UserResponse> getAllMembers(UUID conversationId);
+
+    @Modifying
+    @Query(value = """
+        UPDATE conversation_members
+        SET last_read_message_id = GREATEST(last_read_message_id, :messageId) -- works even if previously null
+        WHERE conversation_id = :conversationId AND user_id = :userId
+    """, nativeQuery = true)
+    void updateLastReadMessageId(UUID conversationId, long userId, long messageId);
 }

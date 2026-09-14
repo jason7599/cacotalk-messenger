@@ -2,8 +2,6 @@ package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
 import com.jason7599.cacotalk.conversation.DirectBlockStatus;
-import com.jason7599.cacotalk.message.EventMessageType;
-import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 
 import java.time.Instant;
@@ -32,10 +30,10 @@ public record ConversationSummary(
     public static ConversationSummary fromProjection(ConversationSummaryProjection proj) {
         return new ConversationSummary(
                 proj.getConversationId(),
-                ConversationType.valueOf(proj.getConversationType()),
+                proj.getConversationType(),
                 Arrays.asList(proj.getMembersPreview()),
                 proj.getMemberCount(),
-                DirectBlockStatus.valueOf(proj.getBlockStatus()),
+                proj.getBlockStatus(),
                 proj.getGroupCreatorId(),
                 proj.getIsClosed(),
                 proj.getLastReadMessageId(),
@@ -46,8 +44,8 @@ public record ConversationSummary(
                                 proj.getConversationId(),
                                 proj.getLastMessageSenderId(),
                                 proj.getLastMessageSenderName(),
-                                MessageType.valueOf(proj.getLastMessageType()),
-                                proj.getLastMessageEventType() != null ? EventMessageType.valueOf(proj.getLastMessageEventType()) : null,
+                                proj.getLastMessageType(),
+                                proj.getLastMessageEventType() != null ? proj.getLastMessageEventType() : null,
                                 proj.getLastMessageEventData(),
                                 proj.getLastMessageContent(),
                                 proj.getLastMessageCreatedAt(),

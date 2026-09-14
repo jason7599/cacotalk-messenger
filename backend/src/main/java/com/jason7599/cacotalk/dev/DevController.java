@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @Profile("dev")
 @RequestMapping("/dev")
@@ -22,6 +24,15 @@ public class DevController {
     public String seedContacts(@RequestParam(defaultValue = "0.2") double ratio) {
         int count = dataService.seedContacts(ratio);
         return "Seeded %d contacts".formatted(count);
+    }
+
+    @PostMapping("/seed/conversations/{conversationId}/messages")
+    public String seedMessages(
+            @PathVariable UUID conversationId,
+            @RequestParam(defaultValue = "100") int count
+    ) {
+        long total = dataService.seedMessages(conversationId, count);
+        return "Total messages: %d".formatted(total);
     }
 
     @PostMapping("/data/nuke")

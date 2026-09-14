@@ -3,7 +3,7 @@ CREATE TABLE messages (
     conversation_id UUID NOT NULL REFERENCES conversations(id),
     sender_id BIGINT REFERENCES users(id),
 
-    type VARCHAR(2000) NOT NULL CHECK (type IN ('USER', 'EVENT')),
+    type TEXT NOT NULL CHECK (type IN ('USER', 'EVENT')),
     event_type TEXT CHECK (
         event_type IN ('GROUP_CREATED',
                        'USER_INVITED',
@@ -12,7 +12,7 @@ CREATE TABLE messages (
                        'GROUP_CLOSED')
     ),
     event_data JSONB,
-    content TEXT, -- def should be length limit
+    content VARCHAR(2000),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     client_id UUID UNIQUE,
