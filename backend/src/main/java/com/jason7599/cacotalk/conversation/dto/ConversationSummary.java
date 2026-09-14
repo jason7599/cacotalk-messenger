@@ -1,6 +1,7 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
+import com.jason7599.cacotalk.conversation.DirectBlockStatus;
 import com.jason7599.cacotalk.message.EventMessageType;
 import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
@@ -14,10 +15,10 @@ public record ConversationSummary(
         UUID id,
         ConversationType type,
 
-        List<String> membersPreview, // list of usernames of other users. excludes requesting user. Should be size 1 for DIRECT
+        List<String> membersPreview,// list of usernames of other users. excludes requesting user. Should be size 1 for DIRECT
         int memberCount, // exclude user
 
-        BlockStatus blockStatus, // DIRECT type only
+        DirectBlockStatus blockStatus, // DIRECT type only
 
         Long groupCreatorId, // GROUP type only
         boolean isClosed, // GROUP type only, default false in DIRECT
@@ -28,19 +29,13 @@ public record ConversationSummary(
 
         MessageResponse lastMessage
 ) {
-    public enum BlockStatus {
-        NONE,
-        BLOCKED_BY_ME,
-        BLOCKED_ME
-    }
-
     public static ConversationSummary fromProjection(ConversationSummaryProjection proj) {
         return new ConversationSummary(
                 proj.getConversationId(),
                 ConversationType.valueOf(proj.getConversationType()),
                 Arrays.asList(proj.getMembersPreview()),
                 proj.getMemberCount(),
-                BlockStatus.valueOf(proj.getBlockStatus()),
+                DirectBlockStatus.valueOf(proj.getBlockStatus()),
                 proj.getGroupCreatorId(),
                 proj.getIsClosed(),
                 proj.getLastReadMessageId(),

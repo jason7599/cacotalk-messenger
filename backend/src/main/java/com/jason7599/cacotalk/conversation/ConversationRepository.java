@@ -2,6 +2,7 @@ package com.jason7599.cacotalk.conversation;
 
 import com.jason7599.cacotalk.conversation.dto.ConversationSummaryProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ConversationRepository extends JpaRepository<ConversationEntity, UUID> {
-    @Query(value = """
+    String CONVERSATION_SUMMARY_QUERY = """
         SELECT
             c.id AS conversationId,
             c.type AS conversationType,
@@ -87,16 +88,42 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             AND blocked_me.blocked_id = :userId
 
         WHERE me.user_id = :userId
+    """;
+
+    @Query(value = CONVERSATION_SUMMARY_QUERY + """
+        AND (c.type = 'GROUP' OR lm.id IS NOT NULL) -- ignore empty direct conversations in bootstrap fetch
     """, nativeQuery = true)
     List<ConversationSummaryProjection> getConversationSummaries(long userId);
 
-
-    @Query(value = """
-        SELECT *
-        FROM conversations
-        WHERE type = 'DIRECT' -- technically redundant
-              AND direct_user_id1 = LEAST(:userId1, :userId2)
-              AND direct_user_id2 = GREATEST(:userId1, :userId2)
+    @Query(value = CONVERSATION_SUMMARY_QUERY + """
+        AND c.id = :conversationId
     """, nativeQuery = true)
-    Optional<ConversationEntity> findDirectConversation(long userId1, long userId2);
+    Optional<ConversationSummaryProjection> getConversationSummary(UUID conversationId, long userId);
+
+    // idempotent
+    @Query(value = """
+        INSERT INTO conversations (id, type, direct_user_id1, direct_user_id2)
+        VALUES (:conversationId, 'DIRECT', LEAST(:userId1, :userId2), GREATEST(:userId1, :userId2))
+        ON CONFLICT (direct_user_id1, direct_user_id2) WHERE type = 'DIRECT'
+        DO UPDATE SET id = conversations.id -- harmless no-op
+        RETURNING id
+    """, nativeQuery = true)
+    UUID getOrCreateDirectConversation(long userId1, long userId2, UUID conversationId);
+
+    // idempotent
+    @Modifying
+    @Query(value = """
+        INSERT INTO conversation_members (conversation_id, user_id, last_read_message_id)
+        SELECT -- read the last message_id in conversation
+            :conversationId,
+            user_id,
+            (
+                SELECT MAX(m.id)
+                FROM messages m
+                WHERE m.conversation_id = :conversationId
+            )
+        FROM UNNEST(:userIds) user_id
+        ON CONFLICT (conversation_id, user_id) DO NOTHING
+    """, nativeQuery = true)
+    int insertMembers(UUID conversationId, long[] userIds);
 }
