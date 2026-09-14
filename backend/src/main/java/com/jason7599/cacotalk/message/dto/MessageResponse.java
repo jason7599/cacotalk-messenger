@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.message.dto;
 
 import com.jason7599.cacotalk.message.EventMessageType;
-import com.jason7599.cacotalk.message.MessageEntity;
 import com.jason7599.cacotalk.message.MessageType;
 import tools.jackson.databind.JsonNode;
 
@@ -12,6 +11,7 @@ public record MessageResponse(
         long id,
         UUID conversationId,
         Long senderId,
+        String senderName,
         MessageType type,
         EventMessageType eventType,
         JsonNode eventData,
@@ -19,17 +19,4 @@ public record MessageResponse(
         Instant createdAt,
         UUID clientId
 ) {
-    public static MessageResponse fromEntity(MessageEntity e) {
-        return new MessageResponse(
-                e.getId(),
-                e.getConversationId(),
-                e.getSenderId(),
-                e.getType(),
-                e.getEventType(),
-                e.getEventData(),
-                e.getContent(),
-                e.getCreatedAt(),
-                e.getClientId()
-        );
-    }
 }

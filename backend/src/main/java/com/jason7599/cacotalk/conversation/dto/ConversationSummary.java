@@ -45,6 +45,7 @@ public record ConversationSummary(
                                 proj.getLastMessageId(),
                                 proj.getConversationId(),
                                 proj.getLastMessageSenderId(),
+                                proj.getLastMessageSenderName(),
                                 MessageType.valueOf(proj.getLastMessageType()),
                                 proj.getLastMessageEventType() != null ? EventMessageType.valueOf(proj.getLastMessageEventType()) : null,
                                 proj.getLastMessageEventData(),

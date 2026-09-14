@@ -23,6 +23,7 @@ public interface ConversationSummaryProjection {
 
     Long getLastMessageId();
     Long getLastMessageSenderId();
+    String getLastMessageSenderName();
     String getLastMessageType();
     String getLastMessageEventType();
     JsonNode getLastMessageEventData();

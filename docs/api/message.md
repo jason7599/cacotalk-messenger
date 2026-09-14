@@ -7,6 +7,7 @@
   "id": number,
   "conversationId": UUID string,
   "senderId": number | null,
+  "senderName": string | null,
   "type": MessageType,
   "eventType": EventMessageType | null,
   "eventData": json object | null,

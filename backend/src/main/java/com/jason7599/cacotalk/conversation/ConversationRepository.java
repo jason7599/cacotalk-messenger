@@ -27,6 +27,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             c.created_at AS conversationCreatedAt,
             lm.id AS lastMessageId,
             lm.sender_id AS lastMessageSenderId,
+            lms.username AS lastMessageSenderName,
             lm.type AS lastMessageType,
             lm.event_type AS lastMessageEventType,
             lm.event_data AS lastMessageEventData,
@@ -78,6 +79,9 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             ORDER BY conversation_id, id DESC
         ) lm
             ON c.id = lm.conversation_id
+
+        LEFT JOIN users lms
+            ON lm.sender_id = lms.id
 
         LEFT JOIN blocks blocked_by_me
             ON blocked_by_me.user_id = :userId
