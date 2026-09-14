@@ -5,7 +5,7 @@ import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStor
 import { apiGetConversations } from "../features/conversations/conversationsApi";
 import { useConversationsStore } from "../features/conversations/conversationsStore";
 
-type BootstrapStatus = "loading" | "ready" | "error";
+type BootstrapStatus = "LOADING" | "READY" | "ERROR";
 
 type BootstrapContextValue = {
     status: BootstrapStatus;
@@ -15,7 +15,7 @@ const BootstrapContext = createContext<BootstrapContextValue | null>(null);
 
 export function BootstrapProvider({ children }: { children: ReactNode }) {
 
-    const [status, setStatus] = useState<BootstrapStatus>("loading");
+    const [status, setStatus] = useState<BootstrapStatus>("LOADING");
 
     // on MainPage render
     useEffect(() => {
@@ -37,10 +37,10 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
                 useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
                 useConversationsStore.getState().setConversations(conversations);
 
-                setStatus("ready");
+                setStatus("READY");
             } catch (err) {
                 // TODO: gotta differentiate between websocket error and api error
-                setStatus("error");
+                setStatus("ERROR");
             }
         }
 

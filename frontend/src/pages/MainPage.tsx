@@ -1,22 +1,24 @@
 import { useBootstrap } from "../app/BootstrapProvider";
 import LoadingScreen from "../components/LoadingScreen";
 import Sidebar from "../components/Sidebar";
+import ConversationView from "../features/conversations/components/ConversationView";
 
 export default function MainPage() {
     const { status } = useBootstrap();
 
-    if (status === "loading") {
+    if (status === "LOADING") {
         return <LoadingScreen title="SUMMONING YOUR CHAOS"/>
     }
 
     // TODO: idk?
-    if (status === "error") {
+    if (status === "ERROR") {
         return <div>WTF?</div>
     }
 
     return (
-        <div>
+        <div className="flex h-dvh min-h-0">
             <Sidebar />
+            <ConversationView />
         </div>
     )
 }
