@@ -1,16 +1,17 @@
 import { create } from "zustand";
-import type { Conversation } from "./types";
+import type { ConversationSummary } from "./types";
 
 type ConversationsState = {
-    conversationsById: Record<string, Conversation>;
+    conversationsById: Record<string, ConversationSummary>;
 
     // local sync
-    setConversations: (conversations: Conversation[]) => void;
-
+    setConversations: (conversations: ConversationSummary[]) => void;
+    upsertLocal: (conversation: ConversationSummary) => void;
+    removeLocal: (conversationId: string) => void;
     reset: () => void;
 };
 
-export const useConversationsStore = create<ConversationsState>((set, get) => ({
+export const useConversationsStore = create<ConversationsState>((set) => ({
     conversationsById: {},
 
     setConversations: (conversations) => {
@@ -19,6 +20,24 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
                 conversations.map((c) => [c.id, c])
             )
         });
+    },
+
+    upsertLocal: (conversation) => {
+        set((state) => ({
+            conversationsById: {
+                ...state.conversationsById,
+                [conversation.id]: conversation
+            }
+        }));
+    },
+
+    removeLocal: (conversationId) => {
+        set((state) => {
+            const { [conversationId]: _, ...rest } = state.conversationsById;
+            return {
+                conversationsById: rest
+            };
+        })
     },
 
     reset: () => {

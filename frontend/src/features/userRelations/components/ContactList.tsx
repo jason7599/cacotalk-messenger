@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 
 export default function ContactList() {
     const { openModal } = useModal();
-    const contacts = useContactsStore((state) => state.contacts);
+    const contacts = useContactsStore((s) => s.contacts);
 
     const [query, setQuery] = useState("");
 

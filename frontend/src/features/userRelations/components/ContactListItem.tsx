@@ -2,6 +2,7 @@ import { MessageSquare, MoreVertical } from "lucide-react";
 import type { UserSummary } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
 import ContactActionsModal from "./ContactActionsModal";
+import { useActiveConversationStore } from "../../conversations/activeConversationStore";
 
 type ContactListItemProps = {
     contact: UserSummary;
@@ -9,6 +10,7 @@ type ContactListItemProps = {
 
 export default function ContactListItem({ contact }: ContactListItemProps) {
     const { openModal } = useModal();
+    const openDirectConversation = useActiveConversationStore((s) => s.openDirectConversation);
 
     return (
         <div
@@ -54,7 +56,7 @@ export default function ContactListItem({ contact }: ContactListItemProps) {
             >
                 <button
                     type="button"
-                    // TODO: dm 
+                    onClick={() => openDirectConversation(contact.userId)}
                     aria-label={`Message ${contact.username}`}
                     className="
                         grid h-8 w-8 place-items-center
