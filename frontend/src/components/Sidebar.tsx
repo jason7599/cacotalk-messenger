@@ -4,6 +4,7 @@ import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
 import cacotalkEmblem from "../assets/cacotalk-logo.png";
 import ContactList from "../features/userRelations/components/ContactList";
+import ConversationList from "../features/conversations/components/ConversationList";
 
 export default function Sidebar() {
     const [panel, setPanel] =
@@ -118,7 +119,7 @@ export default function Sidebar() {
                 "
             >
                 {panel === "conversations"
-                    ? <div>hi</div>
+                    ? <ConversationList />
                     : <ContactList />
                 }
             </section>

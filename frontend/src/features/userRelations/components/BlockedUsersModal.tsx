@@ -7,9 +7,9 @@ import { useMemo, useState } from "react";
 export default function BlockedUsersModal() {
     const { openModal, closeModal } = useModal();
 
-    const blockedUsers = useBlockedUsersStore((state) => state.blockedUsers);
-    const pendingIds = useBlockedUsersStore((state) => state.pendingIds);
-    const unblockUser = useBlockedUsersStore((state) => state.unblockUser);
+    const blockedUsers = useBlockedUsersStore((s) => s.blockedUsers);
+    const pendingIds = useBlockedUsersStore((s) => s.pendingIds);
+    const unblockUser = useBlockedUsersStore((s) => s.unblockUser);
 
     async function handleUnblock(userId: number) {
         await unblockUser(userId);
@@ -224,7 +224,7 @@ export default function BlockedUsersModal() {
                     text-[#7f6668]
                 "
             >
-                BLACKLIST RECORDS // LOCAL RELATION STATE
+                BLACKLIST RECORDS // LOCAL RELATION s
             </footer>
         </div>
     );

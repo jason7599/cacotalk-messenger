@@ -13,8 +13,8 @@ const SEARCH_DEBOUNCE_MS = 350;
 export default function UserSearchModal() {
     const { closeModal } = useModal();
 
-    const addContact = useContactsStore((state) => state.addContact);
-    const addingIds = useContactsStore((state) => state.addingIds);
+    const addContact = useContactsStore((s) => s.addContact);
+    const addingIds = useContactsStore((s) => s.addingIds);
 
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<UserSearchResult[]>([]);

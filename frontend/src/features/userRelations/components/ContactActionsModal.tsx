@@ -13,10 +13,10 @@ type ContactActionsModalProps = {
 export default function ContactActionsModal({ contact }: ContactActionsModalProps) {
     const { closeModal } = useModal();
 
-    const blockUser = useBlockedUsersStore((state) => state.blockUser);
-    const blockingIds = useBlockedUsersStore((state) => state.pendingIds);
+    const blockUser = useBlockedUsersStore((s) => s.blockUser);
+    const blockingIds = useBlockedUsersStore((s) => s.pendingIds);
 
-    const removeContact = useContactsStore((state) => state.removeContact);
+    const removeContact = useContactsStore((s) => s.removeContact);
 
     const isBlocking = blockingIds.has(contact.userId);
 
