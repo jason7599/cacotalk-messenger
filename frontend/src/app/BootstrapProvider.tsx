@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { apiGetBlockedUsers, apiGetContacts } from "../features/userRelations/userRelationsApi";
 import { useContactsStore } from "../features/userRelations/contactsStore";
 import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStore";
+import { apiGetConversations } from "../features/conversations/conversationsApi";
+import { useConversationsStore } from "../features/conversations/conversationsStore";
 
 type BootstrapStatus = "loading" | "ready" | "error";
 
@@ -24,13 +26,16 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
                 const [
                     contacts,
                     blockedUsers,
+                    conversations,
                 ] = await Promise.all([
                     apiGetContacts(),
                     apiGetBlockedUsers(),
+                    apiGetConversations()
                 ]);
                 
                 useContactsStore.getState().setContacts(contacts);
                 useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
+                useConversationsStore.getState().setConversations(conversations);
 
                 setStatus("ready");
             } catch (err) {

@@ -1,6 +1,6 @@
 import type { ChatMessage } from "../messages/types";
 
-type ConversationSummaryBase = {
+type ConversationBase = {
     id: string;
     membersPreview: string[];
     memberCount: number;
@@ -9,15 +9,15 @@ type ConversationSummaryBase = {
     lastMessage: ChatMessage | null;
 };
 
-export type DirectConversationSummary = ConversationSummaryBase & {
+export type DirectConversation = ConversationBase & {
     type: "DIRECT";
     blockStatus: "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME";
 };
 
-export type GroupConversationSummary = ConversationSummaryBase & {
+export type GroupConversation = ConversationBase & {
     type: "GROUP";
     isClosed: boolean;
     groupCreatorId: number;
 };
 
-export type ConversationSummary = DirectConversationSummary | GroupConversationSummary;
+export type Conversation = DirectConversation | GroupConversation;
