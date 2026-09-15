@@ -1,7 +1,7 @@
 import { useBootstrap } from "../app/BootstrapProvider";
 import LoadingScreen from "../components/LoadingScreen";
-import Sidebar from "../components/Sidebar";
-import ConversationView from "../features/conversations/components/ConversationView";
+import SidebarPanel from "../components/SidebarPanel";
+import ConversationPanel from "../features/conversations/components/ConversationPanel";
 
 export default function MainPage() {
     const { status } = useBootstrap();
@@ -16,9 +16,9 @@ export default function MainPage() {
     }
 
     return (
-        <div className="flex h-dvh min-h-0">
-            <Sidebar />
-            <ConversationView />
+        <div className="flex h-screen w-screen overflow-hidden">
+            <SidebarPanel />
+            <ConversationPanel />
         </div>
     )
 }

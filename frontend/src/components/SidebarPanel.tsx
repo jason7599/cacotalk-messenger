@@ -37,7 +37,7 @@ export default function Sidebar() {
     `;
 
     return (
-        <aside className="flex h-screen">
+        <aside className="flex">
             {/* icon rail */}
             <nav
                 className="
