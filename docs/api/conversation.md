@@ -1,6 +1,8 @@
 # Conversation API
 
-## `ConversationSummary`
+## DTO Schema
+
+### `ConversationSummary`
 ```
 {
   "id": UUID string,
@@ -27,10 +29,11 @@
 - `lastMessage` uses the standard `MessageResponse` shape defined in the [Message API documentation](./message.md).
 
 
+## Global Error Codes
+
 #### `401 Unauthorized`
 
 The request does not contain a valid authenticated session.
-
 
 ## Get Conversation Summaries
 

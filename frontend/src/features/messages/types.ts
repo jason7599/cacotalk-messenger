@@ -27,3 +27,8 @@ export type EventMessage = MessageBase & {
 };
 
 export type ChatMessage = UserMessage | EventMessage;
+
+export type MessagePage = {
+    messages: ChatMessage[];
+    hasOlder: boolean;
+};

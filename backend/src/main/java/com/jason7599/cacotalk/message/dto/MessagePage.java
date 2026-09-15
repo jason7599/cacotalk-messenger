@@ -4,6 +4,6 @@ import java.util.List;
 
 public record MessagePage(
         List<MessageResponse> messages,
-        boolean hasMore
+        boolean hasOlder
 ) {
 }

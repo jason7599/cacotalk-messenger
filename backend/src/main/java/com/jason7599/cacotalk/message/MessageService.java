@@ -25,7 +25,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ConversationService conversationService;
 
-    public MessagePage loadInitialMessages(UUID conversationId, long userId) {
+    public MessagePage loadInitial(UUID conversationId, long userId) {
         // Membership assertion is done here
         long lastReadSeq = conversationService
                 .requireMembership(conversationId, userId)
@@ -41,12 +41,12 @@ public class MessageService {
                 .map(MessageResponse::fromProjection)
                 .toList();
 
-        boolean hasMore = !messages.isEmpty() && messages.getFirst().seq() != 1L;
+        boolean hasOlder = !messages.isEmpty() && messages.getFirst().seq() != 1L;
 
-        return new MessagePage(messages, hasMore);
+        return new MessagePage(messages, hasOlder);
     }
 
-    public MessagePage loadOlderMessages(UUID conversationId, long userId, long beforeSeq) {
+    public MessagePage loadOlder(UUID conversationId, long userId, long beforeSeq) {
         conversationService.requireMembership(conversationId, userId);
 
         List<MessageResponse> messages = messageRepository.fetchOlderMessages(conversationId, beforeSeq, PAGE_SIZE)
@@ -54,8 +54,8 @@ public class MessageService {
                 .map(MessageResponse::fromProjection)
                 .toList();
 
-        boolean hasMore = !messages.isEmpty() && messages.getFirst().seq() != 1L;
+        boolean hasOlder = !messages.isEmpty() && messages.getFirst().seq() != 1L;
 
-        return new MessagePage(messages, hasMore);
+        return new MessagePage(messages, hasOlder);
     }
 }

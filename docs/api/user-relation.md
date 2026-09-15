@@ -1,5 +1,7 @@
 # User Relation API
 
+## Global Error Codes
+
 #### `401 Unauthorized`
 
 The request does not contain a valid authenticated session.
