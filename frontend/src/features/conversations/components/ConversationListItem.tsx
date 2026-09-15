@@ -1,58 +1,70 @@
 import { Ban, Lock, Users, } from "lucide-react";
 import type { ConversationSummary } from "../types";
-import type { EventMessage } from "../../messages/types";
 import { useActiveConversationStore } from "../activeConversationStore";
+import { formatMessageTimestamp, getMessagePreview } from "../../messages/formats";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
 };
 
+function getDisplayName(conversation: ConversationSummary) {
+    if (conversation.membersPreview.length === 0) {
+        return conversation.type === "GROUP"
+            ? "EMPTY CHANNEL"
+            : "UNKNOWN SOUL"
+            ;
+    }
+
+    return conversation.membersPreview.join(", ");
+}
+
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
 
     const displayName = getDisplayName(conversation);
-    const lastMessagePreview = getLastMessagePreview(conversation.lastMessage);
-    const timestamp = getTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
+    const lastMessagePreview = getMessagePreview(conversation.lastMessage);
+    const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
-    const hasUnread =
-        conversation.lastMessage !== null &&
-        conversation.lastMessage.id !== conversation.lastReadMessageId
-    ;
+    const unreadCount = conversation.lastSeq - conversation.lastReadSeq;
+    const hasUnread = unreadCount > 0;
 
     const isBlocked =
         conversation.type === "DIRECT" &&
         conversation.blockStatus !== "NONE"
-    ;
+        ;
 
     const isClosed =
         conversation.type === "GROUP" &&
         conversation.isClosed
-    ;
+        ;
 
     return (
         <button
             type="button"
             onClick={() => setActiveConversation(conversation.id)}
-            className="
-                group flex w-full items-center gap-3
-                border-b border-[#4b1b1f]
-                bg-[#190b0d]
-                px-3 py-3
-                text-left
-                hover:bg-[#240d10]
-            "
+            className={`
+            group flex w-full items-center gap-3
+            border-b
+            px-3 py-3
+            text-left
+            transition-colors
+            ${hasUnread
+                    ? "border-[#64141b] bg-[#220c0f] hover:bg-[#2d0f13]"
+                    : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]"
+                }
+        `}
         >
             <div
                 className={`
-                    grid h-11 w-11 shrink-0 place-items-center
-                    border-2
-                    bg-[#100708]
-                    shadow-[2px_2px_0_#48090e]
-                    ${hasUnread
-                        ? "border-[#a71924] text-[#e02632]"
+                grid h-11 w-11 shrink-0 place-items-center
+                border-2
+                bg-[#100708]
+                shadow-[2px_2px_0_#48090e]
+                ${hasUnread
+                        ? "border-[#8f1d25] text-[#c94a52]"
                         : "border-[#4b1b1f] text-[#7f6668]"
                     }
-                `}
+            `}
             >
                 {conversation.type === "DIRECT" ? (
                     <span className="text-sm font-black">
@@ -67,12 +79,12 @@ export default function ConversationListItem({ conversation }: ConversationListI
                 <div className="flex items-center gap-2">
                     <p
                         className={`
-                            truncate text-sm
-                            ${hasUnread
-                                ? "font-black text-[#eee2d5]"
-                                : "font-bold text-[#cbb9b6]"
+                        truncate text-sm font-bold
+                        ${hasUnread
+                                ? "text-[#eee2d5]"
+                                : "text-[#cbb9b6]"
                             }
-                        `}
+                    `}
                     >
                         {displayName}
                     </p>
@@ -80,13 +92,13 @@ export default function ConversationListItem({ conversation }: ConversationListI
                     {conversation.type === "GROUP" && (
                         <span
                             className="
-                                shrink-0
-                                text-[9px]
-                                tracking-widest
-                                text-[#7f6668]
-                            "
+                            shrink-0
+                            text-[9px]
+                            tracking-widest
+                            text-[#7f6668]
+                        "
                         >
-                            // {conversation.memberCount}
+                        // {conversation.memberCount}
                         </span>
                     )}
 
@@ -107,109 +119,67 @@ export default function ConversationListItem({ conversation }: ConversationListI
                     )}
                 </div>
 
-                <p
+                <div
                     className={`
-                        mt-1 truncate text-xs
-                        ${hasUnread
-                            ? "font-medium text-[#bfa6a3]"
+                    mt-1 flex min-w-0 items-center text-xs
+                    ${hasUnread
+                            ? "text-[#bfa6a3]"
                             : "text-[#7f6668]"
                         }
-                    `}
+                `}
                 >
-                    {lastMessagePreview}
-                </p>
+                    {conversation.type === "GROUP" &&
+                        conversation.lastMessage?.type === "USER" && (
+                            <span
+                                className="
+                                mr-1 max-w-24 shrink-0 truncate
+                                font-medium
+                                text-[#9d7779]
+                            "
+                            >
+                                {conversation.lastMessage.senderName}:
+                            </span>
+                        )}
+
+                    <span className="truncate">
+                        {lastMessagePreview}
+                    </span>
+                </div>
             </div>
 
-            <div className="flex shrink-0 flex-col items-end gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+                {unreadCount > 0 && (
+                    <span
+                        className="
+                        min-w-5
+                        border border-[#a71924]
+                        bg-[#2b0e12]
+                        px-1.5
+                        text-center
+                        text-[9px]
+                        font-black
+                        leading-4
+                        text-[#e02632]
+                        shadow-[1px_1px_0_#48090e]
+                    "
+                    >
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                )}
+
                 <span
                     className={`
-                        text-[9px]
-                        tracking-[0.08em]
-                        ${hasUnread
-                            ? "text-[#a71924]"
+                    text-[9px]
+                    tracking-[0.08em]
+                    ${hasUnread
+                            ? "text-[#9f6267]"
                             : "text-[#6f595b]"
                         }
-                    `}
+                `}
                 >
                     {timestamp}
                 </span>
-
-                {hasUnread && (
-                    <span
-                        className="
-                            h-2.5 w-2.5
-                            border border-[#e02632]
-                            bg-[#a71924]
-                            shadow-[1px_1px_0_#48090e]
-                        "
-                    />
-                )}
             </div>
         </button>
     );
-}
-
-function getDisplayName(conversation: ConversationSummary) {
-    if (conversation.membersPreview.length === 0) {
-        return conversation.type === "GROUP"
-            ? "EMPTY CHANNEL"
-            : "UNKNOWN SOUL";
-    }
-
-    return conversation.membersPreview.join(", ");
-}
-
-function getLastMessagePreview(
-    message: ConversationSummary["lastMessage"]
-) {
-    if (!message) {
-        return "NO TRANSMISSIONS YET";
-    }
-
-    if (message.type === "USER") {
-        return message.content;
-    }
-
-    return getEventMessagePreview(message);
-}
-
-function getEventMessagePreview(message: EventMessage) {
-    switch (message.eventType) {
-        case "GROUP_CREATED":
-            return "GROUP CHANNEL ESTABLISHED";
-
-        case "USER_INVITED":
-            return "A SOUL ENTERED THE CHANNEL";
-
-        case "USER_LEFT":
-            return "A SOUL LEFT THE CHANNEL";
-
-        case "USER_REMOVED":
-            return "A SOUL WAS REMOVED";
-
-        case "GROUP_CLOSED":
-            return "CHANNEL CLOSED";
-    }
-}
-
-function getTimestamp(timestamp: string) {
-    const date = new Date(timestamp);
-    const now = new Date();
-
-    const isToday =
-        date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate();
-
-    if (isToday) {
-        return date.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    }
-
-    return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-    });
 }

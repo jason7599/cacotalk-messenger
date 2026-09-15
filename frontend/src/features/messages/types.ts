@@ -7,6 +7,7 @@ type MessageBase = {
 export type UserMessage = MessageBase & {
     type: "USER";
     senderId: number;
+    senderName: string;
     content: string;
     clientId: string;
 };
