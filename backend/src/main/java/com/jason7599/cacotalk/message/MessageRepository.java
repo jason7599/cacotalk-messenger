@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
-
-    @Query(value = """
+    String MESSAGE_SELECT = """
         SELECT
             m.conversation_id,
             m.seq,
@@ -24,14 +23,41 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         LEFT JOIN users u
             ON m.sender_id = u.id
         WHERE m.conversation_id = :conversationId
-            AND m.seq BETWEEN :startSeq AND :endSeq
-        ORDER BY m.id
+    """;
+
+    /**
+     * Tries to load all messages after the read boundary plus previous context.
+     * If the result exceeds initialLoadLimit, the older messages are dropped first,
+     * meaning the newest message in the conversation is always included
+     */
+    @Query(value = """
+        SELECT *
+        FROM ("""
+            + MESSAGE_SELECT + """
+                AND m.seq > :lastReadSeq - :contextSize
+            ORDER BY m.seq DESC
+            LIMIT :initialLoadLimit
+        ) x
+        ORDER BY x.seq ASC
     """, nativeQuery = true)
-    List<MessageProjection> fetchMessagesRange(
+    List<MessageProjection> fetchInitialMessages(
             UUID conversationId,
-            long startSeq,
-            long endSeq
+            long lastReadSeq,
+            int contextSize,
+            int initialLoadLimit
     );
+
+    @Query(value = """
+        SELECT *
+        FROM ("""
+            + MESSAGE_SELECT + """
+                AND m.seq < :beforeSeq
+            ORDER BY m.seq DESC
+            LIMIT :pageSize
+        )
+        ORDER BY m.seq ASC
+    """, nativeQuery = true)
+    List<MessageProjection> fetchOlderMessages(UUID conversationId, long beforeSeq, int pageSize);
 
     /**
      * Atomically increment conversations.last_seq and inserts the message.
