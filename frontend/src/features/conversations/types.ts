@@ -4,7 +4,8 @@ type ConversationBase = {
     id: string;
     membersPreview: string[];
     memberCount: number;
-    lastReadMessageId: number | null;
+    lastSeq: number;
+    lastReadSeq: number;
     createdAt: string;
     lastMessage: ChatMessage | null;
 };

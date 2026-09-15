@@ -29,7 +29,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             c.is_closed,
 
             c.last_seq,
-            me.last_read_seq AS myLastReadSeq,
+            me.last_read_seq,
 
             c.created_at AS conversationCreatedAt,
 

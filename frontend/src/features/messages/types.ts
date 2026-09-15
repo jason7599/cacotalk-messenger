@@ -1,6 +1,6 @@
 type MessageBase = {
-    id: number;
     conversationId: string;
+    seq: number;
     createdAt: string;
 };
 

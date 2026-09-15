@@ -11,7 +11,7 @@
   "groupCreatorId": number | null,
   "isClosed": boolean,
   "lastSeq": number,
-  "myLastReadSeq": number,
+  "lastReadSeq": number,
   "createdAt": string,
   "lastMessage": MessageResponse
 }
@@ -22,7 +22,7 @@
 - `BLOCKED_BY_ME` takes precedence over `BLOCKED_ME` if both users have blocked each other.
 - `groupCreatorId` is only used for group conversations and is `null` for direct conversations.
 - `isClosed` is only meaningful for group conversations and is always `false` for direct conversations.
-- `myLastReadSeq` is the highest conversation sequence the authenticated user has read.
+- `lastReadSeq` is the highest conversation sequence the authenticated user has read.
   - A value of 0 means no messages have been read.
 - `lastMessage` uses the standard `MessageResponse` shape defined in the [Message API documentation](./message.md).
 

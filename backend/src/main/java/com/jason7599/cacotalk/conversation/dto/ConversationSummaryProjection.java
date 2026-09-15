@@ -22,7 +22,7 @@ public interface ConversationSummaryProjection {
     boolean getIsClosed();
 
     long getLastSeq();
-    long getMyLastReadSeq();
+    long getLastReadSeq();
 
     Instant getConversationCreatedAt();
 

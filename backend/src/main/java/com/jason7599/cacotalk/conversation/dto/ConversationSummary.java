@@ -22,7 +22,7 @@ public record ConversationSummary(
         boolean isClosed, // GROUP type only, default false in DIRECT
 
         long lastSeq,
-        long myLastReadSeq,
+        long lastReadSeq,
 
         Instant createdAt,
 
@@ -38,7 +38,7 @@ public record ConversationSummary(
                 proj.getGroupCreatorId(),
                 proj.getIsClosed(),
                 proj.getLastSeq(),
-                proj.getMyLastReadSeq(),
+                proj.getLastReadSeq(),
                 proj.getConversationCreatedAt(),
                 proj.getLastSeq() != 0L
                         ? new MessageResponse(
