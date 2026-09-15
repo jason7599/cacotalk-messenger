@@ -61,13 +61,16 @@ export default function ContactActionsModal({ contact }: ContactActionsModalProp
     return (
         <div className="w-105 max-w-[90vw] text-[#eee2d5]">
             <header className="mb-6 border-b-2 border-[#64141b] pb-5">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
+                <div className="flex items-start gap-4">
+                    <div className="min-w-0 flex-1">
                         <p className="mb-2 text-xs tracking-[0.2em] text-[#a71924]">
                             CONTACT CONTROL
                         </p>
 
-                        <h2 className="text-2xl font-black">
+                        <h2
+                            className="truncate text-2xl font-black"
+                            title={contact.username}
+                        >
                             {contact.username}
                         </h2>
 
@@ -82,7 +85,7 @@ export default function ContactActionsModal({ contact }: ContactActionsModalProp
                         disabled={isBusy}
                         aria-label="Close contact actions"
                         className="
-                            grid h-10 w-10 place-items-center
+                            grid h-10 w-10 shrink-0 place-items-center
                             border-2 border-[#4b1b1f]
                             bg-[#0c0506]
                             text-[#9f8581]
