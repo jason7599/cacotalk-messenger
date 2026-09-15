@@ -15,20 +15,27 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         SELECT
             c.id AS conversationId,
             c.type AS conversationType,
+
             members.preview AS membersPreview,
             members.cnt AS memberCount,
+
             CASE
                 WHEN blocked_by_me IS NOT NULL THEN 'BLOCKED_BY_ME'
                 WHEN blocked_me IS NOT NULL THEN 'BLOCKED_ME'
                 ELSE 'NONE'
             END AS blockStatus,
+
             c.group_creator_id,
             c.is_closed,
-            me.last_read_message_id,
+
+            c.last_seq,
+            me.last_read_seq AS myLastReadSeq,
+
             c.created_at AS conversationCreatedAt,
-            lm.id AS lastMessageId,
+
             lm.sender_id AS lastMessageSenderId,
             lms.username AS lastMessageSenderName,
+
             lm.type AS lastMessageType,
             lm.event_type AS lastMessageEventType,
             lm.event_data AS lastMessageEventData,
@@ -73,13 +80,9 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         ) members
             ON c.id = members.conversation_id
 
-        LEFT JOIN (
-            SELECT DISTINCT ON (conversation_id)
-                *
-            FROM messages
-            ORDER BY conversation_id, id DESC
-        ) lm
+        LEFT JOIN messages lm
             ON c.id = lm.conversation_id
+            AND c.last_seq = lm.seq
 
         LEFT JOIN users lms
             ON lm.sender_id = lms.id
@@ -96,7 +99,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     """;
 
     @Query(value = CONVERSATION_SUMMARY_QUERY + """
-        AND (c.type = 'GROUP' OR lm.id IS NOT NULL) -- ignore empty direct conversations in bootstrap fetch
+        AND c.last_seq > 0 -- ignore empty conversations in bootstrap fetch
     """, nativeQuery = true)
     List<ConversationSummaryProjection> getConversationSummaries(long userId);
 
@@ -118,22 +121,20 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     // idempotent
     @Modifying
     @Query(value = """
-        INSERT INTO conversation_members (conversation_id, user_id, last_read_message_id)
-        SELECT -- read the last message_id in conversation
+        INSERT INTO conversation_members (conversation_id, user_id, last_read_seq)
+        SELECT
             :conversationId,
-            user_id,
-            (
-                SELECT MAX(m.id)
-                FROM messages m
-                WHERE m.conversation_id = :conversationId
-            )
-        FROM UNNEST(:userIds) user_id
+            u.user_id,
+            c.last_seq
+        FROM conversations c
+        CROSS JOIN UNNEST(:userIds) u(user_id)
+        WHERE c.id = :conversationId
         ON CONFLICT (conversation_id, user_id) DO NOTHING
     """, nativeQuery = true)
     void insertMembers(UUID conversationId, long[] userIds);
 
     @Query(value = """
-        SELECT last_read_message_id
+        SELECT last_read_seq
         FROM conversation_members
         WHERE conversation_id = :conversationId AND user_id = :userId
     """, nativeQuery = true)
@@ -152,8 +153,8 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     @Modifying
     @Query(value = """
         UPDATE conversation_members
-        SET last_read_message_id = GREATEST(last_read_message_id, :messageId) -- works even if previously null
+        SET last_read_seq = GREATEST(last_read_seq, :seq) -- idempotent
         WHERE conversation_id = :conversationId AND user_id = :userId
     """, nativeQuery = true)
-    void updateLastReadMessageId(UUID conversationId, long userId, long messageId);
+    void updateLastReadSeq(UUID conversationId, long userId, long seq);
 }

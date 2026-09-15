@@ -1,7 +1,7 @@
 CREATE TABLE conversation_members (
     conversation_id UUID NOT NULL REFERENCES conversations(id),
     user_id BIGINT NOT NULL REFERENCES users(id),
-    last_read_message_id BIGINT REFERENCES messages(id), -- correctness check, default null
+    last_read_seq BIGINT NOT NULL DEFAULT 0,
 
     PRIMARY KEY (conversation_id, user_id)
 );

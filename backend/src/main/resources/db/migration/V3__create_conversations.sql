@@ -9,6 +9,9 @@ CREATE TABLE conversations (
     group_creator_id BIGINT REFERENCES users(id),
 
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
+
+    last_seq BIGINT NOT NULL DEFAULT 0 CHECK (last_seq >= 0),
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_conversations_type_fields CHECK (

@@ -4,8 +4,8 @@
 
 ```
 {
-  "id": number,
   "conversationId": UUID string,
+  "seq": number,
   "senderId": number | null,
   "senderName": string | null,
   "type": MessageType,
@@ -13,7 +13,6 @@
   "eventData": json object | null,
   "content": string | null,
   "createdAt": string,
-  "clientId": UUID string
 }
 ```
 - `eventType` and `eventData` are only populated for event messages.

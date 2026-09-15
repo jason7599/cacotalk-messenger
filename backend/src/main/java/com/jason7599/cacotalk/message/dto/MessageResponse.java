@@ -8,15 +8,28 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record MessageResponse(
-        long id,
         UUID conversationId,
+        long seq,
         Long senderId,
         String senderName,
         MessageType type,
         EventMessageType eventType,
         JsonNode eventData,
         String content,
-        Instant createdAt,
-        UUID clientId
+        Instant createdAt
 ) {
+
+    public static MessageResponse fromProjection(MessageProjection proj) {
+        return new MessageResponse(
+                proj.getConversationId(),
+                proj.getSeq(),
+                proj.getSenderId(),
+                proj.getSenderName(),
+                proj.getType(),
+                proj.getEventType(),
+                proj.getEventData(),
+                proj.getContent(),
+                proj.getCreatedAt()
+        );
+    }
 }

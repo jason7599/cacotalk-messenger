@@ -15,16 +15,9 @@ public class MessageService {
     private static final int INITIAL_CONTEXT_SIZE = 30;
 
     // Hard cap for initial load
-    private static final int INITIAL_LOAD_LIMIT = 5000;
+    private static final int INITIAL_LOAD_LIMIT = 500;
 
     private final MessageRepository messageRepository;
     private final ConversationService conversationService;
 
-//    public MessagePage loadInitialMessages(UUID conversationId, long userId) {
-//        // membership check done here
-//        Long lastReadMessageId = conversationService.requireMembership(conversationId, userId)
-//                .lastReadMessageId();
-//
-//
-//    }
 }

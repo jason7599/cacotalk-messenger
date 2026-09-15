@@ -1,6 +1,7 @@
 CREATE TABLE messages (
-    id BIGSERIAL PRIMARY KEY,
     conversation_id UUID NOT NULL REFERENCES conversations(id),
+    seq BIGINT NOT NULL CHECK (seq > 0),
+
     sender_id BIGINT REFERENCES users(id),
 
     type TEXT NOT NULL CHECK (type IN ('USER', 'EVENT')),
@@ -16,6 +17,8 @@ CREATE TABLE messages (
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     client_id UUID UNIQUE,
+
+    PRIMARY KEY (conversation_id, seq),
 
     CONSTRAINT chk_messages_type_fields CHECK (
         (type = 'USER'
@@ -34,5 +37,3 @@ CREATE TABLE messages (
             AND client_id IS NULL)
     )
 );
-
-CREATE INDEX idx_messages_conversation_id_id ON messages(conversation_id, id);

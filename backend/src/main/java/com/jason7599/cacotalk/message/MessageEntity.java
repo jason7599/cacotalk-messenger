@@ -19,11 +19,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MessageEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @EmbeddedId
+    private MessageId id;
 
-    private UUID conversationId;
     private Long senderId;
 
     @Enumerated(EnumType.STRING)
@@ -41,55 +39,4 @@ public class MessageEntity {
     private Instant createdAt;
 
     private UUID clientId;
-
-    private MessageEntity(
-            UUID conversationId,
-            Long senderId,
-            MessageType type,
-            EventMessageType eventType,
-            JsonNode eventData,
-            String content,
-            UUID clientId
-    ) {
-        this.conversationId = conversationId;
-        this.senderId = senderId;
-        this.type = type;
-        this.eventType = eventType;
-        this.eventData = eventData;
-        this.content = content;
-        this.clientId = clientId;
-    }
-
-    public static MessageEntity user(
-            UUID conversationId,
-            long senderId,
-            String content,
-            UUID clientId
-    ) {
-        return new MessageEntity(
-                conversationId,
-                senderId,
-                MessageType.USER,
-                null,
-                null,
-                content,
-                clientId
-        );
-    }
-
-    public static MessageEntity event(
-            UUID conversationId,
-            EventMessageType eventType,
-            JsonNode eventData
-    ) {
-        return new MessageEntity(
-                conversationId,
-                null,
-                MessageType.EVENT,
-                eventType,
-                eventData,
-                null,
-                null
-        );
-    }
 }

@@ -21,11 +21,11 @@ public interface ConversationSummaryProjection {
     Long getGroupCreatorId();
     boolean getIsClosed();
 
-    Long getLastReadMessageId();
+    long getLastSeq();
+    long getMyLastReadSeq();
 
     Instant getConversationCreatedAt();
 
-    Long getLastMessageId();
     Long getLastMessageSenderId();
     String getLastMessageSenderName();
     MessageType getLastMessageType();

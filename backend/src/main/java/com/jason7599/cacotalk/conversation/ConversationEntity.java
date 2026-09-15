@@ -29,6 +29,8 @@ public class ConversationEntity {
 
     private boolean isClosed;
 
+    private long lastSeq;
+
     @Column(insertable = false)
     private Instant createdAt;
 

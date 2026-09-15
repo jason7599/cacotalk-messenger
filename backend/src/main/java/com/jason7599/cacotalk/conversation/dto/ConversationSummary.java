@@ -21,7 +21,8 @@ public record ConversationSummary(
         Long groupCreatorId, // GROUP type only
         boolean isClosed, // GROUP type only, default false in DIRECT
 
-        Long lastReadMessageId,
+        long lastSeq,
+        long myLastReadSeq,
 
         Instant createdAt,
 
@@ -36,20 +37,20 @@ public record ConversationSummary(
                 proj.getBlockStatus(),
                 proj.getGroupCreatorId(),
                 proj.getIsClosed(),
-                proj.getLastReadMessageId(),
+                proj.getLastSeq(),
+                proj.getMyLastReadSeq(),
                 proj.getConversationCreatedAt(),
-                proj.getLastMessageId() != null
+                proj.getLastSeq() != 0L
                         ? new MessageResponse(
-                                proj.getLastMessageId(),
                                 proj.getConversationId(),
+                                proj.getLastSeq(),
                                 proj.getLastMessageSenderId(),
                                 proj.getLastMessageSenderName(),
                                 proj.getLastMessageType(),
-                                proj.getLastMessageEventType() != null ? proj.getLastMessageEventType() : null,
+                                proj.getLastMessageEventType(),
                                 proj.getLastMessageEventData(),
                                 proj.getLastMessageContent(),
-                                proj.getLastMessageCreatedAt(),
-                                null // clientId doesn't matter in summaries
+                                proj.getLastMessageCreatedAt()
                         )
                         : null
         );

@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.dev;
 
 import com.jason7599.cacotalk.conversation.ConversationRepository;
-import com.jason7599.cacotalk.message.MessageEntity;
 import com.jason7599.cacotalk.message.MessageRepository;
 import com.jason7599.cacotalk.user.UserEntity;
 import com.jason7599.cacotalk.user.UserRepository;
@@ -124,20 +123,22 @@ public class DevDataService {
             throw new IllegalStateException("Conversation has no members");
         }
 
-        long lastMessageId = 0;
+        long lastSeq = 0;
         while (messageCount-- > 0) {
-            MessageEntity message = MessageEntity.user(
+
+            lastSeq = messageRepository.insertMessage(
                     conversationId,
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
+                    "USER",
+                    null,
+                    null,
                     DevDataFaker.message(),
                     UUID.randomUUID()
-            );
-
-            lastMessageId = messageRepository.save(message).getId();
+            ).getId().seq();
         }
 
         for (long memberId : memberIds) {
-            conversationRepository.updateLastReadMessageId(conversationId, memberId, lastMessageId);
+            conversationRepository.updateLastReadSeq(conversationId, memberId, lastSeq);
         }
 
         return devQueries.countMessages(conversationId);
