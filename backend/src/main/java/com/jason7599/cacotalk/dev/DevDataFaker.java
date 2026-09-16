@@ -54,17 +54,13 @@ public class DevDataFaker {
     }
 
     public static String message() {
-        String text = switch (RANDOM.nextInt(5)) {
+        return switch (RANDOM.nextInt(5)) {
             case 0 -> FAKER.lorem().word();
             case 1 -> FAKER.lorem().sentence(3);
             case 2 -> FAKER.lorem().sentence(10);
             case 3 -> FAKER.lorem().paragraph();
             default -> FAKER.lorem().paragraph(3);
         };
-
-        return text.length() <= 2000
-                ? text
-                : text.substring(0, 2000);
     }
 
     private static String randomUsernameWord() {

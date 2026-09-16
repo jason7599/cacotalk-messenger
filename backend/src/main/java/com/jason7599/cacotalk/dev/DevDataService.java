@@ -123,25 +123,33 @@ public class DevDataService {
             throw new IllegalStateException("Conversation has no members");
         }
 
-        long lastSeq = 0;
+        long seq = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new IllegalArgumentException("Conversation not found"))
+                .getLastSeq();
+
         while (messageCount-- > 0) {
 
-            lastSeq = messageRepository.insertMessage(
+            String message = ++seq + " " + DevDataFaker.message();
+            if (message.length() > 2000) {
+                message = message.substring(0, 2000);
+            }
+
+            messageRepository.insertMessage(
                     conversationId,
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
                     "USER",
                     null,
                     null,
-                    DevDataFaker.message(),
+                    message,
                     UUID.randomUUID()
-            ).getId().seq();
+            );
         }
 
         for (long memberId : memberIds) {
-            conversationRepository.updateLastReadSeq(conversationId, memberId, lastSeq);
+            conversationRepository.updateLastReadSeq(conversationId, memberId, seq);
         }
 
-        return devQueries.countMessages(conversationId);
+        return seq;
     }
 
     private boolean createDev() {

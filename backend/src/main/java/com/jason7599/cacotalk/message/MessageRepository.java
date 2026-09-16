@@ -54,8 +54,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
                 AND m.seq < :beforeSeq
             ORDER BY m.seq DESC
             LIMIT :pageSize
-        )
-        ORDER BY m.seq ASC
+        ) x
+        ORDER BY x.seq ASC
     """, nativeQuery = true)
     List<MessageProjection> fetchOlderMessages(UUID conversationId, long beforeSeq, int pageSize);
 
