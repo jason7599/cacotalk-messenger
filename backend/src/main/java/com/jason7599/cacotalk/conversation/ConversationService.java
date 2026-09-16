@@ -60,7 +60,7 @@ public class ConversationService {
         ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
 
-        List<UserResponse> members = conversationRepository.getAllMembers(conversationId);
+        List<UserResponse> members = conversationRepository.getAllMembersExcept(conversationId, userId);
 
         return new ConversationDetail(
                 p.getId(),

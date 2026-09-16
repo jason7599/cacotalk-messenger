@@ -63,7 +63,7 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
             set({
                 conversation: {
                     id: detail.id,
-                    members: detail.members,
+                    otherMembers: detail.otherMembers,
                     meta,
                     messages: page.messages,
                     hasOlder: page.hasOlder,

@@ -23,7 +23,7 @@ export type BlockStatus = "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME";
 export type ConversationDetail = {
     id: string;
     type: ConversationType;
-    members: UserInfo[];
+    otherMembers: UserInfo[];
     blockStatus: BlockStatus;
     groupCreatorId: number | null;
     isClosed: boolean;
@@ -41,7 +41,7 @@ export type ConversationMeta =
 
 export type ActiveConversation = {
     id: string;
-    members: UserInfo[];
+    otherMembers: UserInfo[];
     meta: ConversationMeta;
     messages: ChatMessage[];
     hasOlder: boolean;

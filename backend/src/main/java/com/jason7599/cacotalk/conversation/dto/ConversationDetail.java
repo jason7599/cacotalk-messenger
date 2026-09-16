@@ -12,7 +12,7 @@ public record ConversationDetail(
         UUID id,
         ConversationType type,
 
-        List<UserResponse> members, // entire list, including the authenticated user
+        List<UserResponse> otherMembers, // entire list excluding the user
 
         DirectBlockStatus blockStatus, // DIRECT only, BLOCKED_BY_ME takes precedence over BLOCKED_ME if both are true
 

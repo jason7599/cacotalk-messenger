@@ -29,7 +29,7 @@
 {
   "id": UUID string,
   "type": "DIRECT" | "GROUP",
-  "members": UserResponse[],
+  "otherMembers": UserResponse[],
   "blockStatus": "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME",
   "groupCreatorId": number | null,
   "isClosed": boolean,
@@ -39,7 +39,7 @@
 }
 ```
 
-- `members` include the authenticated user.
+- `otherMembers` exclude the authenticated user.
 - `blockStatus` is only meaningful for DIRECT conversations, and defaults to NONE for GROUP
   - BLOCKED_BY_ME takes precedence over BLOCKED_ME if both are true. 
 - `isClosed` is only meaningful in GROUP conversations, and defaults to false for DIRECT

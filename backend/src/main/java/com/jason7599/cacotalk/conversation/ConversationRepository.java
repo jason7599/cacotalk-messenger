@@ -160,6 +160,18 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     """, nativeQuery = true)
     List<UserResponse> getAllMembers(UUID conversationId);
 
+    @Query(value = """
+        SELECT
+            u.id AS userId,
+            u.username
+        FROM conversation_members cm
+        JOIN users u ON cm.user_id = u.id
+        WHERE cm.conversation_id = :conversationId
+            AND cm.user_id <> :userId
+        ORDER BY u.username
+    """, nativeQuery = true)
+    List<UserResponse> getAllMembersExcept(UUID conversationId, long userId);
+
     @Modifying
     @Query(value = """
         UPDATE conversation_members
