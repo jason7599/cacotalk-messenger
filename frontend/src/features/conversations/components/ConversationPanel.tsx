@@ -1,3 +1,4 @@
+import MessageComposer from "../../messages/components/MessageComposer";
 import MessageList from "../../messages/components/MessageList";
 import { useActiveConversationStore } from "../activeConversationStore";
 import ConversationEmptyState from "./ConversationEmptyState";
@@ -17,6 +18,7 @@ export default function ConversationPanel() {
         content = <>
             <ConversationHeader />
             <MessageList />
+            <MessageComposer />
         </>;
     }
 

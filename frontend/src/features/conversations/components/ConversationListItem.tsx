@@ -9,137 +9,112 @@ type ConversationListItemProps = {
 
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
+    const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);
 
     const displayName = getDisplayName(conversation);
     const lastMessagePreview = getMessagePreview(conversation.lastMessage);
     const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
     const unreadCount = conversation.lastSeq - conversation.lastReadSeq;
-    const hasUnread = unreadCount > 0;
+
+    const rowStyle = isActive
+        ? "border-[#a71924] bg-[#2b0e12] hover:bg-[#330f14]"
+        : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]";
+
+    const avatarStyle = isActive
+        ? "border-[#e02632] text-[#e02632]"
+        : "border-[#4b1b1f] text-[#7f6668]";
+
+    const nameStyle = isActive ? "text-[#eee2d5]" : "text-[#cbb9b6]";
+    const previewStyle = isActive ? "text-[#bfa6a3]" : "text-[#7f6668]";
+    const timestampStyle = isActive ? "text-[#9f6267]" : "text-[#6f595b]";
 
     return (
         <button
             type="button"
             onClick={() => setActiveConversation(conversation.id)}
+            aria-pressed={isActive}
             className={`
-            group flex w-full items-center gap-3
-            border-b
-            px-3 py-3
-            text-left
-            transition-colors
-            ${hasUnread
-                    ? "border-[#64141b] bg-[#220c0f] hover:bg-[#2d0f13]"
-                    : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]"
-                }
-        `}
+                group relative flex w-full items-center gap-3
+                border-b
+                px-3 py-3
+                text-left
+                transition-colors
+                ${rowStyle}
+            `}
         >
+            {isActive && (
+                <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 h-full w-1 bg-[#e02632]"
+                />
+            )}
+
             <div
                 className={`
-                grid h-11 w-11 shrink-0 place-items-center
-                border-2
-                bg-[#100708]
-                shadow-[2px_2px_0_#48090e]
-                ${hasUnread
-                        ? "border-[#8f1d25] text-[#c94a52]"
-                        : "border-[#4b1b1f] text-[#7f6668]"
-                    }
-            `}
+                    grid h-11 w-11 shrink-0 place-items-center
+                    border-2
+                    bg-[#100708]
+                    shadow-[2px_2px_0_#48090e]
+                    ${avatarStyle}
+                `}
             >
                 {conversation.type === "DIRECT" ? (
                     <span className="text-sm font-black">
                         {displayName.charAt(0).toUpperCase()}
                     </span>
                 ) : (
-                    <Users size={18} strokeWidth={2.4} />
+                    <Users size={18} strokeWidth={2.4} aria-hidden="true" />
                 )}
             </div>
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                    <p
-                        className={`
-                        truncate text-sm font-bold
-                        ${hasUnread
-                                ? "text-[#eee2d5]"
-                                : "text-[#cbb9b6]"
-                            }
-                    `}
-                    >
+                    <p className={`truncate text-sm font-bold ${nameStyle}`}>
                         {displayName}
                     </p>
 
                     {conversation.type === "GROUP" && (
-                        <span
-                            className="
-                            shrink-0
-                            text-[9px]
-                            tracking-widest
-                            text-[#7f6668]
-                        "
-                        >
-                        // {conversation.memberCount}
+                        <span className="shrink-0 text-[9px] tracking-widest text-[#7f6668]">
+                            // {conversation.memberCount}
                         </span>
                     )}
                 </div>
 
-                <div
-                    className={`
-                    mt-1 flex min-w-0 items-center text-xs
-                    ${hasUnread
-                            ? "text-[#bfa6a3]"
-                            : "text-[#7f6668]"
-                        }
-                `}
-                >
+                <div className={`mt-1 flex min-w-0 items-center text-xs ${previewStyle}`}>
                     {conversation.type === "GROUP" &&
                         conversation.lastMessage?.type === "USER" && (
-                            <span
-                                className="
-                                mr-1 max-w-24 shrink-0 truncate
-                                font-medium
-                                text-[#9d7779]
-                            "
-                            >
+                            <span className="mr-1 max-w-24 shrink-0 truncate font-medium text-[#9d7779]">
                                 {conversation.lastMessage.senderName}:
                             </span>
                         )}
 
-                    <span className="truncate">
-                        {lastMessagePreview}
-                    </span>
+                    <span className="truncate">{lastMessagePreview}</span>
                 </div>
             </div>
 
             <div className="flex shrink-0 flex-col items-end gap-1.5">
                 {unreadCount > 0 && (
                     <span
+                        aria-label={`${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
                         className="
-                        min-w-5
-                        border border-[#a71924]
-                        bg-[#2b0e12]
-                        px-1.5
-                        text-center
-                        text-[9px]
-                        font-black
-                        leading-4
-                        text-[#e02632]
-                        shadow-[1px_1px_0_#48090e]
-                    "
+                            min-w-5
+                            border border-[#a71924]
+                            bg-[#2b0e12]
+                            px-1.5
+                            text-center
+                            text-[9px]
+                            font-black
+                            leading-4
+                            text-[#e02632]
+                            shadow-[1px_1px_0_#48090e]
+                        "
                     >
                         {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                 )}
 
-                <span
-                    className={`
-                    text-[9px]
-                    tracking-[0.08em]
-                    ${hasUnread
-                            ? "text-[#9f6267]"
-                            : "text-[#6f595b]"
-                        }
-                `}
-                >
+                <span className={`text-[9px] tracking-[0.08em] ${timestampStyle}`}>
                     {timestamp}
                 </span>
             </div>
@@ -152,11 +127,7 @@ function getMessagePreview(message: ChatMessage | null) {
         return "NO TRANSMISSIONS YET";
     }
 
-    if (message.type === "USER") {
-        return message.content;
-    } else {
-        return getEventMessagePreview(message);
-    }
+    return message.type === "USER" ? message.content : getEventMessagePreview(message);
 }
 
 function getEventMessagePreview(message: EventMessage) {
@@ -175,6 +146,9 @@ function getEventMessagePreview(message: EventMessage) {
 
         case "GROUP_CLOSED":
             return "CHANNEL CLOSED";
+
+        default:
+            return "UNKNOWN TRANSMISSION";
     }
 }
 
@@ -191,6 +165,7 @@ function formatMessageTimestamp(timestamp: string) {
         return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
+            hour12: false,
         });
     }
 
@@ -200,13 +175,9 @@ function formatMessageTimestamp(timestamp: string) {
     });
 }
 
-
 function getDisplayName(conversation: ConversationSummary) {
     if (conversation.membersPreview.length === 0) {
-        return conversation.type === "GROUP"
-            ? "EMPTY CHANNEL"
-            : "UNKNOWN SOUL"
-            ;
+        return conversation.type === "GROUP" ? "EMPTY CHANNEL" : "UNKNOWN SOUL";
     }
 
     return conversation.membersPreview.join(", ");

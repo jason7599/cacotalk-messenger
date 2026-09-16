@@ -1,8 +1,9 @@
-import { Ban, Lock, MoreVertical, Users } from "lucide-react";
+import { Ban, Lock, X, Users } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
 
 export default function ConversationHeader() {
     const conversation = useActiveConversationStore((s) => s.conversation)!;
+    const clearActiveConversation = useActiveConversationStore((s) => s.clearActiveConversation);
 
     const { otherMembers, meta } = conversation;
 
@@ -119,10 +120,10 @@ export default function ConversationHeader() {
                 </div>
             </div>
 
-            {/* TODO: */}
             <button
                 type="button"
-                aria-label="Conversation actions"
+                aria-label="Close conversation"
+                onClick={clearActiveConversation}
                 className="
                     grid h-9 w-9 shrink-0 place-items-center
                     border border-[#4b1b1f]
@@ -132,7 +133,7 @@ export default function ConversationHeader() {
                     hover:text-[#e02632]
                 "
             >
-                <MoreVertical size={17} strokeWidth={2.3} />
+                <X size={17} strokeWidth={2.3} />
             </button>
         </header>
     );

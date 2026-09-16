@@ -30,6 +30,8 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
         const myRequestId = ++requestId;
 
         set({
+            conversation: null,
+            loadingOlder: false,
             status: "LOADING",
             error: null
         });
