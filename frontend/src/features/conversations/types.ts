@@ -10,15 +10,7 @@ type ConversationBase = {
     lastMessage: ChatMessage | null;
 };
 
-type DirectConversation = ConversationBase & {
-    type: "DIRECT";
-    blockStatus: "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME";
-};
-
-type GroupConversation = ConversationBase & {
-    type: "GROUP";
-    isClosed: boolean;
-    groupCreatorId: number;
-};
-
-export type ConversationSummary = DirectConversation | GroupConversation;
+export type ConversationSummary =
+    | ConversationBase & { type: "DIRECT" }
+    | ConversationBase & { type: "GROUP", groupCreatorId: number }
+;

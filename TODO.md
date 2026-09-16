@@ -1,0 +1,3 @@
+# TODO
+
+- [ ] Compress logo image

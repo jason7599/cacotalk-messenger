@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
-import com.jason7599.cacotalk.conversation.DirectBlockStatus;
 import com.jason7599.cacotalk.message.EventMessageType;
 import com.jason7599.cacotalk.message.MessageType;
 import tools.jackson.databind.JsonNode;
@@ -16,10 +15,7 @@ public interface ConversationSummaryProjection {
     String[] getMembersPreview();
     int getMemberCount();
 
-    DirectBlockStatus getBlockStatus();
-
     Long getGroupCreatorId();
-    boolean getIsClosed();
 
     long getLastSeq();
     long getLastReadSeq();

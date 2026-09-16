@@ -9,9 +9,7 @@
   "type": "DIRECT" | "GROUP",
   "membersPreview": string[],
   "memberCount": number,
-  "blockStatus": "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME" | null,
   "groupCreatorId": number | null,
-  "isClosed": boolean,
   "lastSeq": number,
   "lastReadSeq": number,
   "createdAt": string,
@@ -20,10 +18,8 @@
 ```
 - `membersPreview` contains the usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user.
 - `memberCount` does not include the authenticated user. e.g., A direct conversation has a `memberCount` of 1, not 2.
-- `blockStatus` is only used for direct conversations and is `null` for group conversations.
 - `BLOCKED_BY_ME` takes precedence over `BLOCKED_ME` if both users have blocked each other.
 - `groupCreatorId` is only used for group conversations and is `null` for direct conversations.
-- `isClosed` is only meaningful for group conversations and is always `false` for direct conversations.
 - `lastReadSeq` is the highest conversation sequence the authenticated user has read.
   - A value of 0 means no messages have been read.
 - `lastMessage` uses the standard `MessageResponse` shape defined in the [Message API documentation](./message.md).

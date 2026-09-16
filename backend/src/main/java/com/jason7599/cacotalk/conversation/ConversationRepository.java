@@ -19,14 +19,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             members.preview AS membersPreview,
             members.cnt AS memberCount,
 
-            CASE
-                WHEN blocked_by_me IS NOT NULL THEN 'BLOCKED_BY_ME'
-                WHEN blocked_me IS NOT NULL THEN 'BLOCKED_ME'
-                ELSE 'NONE'
-            END AS blockStatus,
-
             c.group_creator_id,
-            c.is_closed,
 
             c.last_seq,
             me.last_read_seq,

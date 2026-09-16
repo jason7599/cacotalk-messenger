@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
-import com.jason7599.cacotalk.conversation.DirectBlockStatus;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 
 import java.time.Instant;
@@ -16,10 +15,7 @@ public record ConversationSummary(
         List<String> membersPreview,// list of usernames of other users. excludes requesting user. Should be size 1 for DIRECT
         int memberCount, // exclude user
 
-        DirectBlockStatus blockStatus, // DIRECT type only
-
         Long groupCreatorId, // GROUP type only
-        boolean isClosed, // GROUP type only, default false in DIRECT
 
         long lastSeq,
         long lastReadSeq,
@@ -34,9 +30,7 @@ public record ConversationSummary(
                 proj.getConversationType(),
                 Arrays.asList(proj.getMembersPreview()),
                 proj.getMemberCount(),
-                proj.getBlockStatus(),
                 proj.getGroupCreatorId(),
-                proj.getIsClosed(),
                 proj.getLastSeq(),
                 proj.getLastReadSeq(),
                 proj.getConversationCreatedAt(),

@@ -1,4 +1,4 @@
-import { Ban, Lock, Users, } from "lucide-react";
+import { Users } from "lucide-react";
 import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { formatMessageTimestamp, getMessagePreview } from "../../messages/formats";
@@ -27,16 +27,6 @@ export default function ConversationListItem({ conversation }: ConversationListI
 
     const unreadCount = conversation.lastSeq - conversation.lastReadSeq;
     const hasUnread = unreadCount > 0;
-
-    const isBlocked =
-        conversation.type === "DIRECT" &&
-        conversation.blockStatus !== "NONE"
-        ;
-
-    const isClosed =
-        conversation.type === "GROUP" &&
-        conversation.isClosed
-        ;
 
     return (
         <button
@@ -100,22 +90,6 @@ export default function ConversationListItem({ conversation }: ConversationListI
                         >
                         // {conversation.memberCount}
                         </span>
-                    )}
-
-                    {isBlocked && (
-                        <Ban
-                            size={12}
-                            strokeWidth={2.4}
-                            className="shrink-0 text-[#8f343b]"
-                        />
-                    )}
-
-                    {isClosed && (
-                        <Lock
-                            size={12}
-                            strokeWidth={2.4}
-                            className="shrink-0 text-[#7f6668]"
-                        />
                     )}
                 </div>
 
