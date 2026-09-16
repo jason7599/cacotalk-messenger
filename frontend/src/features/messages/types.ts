@@ -9,7 +9,6 @@ export type UserMessage = MessageBase & {
     senderId: number;
     senderName: string;
     content: string;
-    clientId: string;
 };
 
 export type EventMessageType =

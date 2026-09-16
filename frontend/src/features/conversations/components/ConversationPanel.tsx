@@ -1,5 +1,7 @@
+import MessageList from "../../messages/components/MessageList";
 import { useActiveConversationStore } from "../activeConversationStore";
 import ConversationEmptyState from "./ConversationEmptyState";
+import ConversationHeader from "./ConversationHeader";
 import ConversationLoadingState from "./ConversationLoadingState";
 
 export default function ConversationPanel() {
@@ -13,7 +15,8 @@ export default function ConversationPanel() {
         content = <ConversationEmptyState />;
     } else {
         content = <>
-            hi
+            <ConversationHeader />
+            <MessageList />
         </>;
     }
 

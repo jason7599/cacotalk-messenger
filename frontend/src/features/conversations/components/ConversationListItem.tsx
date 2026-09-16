@@ -1,22 +1,11 @@
 import { Users } from "lucide-react";
 import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
-import { formatMessageTimestamp, getMessagePreview } from "../../messages/formats";
+import type { ChatMessage, EventMessage } from "../../messages/types";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
 };
-
-function getDisplayName(conversation: ConversationSummary) {
-    if (conversation.membersPreview.length === 0) {
-        return conversation.type === "GROUP"
-            ? "EMPTY CHANNEL"
-            : "UNKNOWN SOUL"
-            ;
-    }
-
-    return conversation.membersPreview.join(", ");
-}
 
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
@@ -156,4 +145,69 @@ export default function ConversationListItem({ conversation }: ConversationListI
             </div>
         </button>
     );
+}
+
+function getMessagePreview(message: ChatMessage | null) {
+    if (!message) {
+        return "NO TRANSMISSIONS YET";
+    }
+
+    if (message.type === "USER") {
+        return message.content;
+    } else {
+        return getEventMessagePreview(message);
+    }
+}
+
+function getEventMessagePreview(message: EventMessage) {
+    switch (message.eventType) {
+        case "GROUP_CREATED":
+            return "GROUP CHANNEL ESTABLISHED";
+
+        case "USER_INVITED":
+            return "A SOUL ENTERED THE CHANNEL";
+
+        case "USER_LEFT":
+            return "A SOUL LEFT THE CHANNEL";
+
+        case "USER_REMOVED":
+            return "A SOUL WAS REMOVED";
+
+        case "GROUP_CLOSED":
+            return "CHANNEL CLOSED";
+    }
+}
+
+function formatMessageTimestamp(timestamp: string) {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    const isToday =
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate();
+
+    if (isToday) {
+        return date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
+
+    return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+    });
+}
+
+
+function getDisplayName(conversation: ConversationSummary) {
+    if (conversation.membersPreview.length === 0) {
+        return conversation.type === "GROUP"
+            ? "EMPTY CHANNEL"
+            : "UNKNOWN SOUL"
+            ;
+    }
+
+    return conversation.membersPreview.join(", ");
 }
