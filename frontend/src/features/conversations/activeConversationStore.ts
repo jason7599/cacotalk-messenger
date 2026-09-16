@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiGetConversationDetail, apiGetOrCreateDirectConversation } from "./conversationsApi";
+import { apiGetConversationDetail, apiResolveDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
@@ -105,10 +105,10 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
         });
 
         try {
-            const conversation = await apiGetOrCreateDirectConversation(targetId);
+            const id = await apiResolveDirectConversation(targetId);
             if (requestId !== myRequestId) return;
 
-            await get().setActiveConversation(conversation.id);
+            await get().setActiveConversation(id);
         } catch (err) {
             if (requestId !== myRequestId) return;
 

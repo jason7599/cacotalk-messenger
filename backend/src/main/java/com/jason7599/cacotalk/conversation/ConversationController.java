@@ -23,11 +23,11 @@ public class ConversationController {
     }
 
     @PostMapping("/direct/{targetId}")
-    public ConversationSummary getOrCreateDirectConversation(
+    public UUID resolveDirectConversation(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long targetId
     ) {
-        return conversationService.getOrCreateDirectConversation(authUser.userId(), targetId);
+        return conversationService.resolveDirectConversation(authUser.userId(), targetId);
     }
 
     @GetMapping("/{conversationId}")

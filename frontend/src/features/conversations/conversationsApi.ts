@@ -5,7 +5,7 @@ export async function apiGetConversations(): Promise<ConversationSummary[]> {
     return (await api.get("/conversations/me")).data;
 }
 
-export async function apiGetOrCreateDirectConversation(targetId: number): Promise<ConversationSummary> {
+export async function apiResolveDirectConversation(targetId: number): Promise<string> {
     return (await api.post(`/conversations/direct/${targetId}`)).data;
 }
 

@@ -125,7 +125,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         DO UPDATE SET id = conversations.id -- harmless no-op
         RETURNING id
     """, nativeQuery = true)
-    UUID getOrCreateDirectConversation(long userId1, long userId2, UUID conversationId);
+    UUID resolveDirectConversation(long userId1, long userId2, UUID conversationId);
 
     // idempotent
     @Modifying
@@ -140,7 +140,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         WHERE c.id = :conversationId
         ON CONFLICT (conversation_id, user_id) DO NOTHING
     """, nativeQuery = true)
-    void insertMembers(UUID conversationId, long[] userIds);
+    void ensureMembers(UUID conversationId, long[] userIds);
 
     @Query(value = """
         SELECT last_read_seq

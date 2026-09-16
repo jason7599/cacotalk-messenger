@@ -33,7 +33,7 @@ public class ConversationService {
     }
 
     @Transactional
-    public ConversationSummary getOrCreateDirectConversation(long userId, long targetId) {
+    public UUID resolveDirectConversation(long userId, long targetId) {
         if (userId == targetId) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot have a direct conversation with self.");
         }
@@ -44,16 +44,14 @@ public class ConversationService {
 
         // no need to check userId as it should be validated by AuthenticationPrincipal
 
-        UUID id = conversationRepository.getOrCreateDirectConversation(userId, targetId, UUID.randomUUID());
+        UUID id = conversationRepository.resolveDirectConversation(userId, targetId, UUID.randomUUID());
 
-        conversationRepository.insertMembers(id, new long[]{userId, targetId});
+        conversationRepository.ensureMembers(id, new long[]{userId, targetId});
 
-        return ConversationSummary.fromProjection(
-            conversationRepository.getConversationSummary(id, userId)
-                    .orElseThrow()
-        );
+        return id;
     }
 
+    // Called when user opens a conversation
     public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
         long lastReadSeq = requireMembership(conversationId, userId).lastReadSeq();
 

@@ -67,7 +67,7 @@ Returns an array of `ConversationSummary`.
 
 ## Get or Create Direct Conversation
 
-Fetch the direct conversation between the authenticated user and the target user.
+Fetch the ID of the direct conversation between the authenticated user and the target user.
 
 If it didn't exist, one is created and returned, making it idempotent.
 
@@ -80,7 +80,7 @@ POST /conversations/direct/{targetId}
 
 #### `200 OK`
 
-Returns a `ConversationSummary`.
+Returns the UUID string of the conversation.
 
 #### `400 BAD REQUEST`
 
