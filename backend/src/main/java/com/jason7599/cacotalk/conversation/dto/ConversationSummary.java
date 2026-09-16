@@ -1,7 +1,10 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
+import com.jason7599.cacotalk.message.EventMessageType;
+import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -24,27 +27,45 @@ public record ConversationSummary(
 
         MessageResponse lastMessage
 ) {
-    public static ConversationSummary fromProjection(ConversationSummaryProjection proj) {
+    public interface Projection {
+        UUID getConversationId();
+        ConversationType getConversationType();
+        String[] getMembersPreview();
+        int getMemberCount();
+        Long getGroupCreatorId();
+        long getLastSeq();
+        long getLastReadSeq();
+        Instant getConversationCreatedAt();
+        Long getLastMessageSenderId();
+        String getLastMessageSenderName();
+        MessageType getLastMessageType();
+        EventMessageType getLastMessageEventType();
+        JsonNode getLastMessageEventData();
+        String getLastMessageContent();
+        Instant getLastMessageCreatedAt();
+    }
+
+    public static ConversationSummary fromProjection(Projection p) {
         return new ConversationSummary(
-                proj.getConversationId(),
-                proj.getConversationType(),
-                Arrays.asList(proj.getMembersPreview()),
-                proj.getMemberCount(),
-                proj.getGroupCreatorId(),
-                proj.getLastSeq(),
-                proj.getLastReadSeq(),
-                proj.getConversationCreatedAt(),
-                proj.getLastSeq() != 0L
+                p.getConversationId(),
+                p.getConversationType(),
+                Arrays.asList(p.getMembersPreview()),
+                p.getMemberCount(),
+                p.getGroupCreatorId(),
+                p.getLastSeq(),
+                p.getLastReadSeq(),
+                p.getConversationCreatedAt(),
+                p.getLastSeq() != 0L
                         ? new MessageResponse(
-                                proj.getConversationId(),
-                                proj.getLastSeq(),
-                                proj.getLastMessageSenderId(),
-                                proj.getLastMessageSenderName(),
-                                proj.getLastMessageType(),
-                                proj.getLastMessageEventType(),
-                                proj.getLastMessageEventData(),
-                                proj.getLastMessageContent(),
-                                proj.getLastMessageCreatedAt()
+                                p.getConversationId(),
+                                p.getLastSeq(),
+                                p.getLastMessageSenderId(),
+                                p.getLastMessageSenderName(),
+                                p.getLastMessageType(),
+                                p.getLastMessageEventType(),
+                                p.getLastMessageEventData(),
+                                p.getLastMessageContent(),
+                                p.getLastMessageCreatedAt()
                         )
                         : null
         );

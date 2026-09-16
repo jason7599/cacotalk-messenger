@@ -1,12 +1,14 @@
 package com.jason7599.cacotalk.conversation;
 
 import com.jason7599.cacotalk.auth.AuthUser;
+import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/conversations")
@@ -26,5 +28,13 @@ public class ConversationController {
             @PathVariable long targetId
     ) {
         return conversationService.getOrCreateDirectConversation(authUser.userId(), targetId);
+    }
+
+    @GetMapping("/{conversationId}")
+    public ConversationDetail getConversationDetail(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        return conversationService.getConversationDetail(conversationId, authUser.userId());
     }
 }

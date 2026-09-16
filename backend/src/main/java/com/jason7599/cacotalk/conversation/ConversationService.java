@@ -1,8 +1,10 @@
 package com.jason7599.cacotalk.conversation;
 
+import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.user.UserRepository;
+import com.jason7599.cacotalk.user.dto.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,27 @@ public class ConversationService {
         return ConversationSummary.fromProjection(
             conversationRepository.getConversationSummary(id, userId)
                     .orElseThrow()
+        );
+    }
+
+    public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
+        long lastReadSeq = requireMembership(conversationId, userId).lastReadSeq();
+
+        ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
+
+        List<UserResponse> members = conversationRepository.getAllMembers(conversationId);
+
+        return new ConversationDetail(
+                p.getId(),
+                p.getType(),
+                members,
+                p.getBlockStatus(),
+                p.getGroupCreatorId(),
+                p.getIsClosed(),
+                p.getLastSeq(),
+                lastReadSeq,
+                p.getCreatedAt()
         );
     }
 }

@@ -1,5 +1,15 @@
 # User Relation API
 
+## DTO Schema
+
+### `UserResponse`
+```
+{
+  "username": string,
+  "userId": number
+}
+```
+
 ## Global Error Codes
 
 #### `401 Unauthorized`
