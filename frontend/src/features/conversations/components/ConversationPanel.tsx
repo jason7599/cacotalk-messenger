@@ -3,13 +3,13 @@ import ConversationEmptyState from "./ConversationEmptyState";
 import ConversationLoadingState from "./ConversationLoadingState";
 
 export default function ConversationPanel() {
-    const activeConversationId = useActiveConversationStore((s) => s.activeConversationId);
+    const conversation = useActiveConversationStore((s) => s.conversation);
     const status = useActiveConversationStore((s) => s.status);
     
     let content;
     if (status === "LOADING") {
         content = <ConversationLoadingState />;
-    } else if (!activeConversationId) {
+    } else if (!conversation) {
         content = <ConversationEmptyState />;
     } else {
         content = <>

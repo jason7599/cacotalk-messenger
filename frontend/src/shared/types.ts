@@ -1,4 +1,4 @@
-export type UserSummary = {
+export type UserInfo = {
     userId: number;
     username: string;
 };

@@ -1,5 +1,5 @@
 import { Ban, UserMinus, X } from "lucide-react";
-import type { UserSummary } from "../../../shared/types";
+import type { UserInfo } from "../../../shared/types";
 import { useBlockedUsersStore } from "../blockedUsersStore";
 import { useContactsStore } from "../contactsStore";
 import { useModal } from "../../../components/ModalProvider";
@@ -7,7 +7,7 @@ import { useState } from "react";
 import { getErrorMessage } from "../../../shared/apiClient";
 
 type ContactActionsModalProps = {
-    contact: UserSummary;
+    contact: UserInfo;
 };
 
 export default function ContactActionsModal({ contact }: ContactActionsModalProps) {

@@ -1,16 +1,16 @@
 import api from "../../shared/apiClient";
-import type { UserSummary } from "../../shared/types";
+import type { UserInfo } from "../../shared/types";
 import type { UserSearchResult } from "./types";
 
 export async function apiSearchUsers(query: string): Promise<UserSearchResult[]> {
     return (await api.get(`/users/search?query=${query}`)).data;
 }
 
-export async function apiGetContacts(): Promise<UserSummary[]> {
+export async function apiGetContacts(): Promise<UserInfo[]> {
     return (await api.get("/users/me/contacts")).data;
 }
 
-export async function apiAddContact(targetId: number): Promise<UserSummary> {
+export async function apiAddContact(targetId: number): Promise<UserInfo> {
     return (await api.post(`/users/me/contacts/${targetId}`)).data;
 }
 
@@ -18,11 +18,11 @@ export async function apiRemoveContact(targetId: number): Promise<void> {
     await api.delete(`/users/me/contacts/${targetId}`);
 }
 
-export async function apiGetBlockedUsers(): Promise<UserSummary[]> {
+export async function apiGetBlockedUsers(): Promise<UserInfo[]> {
     return (await api.get("/users/me/blocks")).data;
 }
 
-export async function apiBlockUser(targetId: number): Promise<UserSummary> {
+export async function apiBlockUser(targetId: number): Promise<UserInfo> {
     return (await api.post(`/users/me/blocks/${targetId}`)).data;
 }
 

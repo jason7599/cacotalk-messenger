@@ -1,17 +1,15 @@
 import { create } from "zustand";
-import { apiGetOrCreateDirectConversation } from "./conversationsApi";
+import { apiGetConversationDetail, apiGetOrCreateDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
-import type { ChatMessage } from "../messages/types";
 import { apiLoadMessages } from "../messages/messagesApi";
+import type { ActiveConversation, ConversationMeta } from "./types";
 
 export type ActiveConversationState = {
-    activeConversationId: string | null; // currently opened conversation
-
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
     error: string | null;
 
-    messages: ChatMessage[];
-    hasOlder: boolean;
+    conversation: ActiveConversation | null;
+
     loadingOlder: boolean;
 
     setActiveConversation: (conversationId: string) => Promise<void>;
@@ -25,25 +23,53 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
     let requestId = 0;
 
     const setActiveConversation = async (conversationId: string) => {
-        if (get().activeConversationId === conversationId && get().status !== "ERROR") {
+        if (get().conversation?.id === conversationId && get().status !== "ERROR") {
             return;
         }
 
         const myRequestId = ++requestId;
 
         set({
-            activeConversationId: conversationId,
             status: "LOADING",
             error: null
         });
 
         try {
-            const page = await apiLoadMessages(conversationId);
+            const [
+                detail,
+                page
+            ] = await Promise.all([
+                apiGetConversationDetail(conversationId),
+                apiLoadMessages(conversationId)
+            ])
+
             if (requestId !== myRequestId) return;
 
+            const meta: ConversationMeta =
+                detail.type === "DIRECT"
+                    ? {
+                        type: "DIRECT",
+                        blockStatus: detail.blockStatus,
+                        createdAt: detail.createdAt,
+                    }
+                    : {
+                        type: "GROUP",
+                        groupCreatorId: detail.groupCreatorId!,
+                        isClosed: detail.isClosed,
+                        createdAt: detail.createdAt,
+                    }
+            ;
+
             set({
-                messages: page.messages,
-                hasOlder: page.hasOlder,
+                conversation: {
+                    id: detail.id,
+                    members: detail.members,
+                    meta,
+                    messages: page.messages,
+                    hasOlder: page.hasOlder,
+                    lastSeq: detail.lastSeq,
+                    prevLastReadSeq: detail.prevLastReadSeq
+                },
                 status: "READY"
             });
         } catch (err) {
@@ -59,11 +85,9 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
     const clearActiveConversation = () => {
         requestId++; // invalidate anything in flight
         set({
-            activeConversationId: null,
             status: "IDLE",
             error: null,
-            messages: [],
-            hasOlder: false,
+            conversation: null,
             loadingOlder: false,
         });
     };
@@ -96,32 +120,43 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
     const loadOlderMessages = async () => {
         const s = get();
 
-        if (s.loadingOlder || !s.activeConversationId || s.loadingOlder || s.messages.length === 0) {
+        if (s.loadingOlder || !s.conversation || !s.conversation.hasOlder || s.conversation.messages.length === 0) {
             return;
         }
 
         const myRequestId = ++requestId;
-        const cursor = s.messages[0].seq;
+        const cursor = s.conversation.messages[0].seq;
 
         set({
             loadingOlder: true,
-            error: null 
+            error: null
         });
 
         try {
-            const page = await apiLoadMessages(s.activeConversationId, cursor);
+            const page = await apiLoadMessages(s.conversation.id, cursor);
             if (requestId !== myRequestId) return;
 
-            set((state) => ({
-                messages: [...page.messages, ...state.messages],
-                hasOlder: page.hasOlder,
-            }));
+            set((state) => {
+                if (!state.conversation) return state;
+
+                return {
+                    conversation: {
+                        ...state.conversation,
+                        messages: [
+                            ...page.messages,
+                            ...state.conversation.messages
+                        ],
+                        hasOlder: page.hasOlder
+                    }
+                };
+            });
         } catch (err) {
             if (requestId !== myRequestId) return;
 
-            set({ 
+            // TODO: separate message loading error with whole session error
+            set({
                 status: "ERROR",
-                error: getErrorMessage(err) 
+                error: getErrorMessage(err)
             });
         } finally {
             set({ loadingOlder: false });
@@ -129,11 +164,9 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
     };
 
     return {
-        activeConversationId: null,
         status: "IDLE",
         error: null,
-        messages: [],
-        hasOlder: false,
+        conversation: null,
         loadingOlder: false,
 
         setActiveConversation,

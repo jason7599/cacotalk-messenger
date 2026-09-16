@@ -1,14 +1,14 @@
 import { create } from "zustand";
-import type { UserSummary } from "../../shared/types";
+import type { UserInfo } from "../../shared/types";
 import { apiAddContact, apiRemoveContact } from "./userRelationsApi";
 
 type ContactsState = {
-    contacts: UserSummary[];
+    contacts: UserInfo[];
     addingIds: Set<number>;
 
     // Local synchronization
-    setContacts: (contacts: UserSummary[]) => void;
-    upsertLocal: (contact: UserSummary) => void;
+    setContacts: (contacts: UserInfo[]) => void;
+    upsertLocal: (contact: UserInfo) => void;
     removeLocal: (contactId: number) => void;
     reset: () => void;
 
@@ -17,7 +17,7 @@ type ContactsState = {
     removeContact: (contactId: number) => Promise<void>;
 };
 
-function sortContacts(contacts: UserSummary[]) {
+function sortContacts(contacts: UserInfo[]) {
     return contacts.sort((a, b) =>
         a.username.localeCompare(b.username)
     );
