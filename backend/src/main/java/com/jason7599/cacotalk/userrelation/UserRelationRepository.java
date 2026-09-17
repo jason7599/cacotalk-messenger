@@ -120,4 +120,28 @@ public class UserRelationRepository {
                 )
         );
     }
+
+    public List<UserResponse> getInvitableUsers(long userId) {
+        return jdbc.query("""
+            SELECT
+                u.id,
+                u.username
+            FROM contacts c
+            JOIN users u
+                ON c.contact_id = u.id
+            LEFT JOIN blocks blocked_me
+                ON c.contact_id = blocked_me.user_id
+                AND blocked_me.blocked_id = ?
+            WHERE c.user_id = ?
+                AND blocked_me IS NULL
+            ORDER BY u.username
+        """,
+            (rs, rowNum) -> new UserResponse(
+                    rs.getLong("id"),
+                    rs.getString("username")
+            ),
+                userId,
+                userId
+        );
+    }
 }

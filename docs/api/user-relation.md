@@ -208,3 +208,20 @@ DELETE /users/me/blocks/{targetId}
 
 The block was removed successfully, or block didn't exist
 
+
+## Get Invitable Users
+
+Returns the user's contacts, excluding any who have blocked the requester. 
+
+Used by the group conversation creation flow to populate the invitable-members list.
+
+### Request
+```
+GET /users/me/invitable
+```
+
+### Response
+
+#### `200 OK`
+
+Returns a list of `UserResponse`.

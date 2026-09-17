@@ -58,4 +58,9 @@ public class UserRelationController {
     ) {
         userRelationService.unblockUser(user.userId(), targetId);
     }
+
+    @GetMapping("/invitable")
+    public List<UserResponse> getInvitableUsers(@AuthenticationPrincipal AuthUser user) {
+        return userRelationService.getInvitableUsers(user.userId());
+    }
 }

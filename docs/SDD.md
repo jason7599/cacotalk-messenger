@@ -128,11 +128,14 @@ User selects another user or an existing direct conversation\
 If no direct conversation exists yet, one may be created when the user sends the first message.
 
 ### Creating a Group Conversation
-User selects the initial members\
-→ frontend sends the group creation request\
-→ backend validates the selected members\
-→ backend creates the conversation and membership records\
-→ frontend opens the newly created group conversation
+User requests to create a group conversation\
+→ Frontend requests the list of invitable users (contacts minus those who blocked the requesting user).\
+→ User selects the initial members.\
+→ Frontend sends the group creation request\
+→ Backend validates the selected members\
+→ If some members cannot be invited (not in contacts, or have blocked the user), creation fails and the frontend prompts the user to update the selection and retry.\
+→ Backend creates the conversation and membership records.\
+→ Frontend opens the newly created group conversation.
 
 ### Managing Group Members
 Group creator chooses to invite or remove a member\
