@@ -89,3 +89,46 @@ GET /conversations/{conversationId}/messages?before={before}
 ### Response
 #### `200 OK`
 Returns a `MessagePage` object.
+
+
+## Send Message
+
+Sends a user message in a conversation.
+
+The authenticated user must be a member of the conversation and must currently be allowed to send messages. This means:
+- For DIRECT conversations, the other user has not blocked the user or vice versa.
+- For GROUP conversations, the conversation is not closed.
+
+This method is idempotent, and will not create additional messages on retries.
+
+### Request
+```
+POST /conversations/{conversationId}/messages
+```
+
+#### Body
+```
+{
+  "content": string,
+  "clientId": UUID string
+}
+```
+
+- `content` must contain between 1 and 2000 characters after trimming.
+
+### Response
+
+#### `201 CREATED`
+```
+{
+  "clientId": UUID string,
+  "seq": number
+}
+```
+
+#### `400 BAD REQUEST`
+`content` is invalid.
+
+#### `403 Forbidden`
+
+User is not a member of the conversation, or is not currently available to send messages - the response does not distinguish which.

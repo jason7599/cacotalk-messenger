@@ -110,4 +110,10 @@ public class ConversationService {
                 p.getCreatedAt()
         );
     }
+
+    // On DIRECT: check no block status exists
+    // On GROUP: check is_closed is false
+    public boolean canSendMessage(long userId, UUID conversationId) {
+        return conversationRepository.canSendMessage(userId, conversationId);
+    }
 }

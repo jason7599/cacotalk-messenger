@@ -201,4 +201,25 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         WHERE conversation_id = :conversationId AND user_id = :userId
     """, nativeQuery = true)
     void updateLastReadSeq(UUID conversationId, long userId, long seq);
+
+    // On DIRECT: check no block status exists
+    // On GROUP: check is_closed is false
+    @Query(value = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM conversations c
+            WHERE c.id = :conversationId
+              AND NOT c.is_closed
+              AND NOT (
+                  c.type = 'DIRECT'
+                  AND EXISTS (
+                      SELECT 1
+                      FROM blocks b
+                      WHERE (b.user_id = :userId AND b.blocked_id = CASE WHEN c.direct_user_id1 = :userId THEN c.direct_user_id2 ELSE c.direct_user_id1 END)
+                         OR (b.blocked_id = :userId AND b.user_id = CASE WHEN c.direct_user_id1 = :userId THEN c.direct_user_id2 ELSE c.direct_user_id1 END)
+                  )
+              )
+        )
+    """, nativeQuery = true)
+    boolean canSendMessage(long userId, UUID conversationId);
 }

@@ -2,6 +2,7 @@ package com.jason7599.cacotalk.dev;
 
 import com.jason7599.cacotalk.conversation.ConversationRepository;
 import com.jason7599.cacotalk.message.MessageRepository;
+import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.user.UserEntity;
 import com.jason7599.cacotalk.user.UserRepository;
 import com.jason7599.cacotalk.user.dto.UserResponse;
@@ -137,7 +138,7 @@ public class DevDataService {
             messageRepository.insertMessage(
                     conversationId,
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
-                    "USER",
+                    MessageType.USER.name(),
                     null,
                     null,
                     message,

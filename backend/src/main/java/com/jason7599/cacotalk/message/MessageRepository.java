@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
@@ -63,6 +64,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
      * Atomically increment conversations.last_seq and inserts the message.
      * Therefore, even if client_id collides on retry or schema validation happens for the message,
      * the incremented last_seq should be rolled back.
+     * No explicit ON CONFLICT DO NOTHING, since the whole operation should be rolled back
      */
     @Query(value = """
         -- temporary cte
@@ -103,4 +105,6 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             String content,
             UUID clientId
     );
+
+    Optional<Long> findSeqByClientId(UUID clientId);
 }
