@@ -24,6 +24,7 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
     private final SessionService sessionService;
 
     // Look up by session token and inject authentication per request
+    // This also covers the HTTP WebSocket handshake!!
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
