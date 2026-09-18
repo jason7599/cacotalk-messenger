@@ -5,6 +5,7 @@ import type { UserInfo } from "../../../shared/types";
 import { apiGetInvitableUsers } from "../../userRelations/userRelationsApi";
 import { getErrorMessage } from "../../../shared/apiClient";
 import { apiCreateGroupConversation } from "../conversationsApi";
+import { useActiveConversationStore } from "../activeConversationStore";
 
 // excluding user.
 const MIN_INVITE_COUNT = 2;
@@ -12,6 +13,8 @@ const MAX_INVITE_COUNT = 99;
 
 export default function CreateGroupModal() {
     const { closeModal } = useModal();
+
+    const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
 
     const [users, setUsers] = useState<UserInfo[]>([]);
     const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -77,7 +80,8 @@ export default function CreateGroupModal() {
         setCreating(true);
 
         try {
-            await apiCreateGroupConversation(Array.from(selected));
+            const id = await apiCreateGroupConversation(Array.from(selected));
+            await setActiveConversation(id);
             closeModal();
         } catch (err) {
             setError(getErrorMessage(err));
