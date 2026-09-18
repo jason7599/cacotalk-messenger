@@ -1,17 +1,54 @@
 import { Ban, Lock, X, Users } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
+import { useAuth } from "../../auth/AuthProvider";
 
 export default function ConversationHeader() {
+    const { user } = useAuth();
+
     const conversation = useActiveConversationStore((s) => s.conversation)!;
-    const clearActiveConversation = useActiveConversationStore((s) => s.clearActiveConversation);
+    const clearActiveConversation = useActiveConversationStore(
+        (s) => s.clearActiveConversation
+    );
 
     const { otherMembers, meta } = conversation;
 
+    function getGroupDisplayName() {
+        const names = otherMembers.map(({ username }) =>
+            username.length > 16
+                ? `${username.slice(0, 13)}...`
+                : username
+        );
+
+        if (names.length === 0) {
+            return "EMPTY CHANNEL";
+        }
+
+        if (names.length <= 3) {
+            return names.join(", ");
+        }
+
+        return `${names.slice(0, 3).join(", ")} +${names.length - 3}`;
+    }
+
     let displayName: string;
+
     if (meta.type === "DIRECT") {
         displayName = otherMembers[0]!.username;
     } else {
-        displayName = "TODO";
+        displayName = getGroupDisplayName();
+    }
+
+    let creatorLabel: string | null = null;
+
+    if (meta.type === "GROUP") {
+        if (meta.groupCreatorId === user!.userId) {
+            creatorLabel = "YOU";
+        } else {
+            creatorLabel =
+                otherMembers.find(
+                    (member) => member.userId === meta.groupCreatorId
+                )?.username ?? null;
+        }
     }
 
     return (
@@ -45,7 +82,7 @@ export default function ConversationHeader() {
                     {displayName}
                 </p>
 
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
                     {meta.type === "GROUP" ? (
                         <>
                             <span
@@ -57,8 +94,30 @@ export default function ConversationHeader() {
                                 "
                             >
                                 <Users size={11} strokeWidth={2.3} />
-                                GROUP // {otherMembers.length} SOULS
+                                GROUP // {otherMembers.length + 1} SOULS
                             </span>
+
+                            {creatorLabel && (
+                                <>
+                                    <span className="text-[#4b1b1f]">
+                                        //
+                                    </span>
+
+                                    <span
+                                        className="
+                                            min-w-0
+                                            text-[9px]
+                                            tracking-[0.16em]
+                                            text-[#9f8581]
+                                        "
+                                    >
+                                        CREATED BY:{" "}
+                                        <span className="font-bold text-[#b99792]">
+                                            {creatorLabel}
+                                        </span>
+                                    </span>
+                                </>
+                            )}
 
                             <span className="text-[#4b1b1f]">
                                 //
@@ -73,7 +132,10 @@ export default function ConversationHeader() {
                                 "
                             >
                                 {meta.isClosed && (
-                                    <Lock size={10} strokeWidth={2.3} />
+                                    <Lock
+                                        size={10}
+                                        strokeWidth={2.3}
+                                    />
                                 )}
 
                                 {meta.isClosed
@@ -107,7 +169,10 @@ export default function ConversationHeader() {
                                             text-[#8f343b]
                                         "
                                     >
-                                        <Ban size={10} strokeWidth={2.3} />
+                                        <Ban
+                                            size={10}
+                                            strokeWidth={2.3}
+                                        />
 
                                         {meta.blockStatus === "BLOCKED_BY_ME"
                                             ? "SOUL BLOCKED"
