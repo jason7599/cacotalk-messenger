@@ -16,13 +16,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserSearchController {
 
-    private final UserSearchService userSearchService;
+    private final UserService userService;
 
     @GetMapping
     public List<UserSearchResponse> searchUsers(
             @AuthenticationPrincipal AuthUser user,
             @RequestParam("query") String query
     ) {
-        return userSearchService.searchUsers(user.userId(),  query);
+        return userService.searchUsers(user.userId(),  query);
     }
 }

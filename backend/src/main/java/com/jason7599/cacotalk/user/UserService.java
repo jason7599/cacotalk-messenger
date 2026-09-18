@@ -8,13 +8,17 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserSearchService {
+public class UserService {
 
     private static final int QUERY_MIN_LENGTH = 3;
     private static final int QUERY_MAX_LENGTH = 32;
     private static final int QUERY_LIMIT = 20;
 
     private final UserRepository userRepository;
+
+    public boolean exists(long userId) {
+        return userRepository.existsById(userId);
+    }
 
     public List<UserSearchResponse> searchUsers(long requesterId, String query) {
         query = query.toLowerCase().trim();

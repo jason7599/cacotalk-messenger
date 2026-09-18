@@ -30,7 +30,7 @@ public class UserRelationService {
 
         // potential race condition, but I'd say this is trivial enough
         if (userRelationRepository.hasBlocked(userId, targetId)) {
-            throw new ApiException(HttpStatus.CONFLICT, "Cannot add a blocked user as a contact.");
+            throw new ApiException(HttpStatus.FORBIDDEN, "Cannot add a blocked user as a contact.");
         }
 
         UserEntity target = userRepository.findById(targetId)
@@ -78,5 +78,9 @@ public class UserRelationService {
 
     public List<UserResponse> getInvitableUsers(long userId) {
         return userRelationRepository.getInvitableUsers(userId);
+    }
+
+    public boolean validateInvitable(long userId, List<Long> targetIds) {
+        return userRelationRepository.validateInvitable(userId, targetIds);
     }
 }

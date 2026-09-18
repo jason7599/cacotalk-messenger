@@ -110,7 +110,7 @@ User tried to add self as a contact.
 
 The target user does not exist.
 
-#### `409 Conflict`
+#### `403 Forbidden`
 
 The authenticated user has blocked the target user.
 

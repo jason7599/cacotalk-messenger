@@ -3,6 +3,8 @@ package com.jason7599.cacotalk.conversation;
 import com.jason7599.cacotalk.auth.AuthUser;
 import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
+import com.jason7599.cacotalk.conversation.dto.CreateGroupConversationRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -36,5 +38,17 @@ public class ConversationController {
             @PathVariable UUID conversationId
     ) {
         return conversationService.getConversationDetail(conversationId, authUser.userId());
+    }
+
+    @PostMapping("/group")
+    public UUID createGroupConversation(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestBody @Valid CreateGroupConversationRequest request
+    ) {
+        return conversationService.createGroupConversation(
+                authUser.userId(),
+                request.initMemberIds(),
+                request.clientId()
+        );
     }
 }

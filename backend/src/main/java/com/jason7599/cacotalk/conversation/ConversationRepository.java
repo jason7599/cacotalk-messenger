@@ -127,6 +127,28 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     """, nativeQuery = true)
     UUID resolveDirectConversation(long userId1, long userId2, UUID conversationId);
 
+    /*
+    Wait. This looks fucking silly. It returns clientId anyway
+
+    Keeping the design. Here's why for potential confused future me:
+    clientId intentionally doubles as the row's real id. the primary key.
+    and unlike resolveDirectConversation where the given conversationId, which is server generated anyway, might not be the actual
+    existing conversation's id, here, the client generates it, and the DB either finds an existing one by the ID or generates it.
+    So the returning id literally carries no new information.
+    But I'd say it's just a small aesthetic itch naturally caused by having id double as the clientId.
+    And since the FE needs the UUID for future API calls like ConversationDetails and such,
+    it does fit in naturally with the existing flow.
+     */
+    @Query(value = """
+        INSERT INTO conversations (id, type, group_creator_id)
+        VALUES (:clientId, 'GROUP', :userId)
+        ON CONFLICT (id)
+        DO UPDATE SET id = conversations.id -- no-op
+        WHERE conversations.group_creator_id = :userId -- explicitly fail on id collision only if the requester is not the original group creator, though still unlikely
+        RETURNING id
+    """, nativeQuery = true)
+    UUID resolveGroupConversation(long userId, UUID clientId);
+
     // idempotent
     @Modifying
     @Query(value = """

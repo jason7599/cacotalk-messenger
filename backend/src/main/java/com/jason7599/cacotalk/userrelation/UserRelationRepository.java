@@ -2,11 +2,12 @@ package com.jason7599.cacotalk.userrelation;
 
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class UserRelationRepository {
                     SELECT EXISTS (
                         SELECT 1
                         FROM contacts
-                        WHERE user_id = ? AND blocked_id = ?
+                        WHERE user_id = ? AND contact_id = ?
                     )
                     """,
                         Boolean.class,
@@ -131,8 +132,8 @@ public class UserRelationRepository {
                 ON c.contact_id = u.id
             LEFT JOIN blocks blocked_me
                 ON c.contact_id = blocked_me.user_id
-                AND blocked_me.blocked_id = ?
-            WHERE c.user_id = ?
+                AND blocked_me.blocked_id = ? -- userId
+            WHERE c.user_id = ? -- userId
                 AND blocked_me IS NULL
             ORDER BY u.username
         """,
@@ -143,5 +144,29 @@ public class UserRelationRepository {
                 userId,
                 userId
         );
+    }
+
+    public boolean validateInvitable(long userId, List<Long> targetIds) {
+        String placeholders = targetIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        Long res = jdbc.queryForObject(
+            """
+                SELECT COUNT(*)
+                FROM contacts c
+                LEFT JOIN blocks blocked_me
+                    ON blocked_me.user_id = c.contact_id
+                    AND blocked_me.blocked_id = ?
+                WHERE c.user_id = ?
+                    AND c.contact_id IN (%s)
+                    AND blocked_me IS NULL
+            """
+                .formatted(placeholders),
+            Long.class,
+            Stream.concat(Stream.of(userId, userId), targetIds.stream()).toArray()
+        );
+
+        return res != null && res == targetIds.size();
     }
 }
