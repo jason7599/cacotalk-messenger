@@ -12,3 +12,7 @@ export async function apiResolveDirectConversation(targetId: number): Promise<st
 export async function apiGetConversationDetail(conversationId: string): Promise<ConversationDetail> {
     return (await api.get(`/conversations/${conversationId}`)).data;
 }
+
+export async function apiCreateGroupConversation(initMemberIds: number[]): Promise<string> {
+    return (await api.post("/conversations/group", { initMemberIds, clientId: crypto.randomUUID() })).data;
+}

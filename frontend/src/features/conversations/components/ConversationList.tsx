@@ -1,9 +1,13 @@
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Users } from "lucide-react";
 import { useMemo } from "react";
 import { useConversationsStore } from "../conversationsStore";
 import ConversationListItem from "./ConversationListItem";
+import { useModal } from "../../../components/ModalProvider";
+import CreateGroupModal from "./CreateGroupModal";
 
 export default function ConversationList() {
+    const { openModal } = useModal();
+
     const conversationsById = useConversationsStore((s) => s.conversationsById);
 
     const conversations = useMemo(() => {
@@ -38,6 +42,32 @@ export default function ConversationList() {
                     </span>
                 </div>
             </header>
+
+            <div className="border-b-2 border-[#4b1b1f] bg-[#190b0d] p-3">
+                <button
+                    type="button"
+                    onClick={() => openModal(<CreateGroupModal />)}
+                    className="
+                        flex w-full items-center justify-center gap-2
+                        border-2 border-[#64141b]
+                        bg-[#2b0e12]
+                        px-3 py-2.5
+                        text-[10px] font-bold
+                        tracking-[0.16em]
+                        text-[#b99792]
+                        shadow-[3px_3px_0_#48090e]
+                        hover:border-[#e02632]
+                        hover:bg-[#a71924]
+                        hover:text-[#eee2d5]
+                        active:translate-x-0.75
+                        active:translate-y-0.75
+                        active:shadow-[1px_1px_0_#48090e]
+                    "
+                >
+                    <Users size={17} strokeWidth={2.4} />
+                    CREATE GROUP TRANSMISSION
+                </button>
+            </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
                 {conversations.length === 0 ? (

@@ -29,3 +29,7 @@ export async function apiBlockUser(targetId: number): Promise<UserInfo> {
 export async function apiUnblockUser(targetId: number): Promise<void> {
     await api.delete(`/users/me/blocks/${targetId}`);
 }
+
+export async function apiGetInvitableUsers(): Promise<UserInfo[]> {
+    return (await (api.get("/users/me/invitable"))).data;
+}
