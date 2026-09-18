@@ -6,6 +6,7 @@ import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.conversation.dto.CreateGroupConversationRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class ConversationController {
     }
 
     @PostMapping("/direct/{targetId}")
+    @ResponseStatus(HttpStatus.CREATED)
     public UUID resolveDirectConversation(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long targetId
@@ -41,6 +43,7 @@ public class ConversationController {
     }
 
     @PostMapping("/group")
+    @ResponseStatus(HttpStatus.CREATED)
     public UUID createGroupConversation(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody @Valid CreateGroupConversationRequest request
