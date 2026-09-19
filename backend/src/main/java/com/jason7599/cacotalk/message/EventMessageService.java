@@ -23,37 +23,37 @@ public class EventMessageService {
     private final MessageRepository messageRepository;
     private final ObjectMapper objectMapper;
 
-    // TODO: ws event
+    // TODO: ws eventData
     @Transactional
-    public MessageEntity sendEventMessage(UUID conversationId, EventMessage eventMessage) {
+    public MessageEntity sendEventMessage(UUID conversationId, EventData eventData) {
         return messageRepository.insertMessage(
                 conversationId,
                 null,
                 MessageType.EVENT.name(),
-                eventMessage.type().name(),
-                encode(eventMessage),
+                eventData.type().name(),
+                encode(eventData),
                 null,
                 null
         );
     }
 
-    public EventMessage decode(EventMessageType type, String json) {
+    public EventData decode(EventMessageType type, String json) {
         if (type == null) {
             return null;
         }
 
         try {
-            return objectMapper.readValue(json, EventMessage.getClass(type));
+            return objectMapper.readValue(json, EventData.getClass(type));
         } catch (JacksonException e) {
-            throw new RuntimeException("Failed to deserialize event message.", e);
+            throw new RuntimeException("Failed to deserialize eventData message.", e);
         }
     }
 
-    public String encode(EventMessage event) {
+    public String encode(EventData event) {
         try {
             return objectMapper.writeValueAsString(event);
         } catch (JacksonException e) {
-            throw new RuntimeException("Failed to serialize event message.", e);
+            throw new RuntimeException("Failed to serialize eventData message.", e);
         }
     }
 }

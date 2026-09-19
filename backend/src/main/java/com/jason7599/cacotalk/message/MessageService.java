@@ -41,6 +41,7 @@ public class MessageService {
                 p.getSenderId(),
                 p.getSenderName(),
                 p.getType(),
+                p.getEventType(),
                 eventMessageService.decode(
                         p.getEventType(),
                         p.getEventData()
@@ -84,7 +85,7 @@ public class MessageService {
         return new MessagePage(messages, hasOlder);
     }
 
-    // TODO: publish websocket event
+    // TODO: publish websocket eventData
     @Transactional
     public SendMessageResponse sendUserMessage(
             long userId,

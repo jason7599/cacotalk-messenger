@@ -1,6 +1,6 @@
 package com.jason7599.cacotalk.message.dto;
 
-import com.jason7599.cacotalk.message.EventMessage;
+import com.jason7599.cacotalk.message.EventData;
 import com.jason7599.cacotalk.message.EventMessageType;
 import com.jason7599.cacotalk.message.MessageType;
 
@@ -13,7 +13,8 @@ public record MessageResponse(
         Long senderId,
         String senderName,
         MessageType type,
-        EventMessage event,
+        EventMessageType eventType,
+        EventData eventData,
         String content,
         Instant createdAt
 ) {

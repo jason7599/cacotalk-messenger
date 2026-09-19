@@ -3,7 +3,7 @@ package com.jason7599.cacotalk.conversation;
 import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.exceptions.ApiException;
-import com.jason7599.cacotalk.message.EventMessage;
+import com.jason7599.cacotalk.message.EventData;
 import com.jason7599.cacotalk.message.EventMessageService;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
@@ -55,6 +55,7 @@ public class ConversationService {
                                 p.getLastMessageSenderId(),
                                 p.getLastMessageSenderName(),
                                 p.getLastMessageType(),
+                                p.getLastMessageEventType(),
                                 eventMessageService.decode(
                                         p.getLastMessageEventType(),
                                         p.getLastMessageEventData()
@@ -118,7 +119,7 @@ public class ConversationService {
         }
 
         // conversation with clientId already exists.
-        // We NEED this distinction here so that we can avoid inserting duplicate GROUP_CREATED event messages
+        // We NEED this distinction here so that we can avoid inserting duplicate GROUP_CREATED eventData messages
         if (conversationRepository.insertGroupConversation(userId, clientId).isEmpty()) {
             return clientId;
         }
@@ -136,7 +137,7 @@ public class ConversationService {
 
         eventMessageService.sendEventMessage(
                 clientId,
-                new EventMessage.GroupCreated(initMembers)
+                new EventData.GroupCreated(initMembers)
         );
 
         return clientId;
