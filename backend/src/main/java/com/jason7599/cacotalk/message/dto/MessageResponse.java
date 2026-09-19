@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.message.dto;
 
-import com.jason7599.cacotalk.message.EventData;
-import com.jason7599.cacotalk.message.EventMessageType;
+import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.MessageType;
 
 import java.time.Instant;
@@ -13,8 +12,7 @@ public record MessageResponse(
         Long senderId,
         String senderName,
         MessageType type,
-        EventMessageType eventType,
-        EventData eventData,
+        EventMessage event,
         String content,
         Instant createdAt
 ) {
@@ -24,8 +22,7 @@ public record MessageResponse(
         Long getSenderId();
         String getSenderName();
         MessageType getType();
-        EventMessageType getEventType();
-        String getEventData(); // raw json string
+        String getEvent(); // raw json string
         String getContent();
         Instant getCreatedAt();
     }

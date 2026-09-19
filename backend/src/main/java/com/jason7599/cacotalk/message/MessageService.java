@@ -41,11 +41,7 @@ public class MessageService {
                 p.getSenderId(),
                 p.getSenderName(),
                 p.getType(),
-                p.getEventType(),
-                eventMessageService.decode(
-                        p.getEventType(),
-                        p.getEventData()
-                ),
+                eventMessageService.decode(p.getEvent()),
                 p.getContent(),
                 p.getCreatedAt()
         );
@@ -117,7 +113,6 @@ public class MessageService {
                 conversationId,
                 userId,
                 MessageType.USER.name(),
-                null,
                 null,
                 content,
                 clientId

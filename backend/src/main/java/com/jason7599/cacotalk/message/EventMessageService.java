@@ -25,35 +25,35 @@ public class EventMessageService {
 
     // TODO: ws eventData
     @Transactional
-    public MessageEntity sendEventMessage(UUID conversationId, EventData eventData) {
+    public MessageEntity sendEventMessage(UUID conversationId, EventMessage eventMessage) {
         return messageRepository.insertMessage(
                 conversationId,
                 null,
                 MessageType.EVENT.name(),
-                eventData.type().name(),
-                encode(eventData),
+                encode(eventMessage),
                 null,
                 null
         );
     }
 
-    public EventData decode(EventMessageType type, String json) {
-        if (type == null) {
+    public String encode(EventMessage eventMessage) {
+        try {
+            return objectMapper.writeValueAsString(eventMessage);
+        } catch (JacksonException e) {
+            throw new RuntimeException("Failed to serialize event message", e);
+        }
+    }
+
+    public EventMessage decode(String json) {
+        if (json == null) {
             return null;
         }
 
         try {
-            return objectMapper.readValue(json, EventData.getClass(type));
-        } catch (JacksonException e) {
-            throw new RuntimeException("Failed to deserialize eventData message.", e);
-        }
-    }
-
-    public String encode(EventData event) {
-        try {
-            return objectMapper.writeValueAsString(event);
-        } catch (JacksonException e) {
-            throw new RuntimeException("Failed to serialize eventData message.", e);
+            // Jackson owns the subtype dispatch
+            return objectMapper.readValue(json, EventMessage.class);
+        }  catch (JacksonException e) {
+            throw new RuntimeException("Failed to deserialize event message", e);
         }
     }
 }

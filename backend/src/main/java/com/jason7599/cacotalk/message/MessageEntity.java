@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -27,11 +26,9 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private MessageType type;
 
-    @Enumerated(EnumType.STRING)
-    private EventMessageType eventType;
-
     @JdbcTypeCode(SqlTypes.JSON)
-    private JsonNode eventData;
+    @Column(columnDefinition = "jsonb")
+    private EventMessage event;
 
     private String content;
 

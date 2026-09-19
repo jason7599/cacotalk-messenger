@@ -31,8 +31,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             lms.username AS lastMessageSenderName,
 
             lm.type AS lastMessageType,
-            lm.event_type AS lastMessageEventType,
-            lm.event_data AS lastMessageEventData,
+            lm.event AS lastMessageEvent,
             lm.content AS lastMessageContent,
             lm.created_at AS lastMessageCreatedAt
 

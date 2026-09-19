@@ -16,8 +16,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             m.sender_id,
             u.username AS senderName,
             m.type,
-            m.event_type,
-            m.event_data,
+            m.event,
             m.content,
             m.created_at
         FROM messages m
@@ -79,8 +78,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             seq,
             sender_id,
             type,
-            event_type,
-            event_data,
+            event,
             content,
             client_id
         )
@@ -89,7 +87,6 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             next_seq.last_seq,
             :senderId,
             :messageType,
-            :eventType,
             CAST(:eventData AS JSONB),
             :content,
             :clientId
@@ -100,7 +97,6 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             UUID conversationId,
             Long senderId,
             String messageType,
-            String eventType,
             String eventData,
             String content,
             UUID clientId

@@ -5,14 +5,7 @@ CREATE TABLE messages (
     sender_id BIGINT REFERENCES users(id),
 
     type TEXT NOT NULL CHECK (type IN ('USER', 'EVENT')),
-    event_type TEXT CHECK (
-        event_type IN ('GROUP_CREATED',
-                       'USER_INVITED',
-                       'USER_LEFT',
-                       'USER_REMOVED',
-                       'GROUP_CLOSED')
-    ),
-    event_data JSONB,
+    event JSONB,
     content VARCHAR(2000),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -25,14 +18,12 @@ CREATE TABLE messages (
             AND sender_id IS NOT NULL
             AND content IS NOT NULL
             AND TRIM(content) <> ''
-            AND event_type IS NULL
-            AND event_data IS NULL
+            AND event IS NULL
             AND client_id IS NOT NULL)
         OR
         (type = 'EVENT'
             AND sender_id IS NULL
-            AND event_type IS NOT NULL
-            -- event_data can be null depending on event_type
+            AND event IS NOT NULL
             AND content IS NULL
             AND client_id IS NULL)
     )

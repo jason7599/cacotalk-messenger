@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
-import com.jason7599.cacotalk.message.EventMessageType;
 import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 
@@ -37,8 +36,7 @@ public record ConversationSummary(
         Long getLastMessageSenderId();
         String getLastMessageSenderName();
         MessageType getLastMessageType();
-        EventMessageType getLastMessageEventType();
-        String getLastMessageEventData();
+        String getLastMessageEvent();
         String getLastMessageContent();
         Instant getLastMessageCreatedAt();
     }

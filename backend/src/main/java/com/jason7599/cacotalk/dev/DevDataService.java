@@ -140,7 +140,6 @@ public class DevDataService {
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
                     MessageType.USER.name(),
                     null,
-                    null,
                     message,
                     UUID.randomUUID()
             );
