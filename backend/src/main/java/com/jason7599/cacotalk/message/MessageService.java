@@ -4,16 +4,17 @@ import com.jason7599.cacotalk.conversation.ConversationService;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.dto.MessagePage;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
-import com.jason7599.cacotalk.message.dto.SendMessageResponse;
+import com.jason7599.cacotalk.user.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -33,6 +34,7 @@ public class MessageService {
 
     private final ConversationService conversationService;
     private final EventMessageService eventMessageService;
+    private final UserService userService;
 
     private MessageResponse fromProjection(MessageResponse.Projection p) {
         return new MessageResponse(
@@ -83,7 +85,7 @@ public class MessageService {
 
     // TODO: publish websocket eventData
     @Transactional
-    public SendMessageResponse sendUserMessage(
+    public MessageResponse sendUserMessage(
             long userId,
             UUID conversationId,
             String content,
@@ -95,15 +97,42 @@ public class MessageService {
             throw new ApiException(HttpStatus.FORBIDDEN, "Cannot send a message in this conversation.");
         }
 
-        Optional<Long> existingSeq = messageRepository.findSeqByClientId(clientId);
-        if (existingSeq.isPresent()) {
-            // Idempotent
-            return new SendMessageResponse(clientId, existingSeq.get());
-        }
-
         content = content.trim();
         if (content.isEmpty() ||  content.length() > MESSAGE_MAX_LENGTH) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Content has to have between 1-2000 characters.");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Content has to have between 1-%d characters.".formatted(MESSAGE_MAX_LENGTH));
+        }
+
+        // TODO: Consider including username in AuthUser Principal and also caching it in Redis session
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        // SAFE: given userId passed not only AuthenticationFilter, but also requireMembership, which is FK-backed.
+        String username = userService.findById(userId).get().username();
+
+        // Idempotent
+        MessageEntity existing = messageRepository.findByClientId(clientId).orElse(null);
+        if (existing != null) {
+            // This would actually be a concerning scenario.
+            // clientId collision, but the request not matching the existing message.
+            // Either it's an actual, one in a GAZILLION uuid collision, or
+            // it means a malicious actor is probing for existing clientIds.
+            // Either way, a 409 is raised so no big damage will be done
+            if (!existing.getSenderId().equals(userId) || !existing.getId().conversationId().equals(conversationId)
+            || !existing.getContent().equals(content)) {
+                log.warn("clientId collision: user {} submitted clientId {} already owned by sender {} in conversation {}",
+                        userId, clientId, existing.getSenderId(), existing.getId().conversationId());
+
+                throw new ApiException(HttpStatus.CONFLICT, "This message cannot be sent.");
+            }
+
+            return new MessageResponse(
+                    conversationId,
+                    existing.getId().seq(),
+                    userId,
+                    username,
+                    MessageType.USER,
+                    null,
+                    existing.getContent(),
+                    existing.getCreatedAt()
+            );
         }
 
         // Fails explicitly on clientId conflict.
@@ -118,6 +147,15 @@ public class MessageService {
                 clientId
         );
 
-        return new SendMessageResponse(inserted.getClientId(), inserted.getId().seq());
+        return new MessageResponse(
+                conversationId,
+                inserted.getId().seq(),
+                userId,
+                username,
+                MessageType.USER,
+                null,
+                content,
+                inserted.getCreatedAt()
+        );
     }
 }

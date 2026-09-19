@@ -113,22 +113,20 @@ POST /conversations/{conversationId}/messages
   "clientId": UUID string
 }
 ```
-
 - `content` must contain between 1 and 2000 characters after trimming.
+- `clientId` should be generated per new message, and reused only when retrying the exact same attempt.
 
 ### Response
 
 #### `201 CREATED`
-```
-{
-  "clientId": UUID string,
-  "seq": number
-}
-```
+Returns the created (or already existing) `MessageResponse` object.
 
 #### `400 BAD REQUEST`
 `content` is invalid.
 
-#### `403 Forbidden`
-
+#### `403 FORBIDDEN`
 User is not a member of the conversation, or is not currently available to send messages - the response does not distinguish which.
+
+#### `409 CONFLICT`
+`clientId` already belongs to a different sender or conversation.
+It should be noted that this is not the regular conflict flow. This would only happen in genuine UUID collision or malicious attempts.

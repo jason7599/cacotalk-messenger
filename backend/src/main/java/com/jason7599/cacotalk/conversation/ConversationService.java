@@ -117,6 +117,11 @@ public class ConversationService {
         // conversation with clientId already exists.
         // We NEED this distinction here so that we can avoid inserting duplicate GROUP_CREATED eventData messages
         if (conversationRepository.insertGroupConversation(userId, clientId).isEmpty()) {
+            // Even in case where a malicious actor was probing for exiting conversation Ids,
+            // this shouldn't be a big problem. Not only do we skip membership inserts in case of conflict,
+            // every other conversation API is guarded with a membership check.
+            // So the worst thing that can happen is, the attacker finds out this clientId is in use.
+            // Nothing else.
             return clientId;
         }
 

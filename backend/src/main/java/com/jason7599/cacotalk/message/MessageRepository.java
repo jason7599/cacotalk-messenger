@@ -102,5 +102,5 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             UUID clientId
     );
 
-    Optional<Long> findSeqByClientId(UUID clientId);
+    Optional<MessageEntity> findByClientId(UUID clientId);
 }

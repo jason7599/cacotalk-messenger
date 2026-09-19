@@ -2,8 +2,8 @@ package com.jason7599.cacotalk.message;
 
 import com.jason7599.cacotalk.auth.AuthUser;
 import com.jason7599.cacotalk.message.dto.MessagePage;
+import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.message.dto.SendMessageRequest;
-import com.jason7599.cacotalk.message.dto.SendMessageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,7 @@ public class MessageController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SendMessageResponse sendMessage(
+    public MessageResponse sendMessage(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable UUID conversationId,
             @RequestBody @Valid SendMessageRequest request

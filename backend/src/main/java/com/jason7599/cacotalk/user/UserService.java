@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,10 @@ public class UserService {
     private static final int QUERY_LIMIT = 20;
 
     private final UserRepository userRepository;
+
+    public Optional<UserResponse> findById(Long userId) {
+        return userRepository.findById(userId).map(UserResponse::new);
+    }
 
     public boolean exists(long userId) {
         return userRepository.existsById(userId);
