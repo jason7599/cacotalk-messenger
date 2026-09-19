@@ -1,9 +1,13 @@
 import { Ban, Send } from "lucide-react";
 import { useRef, useState } from "react";
 import { useActiveConversationStore } from "../../conversations/activeConversationStore";
+import { useMessageSendStore } from "../messageSendStore";
 
 export default function MessageComposer() {
+    const conversationId = useActiveConversationStore((s) => s.conversation!.id);
     const meta = useActiveConversationStore((s) => s.conversation!.meta);
+    const sendMessage = useMessageSendStore((s) => s.send);
+
     const blockStatus = meta.type === "DIRECT" ? meta.blockStatus : "NONE";
 
     const [content, setContent] = useState("");
@@ -38,7 +42,7 @@ export default function MessageComposer() {
             return;
         }
 
-        // TODO: send message
+        sendMessage(conversationId, trimmed);
 
         setContent("");
 
@@ -88,6 +92,7 @@ export default function MessageComposer() {
                             ref={textareaRef}
                             value={content}
                             onChange={(e) => handleChange(e.target.value)}
+                            maxLength={2000}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();

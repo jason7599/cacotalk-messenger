@@ -3,6 +3,8 @@ import { apiGetConversationDetail, apiResolveDirectConversation } from "./conver
 import { getErrorMessage } from "../../shared/apiClient";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
+import type { ChatMessage } from "../messages/types";
+import { immer } from "zustand/middleware/immer";
 
 export type ActiveConversationState = {
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
@@ -11,14 +13,16 @@ export type ActiveConversationState = {
     conversation: ActiveConversation | null;
 
     loadingOlder: boolean;
+    loadOlderError: string | null;
 
     setActiveConversation: (conversationId: string) => Promise<void>;
     clearActiveConversation: () => void;
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
+    upsertMessage: (message: ChatMessage) => void;
 };
 
-export const useActiveConversationStore = create<ActiveConversationState>((set, get) => {
+export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
     // internal only stale guard
     let requestId = 0;
 
@@ -31,9 +35,10 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
 
         set({
             conversation: null,
-            loadingOlder: false,
             status: "LOADING",
-            error: null
+            error: null,
+            loadingOlder: false,
+            loadOlderError: null
         });
 
         try {
@@ -131,7 +136,7 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
 
         set({
             loadingOlder: true,
-            error: null
+            loadOlderError: null
         });
 
         try {
@@ -155,14 +160,37 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
         } catch (err) {
             if (requestId !== myRequestId) return;
 
-            // TODO: separate message loading error with whole session error
             set({
                 status: "ERROR",
-                error: getErrorMessage(err)
+                loadOlderError: getErrorMessage(err)
             });
         } finally {
             set({ loadingOlder: false });
         }
+    };
+
+    /**
+     * Can't make any assumptions here.. Trust no one.
+     * Out of order arrivals, duplicate events, etc.
+     */
+    const upsertMessage = (message: ChatMessage) => {
+        set((state) => {
+            if (!state.conversation || state.conversation.id !== message.conversationId) {
+                return;
+            }
+
+            const messages = state.conversation.messages;
+
+            const existingIndex = messages.findIndex((m) => m.seq === message.seq);
+            if (existingIndex !== -1) {
+                messages[existingIndex] = message;
+                return;
+            }
+
+            // find the last message with a smaller seq, and insert right after
+            const insertAfter = messages.findLastIndex((m) => m.seq < message.seq);
+            messages.splice(insertAfter + 1, 0, message);
+        });
     };
 
     return {
@@ -170,10 +198,12 @@ export const useActiveConversationStore = create<ActiveConversationState>((set, 
         error: null,
         conversation: null,
         loadingOlder: false,
+        loadOlderError: null,
 
         setActiveConversation,
         clearActiveConversation,
         openDirectConversation,
-        loadOlderMessages
+        loadOlderMessages,
+        upsertMessage
     };
-});
+}));
