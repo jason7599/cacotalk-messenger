@@ -11,6 +11,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByUsername(String username);
 
+    List<UserEntity> findAllByIdInOrderByUsername(List<Long> ids);
+
     @Query(value = """
     SELECT
         u.id AS user_id,

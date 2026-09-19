@@ -32,6 +32,23 @@ public class MessageService {
     private final MessageRepository messageRepository;
 
     private final ConversationService conversationService;
+    private final EventMessageService eventMessageService;
+
+    private MessageResponse fromProjection(MessageResponse.Projection p) {
+        return new MessageResponse(
+                p.getConversationId(),
+                p.getSeq(),
+                p.getSenderId(),
+                p.getSenderName(),
+                p.getType(),
+                eventMessageService.decode(
+                        p.getEventType(),
+                        p.getEventData()
+                ),
+                p.getContent(),
+                p.getCreatedAt()
+        );
+    }
 
     public MessagePage loadInitial(UUID conversationId, long userId) {
         // Membership assertion is done here
@@ -46,7 +63,7 @@ public class MessageService {
                 INITIAL_LOAD_LIMIT
         )
                 .stream()
-                .map(MessageResponse::fromProjection)
+                .map(this::fromProjection)
                 .toList();
 
         boolean hasOlder = !messages.isEmpty() && messages.getFirst().seq() != 1L;
@@ -59,7 +76,7 @@ public class MessageService {
 
         List<MessageResponse> messages = messageRepository.fetchOlderMessages(conversationId, beforeSeq, PAGE_SIZE)
                 .stream()
-                .map(MessageResponse::fromProjection)
+                .map(this::fromProjection)
                 .toList();
 
         boolean hasOlder = !messages.isEmpty() && messages.getFirst().seq() != 1L;

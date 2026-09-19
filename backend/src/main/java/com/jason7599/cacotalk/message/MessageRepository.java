@@ -1,6 +1,6 @@
 package com.jason7599.cacotalk.message;
 
-import com.jason7599.cacotalk.message.dto.MessageProjection;
+import com.jason7599.cacotalk.message.dto.MessageResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -41,7 +41,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         ) x
         ORDER BY x.seq ASC
     """, nativeQuery = true)
-    List<MessageProjection> fetchInitialMessages(
+    List<MessageResponse.Projection> fetchInitialMessages(
             UUID conversationId,
             long lastReadSeq,
             int contextSize,
@@ -58,7 +58,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         ) x
         ORDER BY x.seq ASC
     """, nativeQuery = true)
-    List<MessageProjection> fetchOlderMessages(UUID conversationId, long beforeSeq, int pageSize);
+    List<MessageResponse.Projection> fetchOlderMessages(UUID conversationId, long beforeSeq, int pageSize);
 
     /**
      * Atomically increment conversations.last_seq and inserts the message.

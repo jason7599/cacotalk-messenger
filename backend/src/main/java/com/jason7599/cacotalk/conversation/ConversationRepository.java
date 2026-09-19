@@ -118,6 +118,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     Optional<ConversationDetail.Projection> getConversationDetail(UUID conversationId, long userId);
 
     // idempotent
+    // Note we check conflict on the direct user pair, not the clientId/conversationId.
     @Query(value = """
         INSERT INTO conversations (id, type, direct_user_id1, direct_user_id2)
         VALUES (:conversationId, 'DIRECT', LEAST(:userId1, :userId2), GREATEST(:userId1, :userId2))
@@ -128,26 +129,17 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     UUID resolveDirectConversation(long userId1, long userId2, UUID conversationId);
 
     /*
-    Wait. This looks fucking silly. It returns clientId anyway
-
-    Keeping the design. Here's why for potential confused future me:
-    clientId intentionally doubles as the row's real id. the primary key.
-    and unlike resolveDirectConversation where the given conversationId, which is server generated anyway, might not be the actual
-    existing conversation's id, here, the client generates it, and the DB either finds an existing one by the ID or generates it.
-    So the returning id literally carries no new information.
-    But I'd say it's just a small aesthetic itch naturally caused by having id double as the clientId.
-    And since the FE needs the UUID for future API calls like ConversationDetails and such,
-    it does fit in naturally with the existing flow.
+    Here we distinguish whether the row already existed or not.
+    If already existed, return Optional.empty().
      */
     @Query(value = """
         INSERT INTO conversations (id, type, group_creator_id)
         VALUES (:clientId, 'GROUP', :userId)
         ON CONFLICT (id)
-        DO UPDATE SET id = conversations.id -- no-op
-        WHERE conversations.group_creator_id = :userId -- explicitly fail on id collision only if the requester is not the original group creator, though still unlikely
+        DO NOTHING
         RETURNING id
     """, nativeQuery = true)
-    UUID resolveGroupConversation(long userId, UUID clientId);
+    Optional<UUID> insertGroupConversation(long userId, UUID clientId);
 
     // idempotent
     @Modifying
@@ -162,7 +154,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         WHERE c.id = :conversationId
         ON CONFLICT (conversation_id, user_id) DO NOTHING
     """, nativeQuery = true)
-    void ensureMembers(UUID conversationId, long[] userIds);
+    void insertMembers(UUID conversationId, long[] userIds);
 
     @Query(value = """
         SELECT last_read_seq

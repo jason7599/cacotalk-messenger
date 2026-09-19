@@ -4,10 +4,8 @@ import com.jason7599.cacotalk.conversation.ConversationType;
 import com.jason7599.cacotalk.message.EventMessageType;
 import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
-import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,34 +38,8 @@ public record ConversationSummary(
         String getLastMessageSenderName();
         MessageType getLastMessageType();
         EventMessageType getLastMessageEventType();
-        JsonNode getLastMessageEventData();
+        String getLastMessageEventData();
         String getLastMessageContent();
         Instant getLastMessageCreatedAt();
-    }
-
-    public static ConversationSummary fromProjection(Projection p) {
-        return new ConversationSummary(
-                p.getConversationId(),
-                p.getConversationType(),
-                Arrays.asList(p.getMembersPreview()),
-                p.getMemberCount(),
-                p.getGroupCreatorId(),
-                p.getLastSeq(),
-                p.getLastReadSeq(),
-                p.getConversationCreatedAt(),
-                p.getLastSeq() != 0L
-                        ? new MessageResponse(
-                                p.getConversationId(),
-                                p.getLastSeq(),
-                                p.getLastMessageSenderId(),
-                                p.getLastMessageSenderName(),
-                                p.getLastMessageType(),
-                                p.getLastMessageEventType(),
-                                p.getLastMessageEventData(),
-                                p.getLastMessageContent(),
-                                p.getLastMessageCreatedAt()
-                        )
-                        : null
-        );
     }
 }

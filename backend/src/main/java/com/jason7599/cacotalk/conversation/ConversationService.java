@@ -3,6 +3,9 @@ package com.jason7599.cacotalk.conversation;
 import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.exceptions.ApiException;
+import com.jason7599.cacotalk.message.EventMessage;
+import com.jason7599.cacotalk.message.EventMessageService;
+import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.userrelation.UserRelationService;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -26,6 +30,7 @@ public class ConversationService {
 
     private final UserRelationService userRelationService;
     private final UserService userService;
+    private final EventMessageService eventMessageService;
 
     public ConversationMembership requireMembership(UUID conversationId, long userId) {
         return conversationRepository.getMembership(conversationId, userId)
@@ -35,7 +40,29 @@ public class ConversationService {
     public List<ConversationSummary> getConversationSummaries(long userId) {
         return conversationRepository.getConversationSummaries(userId)
                 .stream()
-                .map(ConversationSummary::fromProjection)
+                .map(p -> new ConversationSummary(
+                        p.getConversationId(),
+                        p.getConversationType(),
+                        Arrays.asList(p.getMembersPreview()),
+                        p.getMemberCount(),
+                        p.getGroupCreatorId(),
+                        p.getLastSeq(),
+                        p.getLastReadSeq(),
+                        p.getConversationCreatedAt(),
+                        p.getLastSeq() > 0 ? new MessageResponse(
+                                p.getConversationId(),
+                                p.getLastSeq(),
+                                p.getLastMessageSenderId(),
+                                p.getLastMessageSenderName(),
+                                p.getLastMessageType(),
+                                eventMessageService.decode(
+                                        p.getLastMessageEventType(),
+                                        p.getLastMessageEventData()
+                                ),
+                                p.getLastMessageContent(),
+                                p.getLastMessageCreatedAt()
+                        ) : null
+                ))
                 .toList();
     }
 
@@ -51,16 +78,28 @@ public class ConversationService {
 
         // no need to check userId as it should be validated by AuthenticationPrincipal
 
-        UUID id = conversationRepository.resolveDirectConversation(userId, targetId, UUID.randomUUID());
+        UUID createId = UUID.randomUUID();
 
-        conversationRepository.ensureMembers(id, new long[]{userId, targetId});
+        UUID id = conversationRepository.resolveDirectConversation(userId, targetId, createId);
+
+        // actual creation happened here.
+        // insertMembers itself is idempotent so this check is technically unnecessary, but it's nice.
+        if (id.equals(createId)) {
+            conversationRepository.insertMembers(id, new long[]{userId, targetId});
+        }
 
         return id;
     }
 
-    // TODO: send group_created event message
-    // Idempotent.
-    // Not exactly happy about the param & return shape combo, but sticking with it. See comment above ConversationRepository.resolveDirectConversation
+    /**
+     * Idempotent.
+     * The signature does look weird. This is because clientId is actually the conversation id.
+     * Because conversation ID doubles as a client id, the return value of this method itself is quite redundant.
+     * If a conversation with the same clientId already existed, it returns the given clientId.
+     * If not, it inserts one and assigns the given clientId, and returns it.
+     * So either way, it returns the given clientId, so the caller gains no new information.
+     * I suppose this is just the natural quirkiness that comes from an ID doubling as a clientId.
+     */
     @Transactional
     public UUID createGroupConversation(long userId, List<Long> initMemberIds, UUID clientId) {
         initMemberIds = initMemberIds.stream().distinct().toList();
@@ -78,15 +117,29 @@ public class ConversationService {
             throw new ApiException(HttpStatus.FORBIDDEN, "Some members cannot be added.");
         }
 
-        UUID id = conversationRepository.resolveGroupConversation(userId, clientId);
+        // conversation with clientId already exists.
+        // We NEED this distinction here so that we can avoid inserting duplicate GROUP_CREATED event messages
+        if (conversationRepository.insertGroupConversation(userId, clientId).isEmpty()) {
+            return clientId;
+        }
+
+        // This looks confusing, because clientId is actually the conversation id.
+        // Because again, the id doubles as a clientId.
 
         long[] allMemberIds = Stream.concat(Stream.of(userId), initMemberIds.stream())
                 .mapToLong(Long::longValue)
                 .toArray();
 
-        conversationRepository.ensureMembers(id, allMemberIds);
+        conversationRepository.insertMembers(clientId, allMemberIds);
 
-        return id;
+        List<UserResponse> initMembers = userService.findAllById(initMemberIds);
+
+        eventMessageService.sendEventMessage(
+                clientId,
+                new EventMessage.GroupCreated(initMembers)
+        );
+
+        return clientId;
     }
 
     // Called when user opens a conversation

@@ -1,5 +1,6 @@
 package com.jason7599.cacotalk.user;
 
+import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.user.dto.UserSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,13 @@ public class UserService {
 
     public boolean exists(long userId) {
         return userRepository.existsById(userId);
+    }
+
+    public List<UserResponse> findAllById(List<Long> userIds) {
+        return userRepository.findAllByIdInOrderByUsername(userIds)
+                .stream()
+                .map(UserResponse::new)
+                .toList();
     }
 
     public List<UserSearchResponse> searchUsers(long requesterId, String query) {
