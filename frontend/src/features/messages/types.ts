@@ -1,3 +1,5 @@
+import type { UserInfo } from "../../shared/types";
+
 type MessageBase = {
     conversationId: string;
     seq: number;
@@ -11,18 +13,17 @@ export type UserMessage = MessageBase & {
     content: string;
 };
 
-export type EventMessageType =
-    | "GROUP_CREATED"
-    | "USER_INVITED"
-    | "USER_LEFT"
-    | "USER_REMOVED"
-    | "GROUP_CLOSED"
+export type EventData =
+    | { type: "GROUP_CREATED"; initMembers: UserInfo[] }
+    | { type: "USER_INVITED"; subject: UserInfo }
+    | { type: "USER_LEFT"; subject: UserInfo }
+    | { type: "USER_REMOVED"; subject: UserInfo }
+    | { type: "GROUP_CLOSED"; }
 ;
 
 export type EventMessage = MessageBase & {
     type: "EVENT";
-    eventType: EventMessageType;
-    eventData: unknown | null;
+    event: EventData;
 };
 
 export type ChatMessage = UserMessage | EventMessage;

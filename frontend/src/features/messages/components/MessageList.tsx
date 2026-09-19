@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useActiveConversationStore } from "../../conversations/activeConversationStore";
 import UserMessageItem from "./UserMessageItem";
+import EventMessageItem from "./EventMessageItem";
 
 export default function MessageList() {
     const messages = useActiveConversationStore((s) => s.conversation!.messages);
@@ -88,7 +89,7 @@ export default function MessageList() {
                         <div key={message.seq} data-seq={message.seq}>
                             {message.type === "USER" 
                                 ? <UserMessageItem message={message} />
-                                : <>hi</>
+                                : <EventMessageItem message={message} />
                             }
                             {showDivider && message.seq === prevLastReadSeq && <UnreadDivider />}
                         </div>

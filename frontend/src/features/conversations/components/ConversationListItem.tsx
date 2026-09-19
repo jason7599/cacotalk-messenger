@@ -2,12 +2,15 @@ import { Users } from "lucide-react";
 import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
 import type { ChatMessage, EventMessage } from "../../messages/types";
+import { useAuth } from "../../auth/AuthProvider";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
 };
 
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
+    const myId = useAuth().user!.userId;
+
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
     const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);
 
@@ -28,6 +31,15 @@ export default function ConversationListItem({ conversation }: ConversationListI
     const nameStyle = isActive ? "text-[#eee2d5]" : "text-[#cbb9b6]";
     const previewStyle = isActive ? "text-[#bfa6a3]" : "text-[#7f6668]";
     const timestampStyle = isActive ? "text-[#9f6267]" : "text-[#6f595b]";
+
+    let lastMessageSenderName: string | null = null;
+    if (conversation.lastMessage?.type === "USER") {
+        if (conversation.lastMessage.senderId === myId) {
+            lastMessageSenderName = "YOU";
+        } else {
+            lastMessageSenderName = conversation.lastMessage.senderName;
+        }
+    }
 
     return (
         <button
@@ -82,13 +94,11 @@ export default function ConversationListItem({ conversation }: ConversationListI
                 </div>
 
                 <div className={`mt-1 flex min-w-0 items-center text-xs ${previewStyle}`}>
-                    {conversation.type === "GROUP" &&
-                        conversation.lastMessage?.type === "USER" && (
-                            <span className="mr-1 max-w-24 shrink-0 truncate font-medium text-[#9d7779]">
-                                {conversation.lastMessage.senderName}:
-                            </span>
-                        )}
-
+                    {lastMessageSenderName && (
+                        <span className="mr-1 max-w-24 shrink-0 truncate font-bold text-[#9d7779]">
+                            {lastMessageSenderName}:
+                        </span>
+                    )}
                     <span className="truncate">{lastMessagePreview}</span>
                 </div>
             </div>
@@ -131,7 +141,7 @@ function getMessagePreview(message: ChatMessage | null) {
 }
 
 function getEventMessagePreview(message: EventMessage) {
-    switch (message.eventType) {
+    switch (message.event.type) {
         case "GROUP_CREATED":
             return "GROUP CHANNEL ESTABLISHED";
 
@@ -146,9 +156,6 @@ function getEventMessagePreview(message: EventMessage) {
 
         case "GROUP_CLOSED":
             return "CHANNEL CLOSED";
-
-        default:
-            return "UNKNOWN TRANSMISSION";
     }
 }
 
