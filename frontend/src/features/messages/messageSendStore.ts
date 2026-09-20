@@ -99,7 +99,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
         });
 
         if (msg) {
-            send(conversationId, msg.content);
+            send(conversationId, msg.content, msg.clientId);
         }
     };
 
