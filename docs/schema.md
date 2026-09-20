@@ -56,8 +56,7 @@ Constraints / Invariants:
 - conversation_id
 - seq
 - type = USER | EVENT
-- event_type = GROUP_CREATED | USER_INVITED | USER_LEFT | USER_REMOVED | GROUP_CLOSED (EVENT type only)
-- event_data (EVENT type only)
+- event (EVENT type only)
 - sender_id (USER type only)
 - content (USER type only)
 - created_at
@@ -65,6 +64,6 @@ Constraints / Invariants:
 
 Constraints / Invariants:
 - `(conversation_id, seq)` uniquely identifies a message.
-- `seq` > 0, meaning the first message has `seq` value of 1.
+- `seq` > 0, meaning the first message has a `seq` value of 1.
 - EVENT messages are created by the system as part of conversation state changes
-- `event_data` contains event-specific metadata and is expected to be stored as JSONB.
+- `event` contains event-specific metadata and is expected to be stored as JSONB.

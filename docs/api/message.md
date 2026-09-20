@@ -10,26 +10,75 @@
   "seq": number,
   "senderId": number | null,
   "senderName": string | null,
-  "type": MessageType,
-  "eventType": EventMessageType | null,
-  "eventData": json object | null,
+  "type": "USER" | "EVENT",
+  "event": EventData | null,
   "content": string | null,
   "createdAt": string,
 }
 ```
-- `eventType` and `eventData` are only populated for event messages.
-  - `eventData` might still be null depending on the `eventType`.
-- `content` is only populated for user messages.
+- `event` is populated only for event messages.
+- `senderId`, `senderName`, and `content` is only populated for user messages.
 
-### `MessageType`
+### `EventData`
+
+`EventData` is a discriminated union, where the shape is determined by the `type` field.
+
 ```
-USER | EVENT
+EventData =
+  | GroupCreatedEvent
+  | UserInvitedEvent
+  | UserLeftEvent
+  | UserRemovedEvent
+  | GroupClosedEvent
 ```
 
-### `EventMessageType`
+#### `GroupCreatedEvent`
 ```
-GROUP_CREATED | USER_INVITED | USER_LEFT | USER_REMOVED | GROUP_CLOSED
+{
+  "type": "GROUP_CREATED",
+  "initMembers": UserResponse[]
+}
 ```
+Contains a snapshot of the members initially invited when the group was created.
+
+This is always the first message of a GROUP conversation.
+
+#### `UserInvitedEvent`
+```
+{
+  "type": "USER_INVITED",
+  "subject": UserResponse
+}
+```
+Describes which user was invited by the group creator.
+
+#### `UserLeftEvent`
+```
+{
+  "type": "USER_LEFT",
+  "subject": UserResponse
+}
+```
+Describes which user voluntarily left the group conversation.
+
+#### `UserRemovedEvent`
+```
+{
+  "type": "USER_REMOVED",
+  "subject": UserResponse
+}
+```
+Describes which user has been removed from the group by the group creator.
+
+#### `GroupClosedEvent`
+```
+{
+  "type": "GROUP_CLOSED"
+}
+```
+Indicates that the group creator closed the conversation.
+
+As this action cannot be undone, it is always the last message in a closed group conversation.
 
 ### `MessagePage`
 ```
