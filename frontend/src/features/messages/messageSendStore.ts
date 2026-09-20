@@ -9,8 +9,6 @@ export type PendingMessage = {
     clientId: string;
 };
 
-export const EMPTY_QUEUE: PendingMessage[] = [];
-
 type MessageQueue = {
     queue: PendingMessage[];
     failed: PendingMessage[];
@@ -47,6 +45,10 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
         });
 
         try {
+            // if (import.meta.env.DEV) {
+            //     console.log("hi mommy");
+            // }
+
             // Upsert using the API response.
             // We could rely on WS events, but it could realistically have a delay.
             // That will cause a gap between the pending message being removed from the UI and it actually appearing as
@@ -79,7 +81,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
     const send = (conversationId: string, content: string, clientId: string = crypto.randomUUID()) => {
         set((state) => {
             if (!state.queues[conversationId]) {
-                state.queues[conversationId] = { queue: EMPTY_QUEUE, failed: EMPTY_QUEUE, status: "READY", error: null };
+                state.queues[conversationId] = { queue: [], failed: [], status: "READY", error: null };
             }
             state.queues[conversationId].queue.push({ content, clientId });
         });

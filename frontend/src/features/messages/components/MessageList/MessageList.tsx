@@ -6,9 +6,11 @@ import { useInitialScrollPosition } from "./useInitialScrollPosition";
 import { useLoadOlderMessages } from "./useLoadOlderMessages";
 import { useStickToBottom } from "./useStickToBottom";
 import { ChevronDown } from "lucide-react";
-import { EMPTY_QUEUE, useMessageSendStore } from "../../messageSendStore";
+import { useMessageSendStore, type PendingMessage } from "../../messageSendStore";
 import PendingMessageItem from "./PendingMessageItem";
 import FailedMessageItem from "./FailedMessageItem";
+
+const EMPTY_QUEUE: PendingMessage[] = [];
 
 export default function MessageList() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
