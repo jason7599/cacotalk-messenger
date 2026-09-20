@@ -1,5 +1,5 @@
 import MessageComposer from "../../messages/components/MessageComposer";
-import MessageList from "../../messages/components/MessageList";
+import MessageList from "../../messages/components/MessageList/MessageList";
 import { useActiveConversationStore } from "../activeConversationStore";
 import ConversationEmptyState from "./ConversationEmptyState";
 import ConversationHeader from "./ConversationHeader";
