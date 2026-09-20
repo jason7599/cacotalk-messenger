@@ -17,5 +17,9 @@ export function getErrorMessage(err: unknown) {
         return err.response?.data ?? "SOMETHING WENT WRONG.";
     }
 
+    if (err instanceof Error) {
+        return err.message;
+    }
+
     return "SOMETHING WENT WRONG.";
 }

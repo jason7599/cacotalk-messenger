@@ -45,9 +45,18 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
         });
 
         try {
-            // if (import.meta.env.DEV) {
-            //     console.log("hi mommy");
-            // }
+            // TODO: cleanup 
+            if (import.meta.env.DEV) {
+                const x = next.content.trim();
+
+                switch (x) {
+                    case "!error": 
+                        throw new Error("Simulated failure");
+                    case "!wait":
+                        await new Promise((r) => setTimeout(r, 3000));
+                        break;
+                }
+            }
 
             // Upsert using the API response.
             // We could rely on WS events, but it could realistically have a delay.
@@ -90,7 +99,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
     };
 
     const retry = (conversationId: string, clientId: string) => {
-        let msg: PendingMessage | undefined;
+        let content: string | undefined;
 
         set((state) => {
             const q = state.queues[conversationId];
@@ -99,11 +108,16 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
             const idx = q.failed.findIndex((m) => m.clientId === clientId);
             if (idx === -1) return;
 
-            [msg] = q.failed.splice(idx, 1);
+            content = q.failed[idx].content;
+            q.failed.splice(idx, 1);
         });
 
-        if (msg) {
-            send(conversationId, msg.content, msg.clientId);
+        if (content) {
+            // DEV-ONLY: "!error" always fails by design
+            // So bump it to "!!error" so retry can actually succeed
+            // TODO: cleanup
+            const toSend = import.meta.env.DEV && content === "!error" ? "!!error" : content;
+            send(conversationId, toSend, clientId);
         }
     };
 
