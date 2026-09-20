@@ -8,6 +8,7 @@ import { getErrorMessage } from "../shared/apiClient";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { wsClient } from "../features/realtime/wsClient";
 import { handleWsEvent } from "../features/realtime/wsEventHandler";
+import { useMessageSendStore } from "../features/messages/messageSendStore";
 
 type BootstrapStatus = "LOADING" | "READY" | "ERROR";
 
@@ -61,6 +62,7 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
             useContactsStore.getState().reset();
             useBlockedUsersStore.getState().reset();
             useConversationsStore.getState().reset();
+            useMessageSendStore.getState().reset();
             useActiveConversationStore.getState().clearActiveConversation();
         };
     }, []);

@@ -51,6 +51,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
 
                 switch (x) {
                     case "!error": 
+                        await new Promise((r) => setTimeout(r, 1));
                         throw new Error("Simulated failure");
                     case "!wait":
                         await new Promise((r) => setTimeout(r, 3000));
