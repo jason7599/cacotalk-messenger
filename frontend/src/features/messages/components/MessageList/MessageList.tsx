@@ -1,24 +1,43 @@
 import { useRef } from "react";
 import { useActiveConversationStore } from "../../../conversations/activeConversationStore";
-import UserMessageItem from "../UserMessageItem";
-import EventMessageItem from "../EventMessageItem";
+import UserMessageItem from "./UserMessageItem";
+import EventMessageItem from "./EventMessageItem";
 import { useInitialScrollPosition } from "./useInitialScrollPosition";
 import { useLoadOlderMessages } from "./useLoadOlderMessages";
 import { useStickToBottom } from "./useStickToBottom";
 import { ChevronDown } from "lucide-react";
+import { EMPTY_QUEUE, useMessageSendStore } from "../../messageSendStore";
+import PendingMessageItem from "./PendingMessageItem";
+import FailedMessageItem from "./FailedMessageItem";
 
 export default function MessageList() {
+    const conversationId = useActiveConversationStore((s) => s.conversation!.id);
+
     const messages = useActiveConversationStore((s) => s.conversation!.messages);
+
     const loadOlderMessages = useActiveConversationStore((s) => s.loadOlderMessages);
     const loadingOlder = useActiveConversationStore((s) => s.loadingOlder);
     const hasOlder = useActiveConversationStore((s) => s.conversation!.hasOlder);
+
     const prevLastReadSeq = useActiveConversationStore((s) => s.conversation!.prevLastReadSeq);
+
+    // Stable reference so the ?? fallback doesn't allocate a new array
+    const pendingMessages = useMessageSendStore((s) => s.queues[conversationId]?.queue ?? EMPTY_QUEUE);
+    const failedMessages = useMessageSendStore((s) => s.queues[conversationId]?.failed ?? EMPTY_QUEUE);
+
+    const sendError = useMessageSendStore((s) => s.queues[conversationId]?.error ?? null);
+
+    const retry = useMessageSendStore((s) => s.retry);
+    const discard = useMessageSendStore((s) => s.discard);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const topSentinelRef = useRef<HTMLDivElement>(null);
 
     const lastSeq = messages[messages.length - 1]?.seq;
     const showDivider = 0 < prevLastReadSeq && prevLastReadSeq < lastSeq;
+
+    // This is just for detecting when the user sends a message, so that we can scroll down
+    const lastOutgoingClientId = pendingMessages.at(-1)?.clientId ?? null;
 
     useInitialScrollPosition({
         containerRef: scrollRef,
@@ -37,7 +56,8 @@ export default function MessageList() {
 
     const { isNearBottom, scrollToBottom } = useStickToBottom({
         containerRef: scrollRef,
-        lastMessageSeq: lastSeq
+        lastMessageSeq: lastSeq,
+        lastOutgoingClientId
     });
 
     return (
@@ -62,6 +82,29 @@ export default function MessageList() {
                             }
                             {showDivider && message.seq === prevLastReadSeq && <UnreadDivider />}
                         </div>
+                    ))}
+
+                    {failedMessages.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            {failedMessages.map((m) => (
+                                <FailedMessageItem
+                                    key={`failed-${m.clientId}`}
+                                    content={m.content}
+                                    onRetry={() => retry(conversationId, m.clientId)}
+                                    onDiscard={() => discard(conversationId, m.clientId)}
+                                />
+                            ))}
+
+                            {sendError && (
+                                <div className="text-right text-[10px] font-bold tracking-widest text-[#a71924]/80">
+                                    {sendError.toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {pendingMessages.map((m) => (
+                        <PendingMessageItem key={`pending-${m.clientId}`} content={m.content} />
                     ))}
                 </div>
             </div>

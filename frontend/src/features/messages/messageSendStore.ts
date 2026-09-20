@@ -4,10 +4,12 @@ import { apiSendMessage } from "./messagesApi";
 import { getErrorMessage } from "../../shared/apiClient";
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 
-type PendingMessage = {
+export type PendingMessage = {
     content: string;
     clientId: string;
 };
+
+export const EMPTY_QUEUE: PendingMessage[] = [];
 
 type MessageQueue = {
     queue: PendingMessage[];
@@ -77,7 +79,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
     const send = (conversationId: string, content: string, clientId: string = crypto.randomUUID()) => {
         set((state) => {
             if (!state.queues[conversationId]) {
-                state.queues[conversationId] = { queue: [], failed: [], status: "READY", error: null };
+                state.queues[conversationId] = { queue: EMPTY_QUEUE, failed: EMPTY_QUEUE, status: "READY", error: null };
             }
             state.queues[conversationId].queue.push({ content, clientId });
         });

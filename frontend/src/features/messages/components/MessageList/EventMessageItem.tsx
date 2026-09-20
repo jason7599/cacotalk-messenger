@@ -1,6 +1,6 @@
 import { UsersRound } from "lucide-react";
-import type { EventMessage } from "../types";
-import { formatMessageTimestamp } from "../formatters";
+import type { EventMessage } from "../../types";
+import { formatMessageTimestamp } from "../../formatters";
 
 type EventMessageItemProps = {
     message: EventMessage;

@@ -5,6 +5,7 @@ const BOTTOM_THRESHOLD_PX = 300;
 interface UseStickToBottomOptions {
     containerRef: React.RefObject<HTMLDivElement | null>;
     lastMessageSeq: number | null;
+    lastOutgoingClientId: string | null;
 }
 
 interface UseStickToBottomResult {
@@ -12,9 +13,10 @@ interface UseStickToBottomResult {
     scrollToBottom: () => void;
 }
 
-export function useStickToBottom({ containerRef, lastMessageSeq }: UseStickToBottomOptions): UseStickToBottomResult {
+export function useStickToBottom({ containerRef, lastMessageSeq, lastOutgoingClientId }: UseStickToBottomOptions): UseStickToBottomResult {
     const [isNearBottom, setIsNearBottom] = useState(true);
     const prevLastMessageSeq = useRef(lastMessageSeq);
+    const prevLastOutgoingClientId = useRef(lastOutgoingClientId);
 
     const scrollToBottom = useCallback(() => {
             const el = containerRef.current;
@@ -52,6 +54,15 @@ export function useStickToBottom({ containerRef, lastMessageSeq }: UseStickToBot
         // wait a frame so the new node is laid out before we measure/scroll
         requestAnimationFrame(() => scrollToBottom());
     }, [lastMessageSeq, isNearBottom, scrollToBottom]);
+
+    // Scroll down automatically when user sends a new message
+    useEffect(() => {
+        const isNewOutgoing = lastOutgoingClientId !== null && lastOutgoingClientId !== prevLastOutgoingClientId.current;
+        prevLastOutgoingClientId.current = lastOutgoingClientId;
+        if (!isNewOutgoing) return;
+
+        requestAnimationFrame(() => scrollToBottom());
+    }, [lastOutgoingClientId, scrollToBottom]);
 
     return { isNearBottom, scrollToBottom };
 }

@@ -1,6 +1,6 @@
-import { useAuth } from "../../auth/AuthProvider";
-import { formatMessageTimestamp } from "../formatters";
-import type { UserMessage } from "../types";
+import { useAuth } from "../../../auth/AuthProvider";
+import { formatMessageTimestamp } from "../../formatters";
+import type { UserMessage } from "../../types";
 
 type UserMessageItemProps = {
     message: UserMessage;
