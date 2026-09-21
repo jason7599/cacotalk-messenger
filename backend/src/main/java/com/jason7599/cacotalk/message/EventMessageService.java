@@ -1,5 +1,8 @@
 package com.jason7599.cacotalk.message;
 
+import com.jason7599.cacotalk.message.dto.MessageResponse;
+import com.jason7599.cacotalk.websocket.RealtimeEvent;
+import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,10 +26,11 @@ public class EventMessageService {
     private final MessageRepository messageRepository;
     private final ObjectMapper objectMapper;
 
-    // TODO: ws eventData
+    private final RealtimeEventPublisher  realtimeEventPublisher;
+
     @Transactional
-    public MessageEntity sendEventMessage(UUID conversationId, EventMessage eventMessage) {
-        return messageRepository.insertMessage(
+    public MessageResponse sendEventMessage(UUID conversationId, EventMessage eventMessage) {
+        MessageEntity inserted = messageRepository.insertMessage(
                 conversationId,
                 null,
                 MessageType.EVENT.name(),
@@ -34,6 +38,24 @@ public class EventMessageService {
                 null,
                 null
         );
+
+        MessageResponse message = new MessageResponse(
+                conversationId,
+                inserted.getId().seq(),
+                null,
+                null,
+                MessageType.EVENT,
+                eventMessage,
+                null,
+                inserted.getCreatedAt()
+        );
+
+        realtimeEventPublisher.broadcast(
+                conversationId,
+                new RealtimeEvent.NewMessage(message)
+        );
+
+        return message;
     }
 
     public String encode(EventMessage eventMessage) {

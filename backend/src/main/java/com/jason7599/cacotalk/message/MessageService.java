@@ -6,6 +6,8 @@ import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.dto.MessagePage;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
+import com.jason7599.cacotalk.websocket.RealtimeEvent;
+import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,8 @@ public class MessageService {
 
     private final EventMessageService eventMessageService;
     private final UserService userService;
+
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     private MessageResponse fromProjection(MessageResponse.Projection p) {
         return new MessageResponse(
@@ -86,7 +90,6 @@ public class MessageService {
         return new MessagePage(messages, hasOlder);
     }
 
-    // TODO: publish websocket eventData
     @Transactional
     public MessageResponse sendUserMessage(
             long userId,
@@ -109,7 +112,7 @@ public class MessageService {
         // SAFE: given userId passed not only AuthenticationFilter, but also requireMembership, which is FK-backed.
         String username = userService.findById(userId).get().username();
 
-        // Idempotent
+        // Idempotent, found existing by clientId
         MessageEntity existing = messageRepository.findByClientId(clientId).orElse(null);
         if (existing != null) {
             // This would actually be a concerning scenario.
@@ -125,6 +128,7 @@ public class MessageService {
                 throw new ApiException(HttpStatus.CONFLICT, "This message cannot be sent.");
             }
 
+            // If the request matches with the existing value
             return new MessageResponse(
                     conversationId,
                     existing.getId().seq(),
@@ -149,7 +153,7 @@ public class MessageService {
                 clientId
         );
 
-        return new MessageResponse(
+        MessageResponse message = new MessageResponse(
                 conversationId,
                 inserted.getId().seq(),
                 userId,
@@ -159,5 +163,12 @@ public class MessageService {
                 content,
                 inserted.getCreatedAt()
         );
+
+        realtimeEventPublisher.broadcast(
+                conversationId,
+                new RealtimeEvent.NewMessage(message)
+        );
+
+        return message;
     }
 }
