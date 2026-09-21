@@ -46,10 +46,6 @@ public class UserRelationService {
         userRelationRepository.removeContact(userId, targetId);
     }
 
-    public boolean isContact(long userId, long targetId) {
-        return userRelationRepository.isContact(userId, targetId);
-    }
-
     public List<UserResponse> getBlockedUsers(long userId) {
         return userRelationRepository.getBlockedUsers(userId);
     }

@@ -85,11 +85,8 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         SELECT
             c.id,
             c.type,
-            CASE
-                WHEN blocked_by_me IS NOT NULL THEN 'BLOCKED_BY_ME' -- takes precedence
-                WHEN blocked_me IS NOT NULL THEN 'BLOCKED_ME'
-                ELSE 'NONE'
-            END AS blockStatus,
+            blocked_me IS NOT NULL AS blockedMe,
+            blocked_by_me IS NOT NULL AS blockedByMe,
             c.group_creator_id,
             c.is_closed,
             c.last_seq,
@@ -107,12 +104,12 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             FROM conversations c
             WHERE c.id = :conversationId
         ) c
-        LEFT JOIN blocks blocked_by_me
-            ON blocked_by_me.user_id = :userId
-            AND blocked_by_me.blocked_id = c.other_user_id
         LEFT JOIN blocks blocked_me
             ON blocked_me.user_id = c.other_user_id
             AND blocked_me.blocked_id = :userId
+        LEFT JOIN blocks blocked_by_me
+            ON blocked_by_me.user_id = :userId
+            AND blocked_by_me.blocked_id = c.other_user_id
     """, nativeQuery = true)
     Optional<ConversationDetail.Projection> getConversationDetail(UUID conversationId, long userId);
 

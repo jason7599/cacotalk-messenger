@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
-import com.jason7599.cacotalk.conversation.DirectBlockStatus;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 
 import java.time.Instant;
@@ -14,7 +13,8 @@ public record ConversationDetail(
 
         List<UserResponse> otherMembers, // entire list excluding the user
 
-        DirectBlockStatus blockStatus, // DIRECT only, BLOCKED_BY_ME takes precedence over BLOCKED_ME if both are true
+        boolean blockedMe, // DIRECT only
+        boolean blockedByMe, // DIRECT only
 
         Long groupCreatorId, // GROUP only
         boolean isClosed, // GROUP only, defaults to false for DIRECT
@@ -29,7 +29,8 @@ public record ConversationDetail(
     public interface Projection {
         UUID getId();
         ConversationType getType();
-        DirectBlockStatus getBlockStatus();
+        boolean getBlockedMe();
+        boolean getBlockedByMe();
         Long getGroupCreatorId();
         boolean getIsClosed();
         long getLastSeq();
