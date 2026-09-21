@@ -28,7 +28,7 @@ public class UserRelationService {
             throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot add self as contact.");
         }
 
-        // potential race condition, but I'd say this is trivial enough
+        // TODO: THIS IS CONCURRENCY-UNSAFE
         if (userRelationRepository.hasBlocked(userId, targetId)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Cannot add a blocked user as a contact.");
         }

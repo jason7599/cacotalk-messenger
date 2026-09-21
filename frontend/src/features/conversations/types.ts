@@ -22,7 +22,6 @@ export type ConversationDetail = {
     type: ConversationType;
     otherMembers: UserInfo[];
     blockedMe: boolean;
-    blockedByMe: boolean;
     groupCreatorId: number | null;
     isClosed: boolean;
     lastSeq: number;
@@ -32,7 +31,7 @@ export type ConversationDetail = {
 
 export type ConversationMeta = 
     { createdAt: string } & (
-        | { type: "DIRECT"; blockedMe: boolean; blockedByMe: boolean; }
+        | { type: "DIRECT"; blockedMe: boolean; }
         | { type: "GROUP"; groupCreatorId: number; isClosed: boolean; }
     )
 ;

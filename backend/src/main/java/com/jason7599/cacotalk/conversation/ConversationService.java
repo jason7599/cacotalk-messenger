@@ -83,7 +83,6 @@ public class ConversationService {
                 p.getType(),
                 members,
                 p.getBlockedMe(),
-                p.getBlockedByMe(),
                 p.getGroupCreatorId(),
                 p.getIsClosed(),
                 p.getLastSeq(),

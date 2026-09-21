@@ -86,7 +86,6 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             c.id,
             c.type,
             blocked_me IS NOT NULL AS blockedMe,
-            blocked_by_me IS NOT NULL AS blockedByMe,
             c.group_creator_id,
             c.is_closed,
             c.last_seq,
@@ -107,9 +106,6 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         LEFT JOIN blocks blocked_me
             ON blocked_me.user_id = c.other_user_id
             AND blocked_me.blocked_id = :userId
-        LEFT JOIN blocks blocked_by_me
-            ON blocked_by_me.user_id = :userId
-            AND blocked_by_me.blocked_id = c.other_user_id
     """, nativeQuery = true)
     Optional<ConversationDetail.Projection> getConversationDetail(UUID conversationId, long userId);
 

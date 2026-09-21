@@ -14,7 +14,6 @@ public record ConversationDetail(
         List<UserResponse> otherMembers, // entire list excluding the user
 
         boolean blockedMe, // DIRECT only
-        boolean blockedByMe, // DIRECT only
 
         Long groupCreatorId, // GROUP only
         boolean isClosed, // GROUP only, defaults to false for DIRECT
@@ -30,7 +29,6 @@ public record ConversationDetail(
         UUID getId();
         ConversationType getType();
         boolean getBlockedMe();
-        boolean getBlockedByMe();
         Long getGroupCreatorId();
         boolean getIsClosed();
         long getLastSeq();
