@@ -29,7 +29,8 @@
   "id": UUID string,
   "type": "DIRECT" | "GROUP",
   "otherMembers": UserResponse[],
-  "blockStatus": "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME",
+  "blockedMe": boolean,
+  "blockedByMe": boolean,
   "groupCreatorId": number | null,
   "isClosed": boolean,
   "lastSeq" : number,
@@ -39,8 +40,7 @@
 ```
 
 - `otherMembers` exclude the authenticated user.
-- `blockStatus` is only meaningful for DIRECT conversations, and defaults to NONE for GROUP
-  - BLOCKED_BY_ME takes precedence over BLOCKED_ME if both are true. 
+- `blockedMe` and `blockedByMe` are only meaningful for DIRECT conversations, and defaults to false for GROUP
 - `isClosed` is only meaningful in GROUP conversations, and defaults to false for DIRECT
 
 ## Global Error Codes

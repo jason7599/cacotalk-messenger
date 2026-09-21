@@ -155,7 +155,7 @@ export default function ConversationHeader() {
                                 DIRECT TRANSMISSION
                             </span>
 
-                            {meta.blockStatus !== "NONE" && (
+                            {(meta.blockedMe || meta.blockedByMe) && (
                                 <>
                                     <span className="text-[#4b1b1f]">
                                         //
@@ -174,9 +174,9 @@ export default function ConversationHeader() {
                                             strokeWidth={2.3}
                                         />
 
-                                        {meta.blockStatus === "BLOCKED_BY_ME"
-                                            ? "SOUL BLOCKED"
-                                            : "LINK RESTRICTED"}
+                                        {meta.blockedMe
+                                            ? "LINK RESTRICTED"
+                                            : "SOUL BLOCKED"}
                                     </span>
                                 </>
                             )}

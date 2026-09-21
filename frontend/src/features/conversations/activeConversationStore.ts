@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { apiGetConversationDetail, apiResolveDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
 import { apiLoadMessages } from "../messages/messagesApi";
-import type { ActiveConversation, BlockStatus, ConversationMeta } from "./types";
+import type { ActiveConversation, ConversationMeta } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 
@@ -20,7 +20,7 @@ export type ActiveConversationState = {
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
-    updateBlockStatus: (subjectUserId: number, blockStatus: BlockStatus) => void;
+    updateBlockStatus: (blockerId: number, targetId: number, blocked: boolean) => void;
 };
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
@@ -57,7 +57,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                 detail.type === "DIRECT"
                     ? {
                         type: "DIRECT",
-                        blockStatus: detail.blockStatus,
+                        blockedMe: detail.blockedMe,
+                        blockedByMe: detail.blockedByMe,
                         createdAt: detail.createdAt,
                     }
                     : {
@@ -194,12 +195,12 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
-    const updateBlockStatus = (subjectUserId: number, blockStatus: BlockStatus) => {
-        set((state) => {
-            if (state.conversation?.meta.type === "DIRECT" && state.conversation.otherMembers[0].userId === subjectUserId) {
-                state.conversation.meta.blockStatus = blockStatus;
-            }
-        });
+    const updateBlockStatus = (blockerId: number, targetId: number, blocked: boolean) => {
+        // TODO:
+        // set((state) => {
+        //     if (state.conversation?.meta.type === "DIRECT" && state.conversation.otherMembers[0].userId === subjectUserId) {
+        //     }
+        // });
     };
 
     return {

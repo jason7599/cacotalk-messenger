@@ -17,13 +17,12 @@ export type ConversationSummary =
     | SummaryBase & { type: "GROUP"; groupCreatorId: number; }
 ;
 
-export type BlockStatus = "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME";
-
 export type ConversationDetail = {
     id: string;
     type: ConversationType;
     otherMembers: UserInfo[];
-    blockStatus: BlockStatus;
+    blockedMe: boolean;
+    blockedByMe: boolean;
     groupCreatorId: number | null;
     isClosed: boolean;
     lastSeq: number;
@@ -33,7 +32,7 @@ export type ConversationDetail = {
 
 export type ConversationMeta = 
     { createdAt: string } & (
-        | { type: "DIRECT"; blockStatus: BlockStatus; }
+        | { type: "DIRECT"; blockedMe: boolean; blockedByMe: boolean; }
         | { type: "GROUP"; groupCreatorId: number; isClosed: boolean; }
     )
 ;

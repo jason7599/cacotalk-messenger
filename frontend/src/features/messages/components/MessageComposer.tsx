@@ -8,7 +8,7 @@ export default function MessageComposer() {
     const meta = useActiveConversationStore((s) => s.conversation!.meta);
     const sendMessage = useMessageSendStore((s) => s.send);
 
-    const blockStatus = meta.type === "DIRECT" ? meta.blockStatus : "NONE";
+    const blocked = meta.type === "DIRECT" && (meta.blockedMe || meta.blockedByMe);
 
     const [content, setContent] = useState("");
     const canSend = content.trim().length > 0;
@@ -32,7 +32,7 @@ export default function MessageComposer() {
     }
 
     function handleSend() {
-        if (blockStatus !== "NONE") {
+        if (blocked) {
             return;
         }
 
@@ -62,7 +62,7 @@ export default function MessageComposer() {
                 p-3
             "
         >
-            {blockStatus !== "NONE" ? (
+            {blocked ? (
                 <div
                     className="
                         flex items-center justify-center gap-2
@@ -80,7 +80,7 @@ export default function MessageComposer() {
                             tracking-[0.16em]
                         "
                     >
-                        {blockStatus === "BLOCKED_BY_ME"
+                        {meta.blockedByMe
                             ? "TRANSMISSION SEALED // YOU BLOCKED THIS SOUL"
                             : "TRANSMISSION REJECTED // THIS SOUL BLOCKED YOU"}
                     </span>

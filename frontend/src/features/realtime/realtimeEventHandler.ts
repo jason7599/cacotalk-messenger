@@ -1,13 +1,12 @@
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
-import type { BlockStatus } from "../conversations/types";
 import type { ChatMessage } from "../messages/types";
 import type { RealtimeEvent } from "./types";
 
 export function handleRealtimeEvent(event: RealtimeEvent) {
     switch (event.type) {
         case "NEW_MESSAGE": return handleNewMessage(event.message);
-        case "BLOCK_STATUS_CHANGE": return handleBlockStatusChange(event.subjectUserId, event.blockStatus);
+        case "BLOCK_STATUS_CHANGE": return handleBlockStatusChange(event.blockerId, event.targetId, event.blocked);
         default:
             console.log(event);
     }
@@ -19,6 +18,6 @@ function handleNewMessage(message: ChatMessage) {
     useConversationsStore.getState().onNewMessage(message);
 }
 
-function handleBlockStatusChange(subjectUserId: number, blockStatus: BlockStatus) {
-    useActiveConversationStore.getState().updateBlockStatus(subjectUserId, blockStatus);
+function handleBlockStatusChange(blockerId: number, targetId: number, blocked: boolean) {
+    useActiveConversationStore.getState().updateBlockStatus(blockerId, targetId, blocked);
 }
