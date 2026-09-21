@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { apiGetConversationDetail, apiResolveDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
 import { apiLoadMessages } from "../messages/messagesApi";
-import type { ActiveConversation, ConversationMeta } from "./types";
+import type { ActiveConversation, BlockStatus, ConversationMeta } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 
@@ -20,6 +20,7 @@ export type ActiveConversationState = {
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
+    updateBlockStatus: (subjectUserId: number, blockStatus: BlockStatus) => void;
 };
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
@@ -193,6 +194,14 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
+    const updateBlockStatus = (subjectUserId: number, blockStatus: BlockStatus) => {
+        set((state) => {
+            if (state.conversation?.meta.type === "DIRECT" && state.conversation.otherMembers[0].userId === subjectUserId) {
+                state.conversation.meta.blockStatus = blockStatus;
+            }
+        });
+    };
+
     return {
         status: "IDLE",
         error: null,
@@ -204,6 +213,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         clearActiveConversation,
         openDirectConversation,
         loadOlderMessages,
-        upsertMessage
+        upsertMessage,
+        updateBlockStatus
     };
 }));
