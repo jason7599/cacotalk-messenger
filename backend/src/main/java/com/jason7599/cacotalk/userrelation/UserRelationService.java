@@ -50,7 +50,6 @@ public class UserRelationService {
         return userRelationRepository.getBlockedUsers(userId);
     }
 
-    // TODO: WebSocket eventData
     @Transactional
     public UserResponse blockUser(long userId, long targetId) {
         if (userId == targetId) {
@@ -66,7 +65,6 @@ public class UserRelationService {
         return new UserResponse(target);
     }
 
-    // TODO: WebSocket eventData
     @Transactional
     public void unblockUser(long userId, long targetId) {
         userRelationRepository.removeBlock(userId, targetId);

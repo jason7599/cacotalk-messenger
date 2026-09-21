@@ -20,7 +20,6 @@ export type ActiveConversationState = {
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
-    updateBlockStatus: (blockerId: number, targetId: number, blocked: boolean) => void;
 };
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
@@ -195,14 +194,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
-    const updateBlockStatus = (blockerId: number, targetId: number, blocked: boolean) => {
-        // TODO:
-        // set((state) => {
-        //     if (state.conversation?.meta.type === "DIRECT" && state.conversation.otherMembers[0].userId === subjectUserId) {
-        //     }
-        // });
-    };
-
     return {
         status: "IDLE",
         error: null,
@@ -215,6 +206,5 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         openDirectConversation,
         loadOlderMessages,
         upsertMessage,
-        updateBlockStatus
     };
 }));
