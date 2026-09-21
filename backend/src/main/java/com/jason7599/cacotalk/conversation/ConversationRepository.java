@@ -174,6 +174,13 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     List<UserResponse> getAllMembers(UUID conversationId);
 
     @Query(value = """
+        SELECT user_id
+        FROM conversation_members
+        WHERE conversation_id = :conversationId
+    """, nativeQuery = true)
+    List<Long> getAllMemberIds(UUID conversationId);
+
+    @Query(value = """
         SELECT
             u.id AS userId,
             u.username
@@ -193,6 +200,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     """, nativeQuery = true)
     void updateLastReadSeq(UUID conversationId, long userId, long seq);
 
+    // Membership check is included
     // On DIRECT: check no block status exists
     // On GROUP: check is_closed is false
     @Query(value = """
@@ -200,14 +208,30 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             SELECT 1
             FROM conversations c
             WHERE c.id = :conversationId
-              AND NOT c.is_closed
-              AND NOT (
-                  c.type = 'DIRECT'
-                  AND EXISTS (
-                      SELECT 1
-                      FROM blocks b
-                      WHERE (b.user_id = :userId AND b.blocked_id = CASE WHEN c.direct_user_id1 = :userId THEN c.direct_user_id2 ELSE c.direct_user_id1 END)
-                         OR (b.blocked_id = :userId AND b.user_id = CASE WHEN c.direct_user_id1 = :userId THEN c.direct_user_id2 ELSE c.direct_user_id1 END)
+                AND NOT c.is_closed
+                AND (
+                    (
+                        c.type = 'DIRECT'
+                        AND :userId IN (c.direct_user_id1, c.direct_user_id2)
+                    )
+                    OR
+                    (
+                        c.type = 'GROUP'
+                        AND EXISTS (
+                            SELECT 1
+                            FROM conversation_members cm
+                            WHERE cm.conversation_id = c.id
+                                AND cm.user_id = :userId
+                        )
+                    )
+                )
+                AND (
+                    c.type <> 'DIRECT'
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM blocks b
+                        WHERE (b.user_id = c.direct_user_id1 AND b.blocked_id = c.direct_user_id2)
+                            OR (b.user_id = c.direct_user_id2 AND b.blocked_id = c.direct_user_id1)
                   )
               )
         )

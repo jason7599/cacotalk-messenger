@@ -28,14 +28,10 @@ public class ConversationService {
 
     private final ConversationRepository conversationRepository;
 
+    private final ConversationMembershipService conversationMembershipService;
     private final UserRelationService userRelationService;
     private final UserService userService;
     private final EventMessageService eventMessageService;
-
-    public ConversationMembership requireMembership(UUID conversationId, long userId) {
-        return conversationRepository.getMembership(conversationId, userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.FORBIDDEN, "Not a member of this conversation."));
-    }
 
     public List<ConversationSummary> getConversationSummaries(long userId) {
         return conversationRepository.getConversationSummaries(userId)
@@ -146,12 +142,12 @@ public class ConversationService {
 
     // Called when user opens a conversation
     public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
-        long lastReadSeq = requireMembership(conversationId, userId).lastReadSeq();
+        long lastReadSeq = conversationMembershipService.requireMembership(conversationId, userId).lastReadSeq();
 
         ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
 
-        List<UserResponse> members = conversationRepository.getAllMembersExcept(conversationId, userId);
+        List<UserResponse> members = conversationMembershipService.getAllMembersExcept(conversationId, userId);
 
         return new ConversationDetail(
                 p.getId(),
@@ -168,6 +164,7 @@ public class ConversationService {
 
     // On DIRECT: check no block status exists
     // On GROUP: check is_closed is false
+    // Membership check is also done
     public boolean canSendMessage(long userId, UUID conversationId) {
         return conversationRepository.canSendMessage(userId, conversationId);
     }
