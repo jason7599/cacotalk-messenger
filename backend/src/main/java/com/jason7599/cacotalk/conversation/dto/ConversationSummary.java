@@ -17,7 +17,6 @@ public record ConversationSummary(
 
         Long groupCreatorId, // GROUP type only
 
-        long lastSeq,
         long lastReadSeq,
 
         Instant createdAt,

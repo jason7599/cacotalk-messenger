@@ -20,9 +20,28 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
-    @GetMapping("/me")
+    // List all the authenticated user's conversation summaries
+    @GetMapping
     public List<ConversationSummary> getConversationSummaries(@AuthenticationPrincipal AuthUser authUser) {
         return conversationService.getConversationSummaries(authUser.userId());
+    }
+
+    // one conversation's summary
+    @GetMapping("/{conversationId}/summary")
+    public ConversationSummary getConversationSummary(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        return conversationService.getConversationSummary(conversationId, authUser.userId());
+    }
+
+    // Full detail
+    @GetMapping("/{conversationId}")
+    public ConversationDetail getConversationDetail(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        return conversationService.getConversationDetail(conversationId, authUser.userId());
     }
 
     @PostMapping("/direct/{targetId}")
@@ -34,13 +53,6 @@ public class ConversationController {
         return conversationService.resolveDirectConversation(authUser.userId(), targetId);
     }
 
-    @GetMapping("/{conversationId}")
-    public ConversationDetail getConversationDetail(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable UUID conversationId
-    ) {
-        return conversationService.getConversationDetail(conversationId, authUser.userId());
-    }
 
     @PostMapping("/group")
     @ResponseStatus(HttpStatus.CREATED)

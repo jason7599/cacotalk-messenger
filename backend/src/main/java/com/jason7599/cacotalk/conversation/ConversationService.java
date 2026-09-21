@@ -33,30 +33,64 @@ public class ConversationService {
     private final UserService userService;
     private final EventMessageService eventMessageService;
 
+    private ConversationSummary summaryFromProjection(ConversationSummary.Projection p) {
+        return new ConversationSummary(
+                p.getConversationId(),
+                p.getConversationType(),
+                Arrays.asList(p.getMembersPreview()),
+                p.getMemberCount(),
+                p.getGroupCreatorId(),
+                p.getLastReadSeq(),
+                p.getConversationCreatedAt(),
+                p.getLastSeq() > 0 ? new MessageResponse(
+                        p.getConversationId(),
+                        p.getLastSeq(),
+                        p.getLastMessageSenderId(),
+                        p.getLastMessageSenderName(),
+                        p.getLastMessageType(),
+                        eventMessageService.decode(p.getLastMessageEvent()),
+                        p.getLastMessageContent(),
+                        p.getLastMessageCreatedAt()
+                ) : null
+        );
+    }
+
     public List<ConversationSummary> getConversationSummaries(long userId) {
         return conversationRepository.getConversationSummaries(userId)
                 .stream()
-                .map(p -> new ConversationSummary(
-                        p.getConversationId(),
-                        p.getConversationType(),
-                        Arrays.asList(p.getMembersPreview()),
-                        p.getMemberCount(),
-                        p.getGroupCreatorId(),
-                        p.getLastSeq(),
-                        p.getLastReadSeq(),
-                        p.getConversationCreatedAt(),
-                        p.getLastSeq() > 0 ? new MessageResponse(
-                                p.getConversationId(),
-                                p.getLastSeq(),
-                                p.getLastMessageSenderId(),
-                                p.getLastMessageSenderName(),
-                                p.getLastMessageType(),
-                                eventMessageService.decode(p.getLastMessageEvent()),
-                                p.getLastMessageContent(),
-                                p.getLastMessageCreatedAt()
-                        ) : null
-                ))
+                .map(this::summaryFromProjection)
                 .toList();
+    }
+
+    public ConversationSummary getConversationSummary(UUID conversationId, long userId) {
+        conversationMembershipService.requireMembership(conversationId, userId);
+
+        ConversationSummary.Projection p = conversationRepository.getConversationSummary(conversationId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found"));
+
+        return summaryFromProjection(p);
+    }
+
+    // Called when user opens a conversation
+    public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
+        long lastReadSeq = conversationMembershipService.requireMembership(conversationId, userId).lastReadSeq();
+
+        ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
+
+        List<UserResponse> members = conversationMembershipService.getAllMembersExcept(conversationId, userId);
+
+        return new ConversationDetail(
+                p.getId(),
+                p.getType(),
+                members,
+                p.getBlockStatus(),
+                p.getGroupCreatorId(),
+                p.getIsClosed(),
+                p.getLastSeq(),
+                lastReadSeq,
+                p.getCreatedAt()
+        );
     }
 
     @Transactional
@@ -138,28 +172,6 @@ public class ConversationService {
         );
 
         return clientId;
-    }
-
-    // Called when user opens a conversation
-    public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
-        long lastReadSeq = conversationMembershipService.requireMembership(conversationId, userId).lastReadSeq();
-
-        ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
-
-        List<UserResponse> members = conversationMembershipService.getAllMembersExcept(conversationId, userId);
-
-        return new ConversationDetail(
-                p.getId(),
-                p.getType(),
-                members,
-                p.getBlockStatus(),
-                p.getGroupCreatorId(),
-                p.getIsClosed(),
-                p.getLastSeq(),
-                lastReadSeq,
-                p.getCreatedAt()
-        );
     }
 
     // On DIRECT: check no block status exists
