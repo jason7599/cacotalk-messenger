@@ -10,7 +10,6 @@
   "membersPreview": string[],
   "memberCount": number,
   "groupCreatorId": number | null,
-  "lastSeq": number,
   "lastReadSeq": number,
   "createdAt": string,
   "lastMessage": MessageResponse
@@ -58,12 +57,28 @@ Empty direct conversations are not returned.
 
 ### Request
 ```
-GET /conversations/me
+GET /conversations
 ```
 
 ### Response
 #### `200 OK`
 Returns an array of `ConversationSummary`.
+
+
+## Get Conversation Summary
+
+### Request
+```
+GET /conversations/{conversationId}/summary
+```
+
+### Response
+#### `200 OK`
+Returns a `ConversationSummary`.
+
+#### `404 NOT FOUND`
+Conversation was not found, or user is not a member. The response does not distinguish which.
+
 
 ## Get or Create Direct Conversation
 

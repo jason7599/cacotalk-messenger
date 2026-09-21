@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { apiGetBlockedUsers, apiGetContacts } from "../features/userRelations/userRelationsApi";
 import { useContactsStore } from "../features/userRelations/contactsStore";
 import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStore";
-import { apiGetConversations } from "../features/conversations/conversationsApi";
+import { apiGetConversationSummaries } from "../features/conversations/conversationsApi";
 import { useConversationsStore } from "../features/conversations/conversationsStore";
 import { getErrorMessage } from "../shared/apiClient";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
@@ -38,7 +38,7 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
                 ] = await Promise.all([
                     apiGetContacts(),
                     apiGetBlockedUsers(),
-                    apiGetConversations()
+                    apiGetConversationSummaries()
                 ]);
                 
                 useContactsStore.getState().setContacts(contacts);

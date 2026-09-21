@@ -18,7 +18,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
     const lastMessagePreview = getMessagePreview(conversation.lastMessage);
     const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
-    const unreadCount = conversation.lastSeq - conversation.lastReadSeq;
+    const unreadCount = (conversation.lastMessage?.seq ?? 0) - conversation.lastReadSeq;
 
     const rowStyle = isActive
         ? "border-[#a71924] bg-[#2b0e12] hover:bg-[#330f14]"

@@ -63,8 +63,6 @@ public class ConversationService {
     }
 
     public ConversationSummary getConversationSummary(UUID conversationId, long userId) {
-        conversationMembershipService.requireMembership(conversationId, userId);
-
         ConversationSummary.Projection p = conversationRepository.getConversationSummary(conversationId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found"));
 
