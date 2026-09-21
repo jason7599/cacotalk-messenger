@@ -10,11 +10,11 @@ public class WebSocketEventPublisher {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void sendToUser(long userId, Object payload) {
+    public void sendToUser(long userId, RealtimeEvent event) {
         messagingTemplate.convertAndSendToUser(
                 Long.toString(userId),
                 "/queue/events",
-                payload
+                event
         );
     }
 }
