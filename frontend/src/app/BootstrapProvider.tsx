@@ -7,7 +7,7 @@ import { useConversationsStore } from "../features/conversations/conversationsSt
 import { getErrorMessage } from "../shared/apiClient";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { wsClient } from "../features/realtime/wsClient";
-import { handleWsEvent } from "../features/realtime/wsEventHandler";
+import { handleRealtimeEvent } from "../features/realtime/realtimeEventHandler";
 import { useMessageSendStore } from "../features/messages/messageSendStore";
 
 type BootstrapStatus = "LOADING" | "READY" | "ERROR";
@@ -45,7 +45,7 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
                 useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
                 useConversationsStore.getState().setConversations(conversations);
 
-                wsClient.goLive(handleWsEvent);
+                wsClient.goLive(handleRealtimeEvent);
 
                 setStatus("READY");
             } catch (err) {

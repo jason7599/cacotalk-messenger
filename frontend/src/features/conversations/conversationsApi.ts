@@ -9,6 +9,11 @@ export async function apiResolveDirectConversation(targetId: number): Promise<st
     return (await api.post(`/conversations/direct/${targetId}`)).data;
 }
 
+export async function apiGetConversationSummary(conversationId: string): Promise<ConversationSummary> {
+    // TODO:
+    return (await api.get(`/conversations/${conversationId}/`)).data;
+}
+
 export async function apiGetConversationDetail(conversationId: string): Promise<ConversationDetail> {
     return (await api.get(`/conversations/${conversationId}`)).data;
 }

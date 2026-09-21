@@ -1,4 +1,5 @@
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
+import type { RealtimeEvent } from "./types";
 
 const WS_URL = import.meta.env.VITE_WS_URL;
 
@@ -7,8 +8,8 @@ class WsClient {
     private isLive = false;
     private connectPromise: Promise<void> | null = null; // singleton pattern
     private subscription: StompSubscription | null = null;
-    private buffer: IMessage[] = []; // events that arrived before bootstrap completes
-    private handler: ((msg: IMessage) => void) | null = null;
+    private buffer: RealtimeEvent[] = []; // events that arrived before bootstrap completes
+    private handler: ((event: RealtimeEvent) => void) | null = null;
 
     constructor() {
         this.client = new Client({
@@ -44,15 +45,16 @@ class WsClient {
     }
 
     private handleFrame(frame: IMessage) {
-        // TODO: parse frame
+        const event: RealtimeEvent = JSON.parse(frame.body);
+
         if (this.isLive) {
-            this.handler!(frame);
+            this.handler!(event);
         } else {
-            this.buffer.push(frame);
+            this.buffer.push(event);
         }
     }
 
-    goLive(handler: (frame: IMessage) => void) {
+    goLive(handler: (event: RealtimeEvent) => void) {
         this.handler = handler;
         
         const queue = this.buffer;

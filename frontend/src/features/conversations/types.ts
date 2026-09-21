@@ -5,7 +5,6 @@ type SummaryBase = {
     id: string;
     membersPreview: string[];
     memberCount: number;
-    lastSeq: number;
     lastReadSeq: number;
     createdAt: string;
     lastMessage: ChatMessage | null;
