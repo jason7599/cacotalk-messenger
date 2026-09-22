@@ -43,28 +43,28 @@ Contains a snapshot of the members initially invited when the group was created.
 
 This is always the first message of a GROUP conversation.
 
-#### `UserInvitedEvent`
+#### `MembersInvitedEvent`
 ```
 {
-  "type": "USER_INVITED",
-  "subject": UserResponse
+  "type": "MEMBER_INVITED",
+  "members": UserResponse[]
 }
 ```
-Describes which user was invited by the group creator.
+Describes which users were invited by the group creator.
 
-#### `UserLeftEvent`
+#### `MemberLeftEvent`
 ```
 {
-  "type": "USER_LEFT",
+  "type": "MEMBER_LEFT",
   "subject": UserResponse
 }
 ```
 Describes which user voluntarily left the group conversation.
 
-#### `UserRemovedEvent`
+#### `MemberRemovedEvent`
 ```
 {
-  "type": "USER_REMOVED",
+  "type": "MEMBER_REMOVED",
   "subject": UserResponse
 }
 ```

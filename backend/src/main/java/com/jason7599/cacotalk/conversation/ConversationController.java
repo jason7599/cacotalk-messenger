@@ -66,4 +66,13 @@ public class ConversationController {
                 request.clientId()
         );
     }
+
+    @DeleteMapping("/{conversationId}/members/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leaveConversation(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        conversationService.leaveConversation(conversationId, authUser.userId());
+    }
 }

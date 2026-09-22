@@ -1,6 +1,6 @@
 package com.jason7599.cacotalk.message;
 
-import com.jason7599.cacotalk.conversation.ConversationMembershipService;
+import com.jason7599.cacotalk.conversation.MembershipLookupService;
 import com.jason7599.cacotalk.conversation.ConversationService;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.dto.MessagePage;
@@ -36,7 +36,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
 
     private final ConversationService conversationService;
-    private final ConversationMembershipService conversationMembershipService;
+    private final MembershipLookupService membershipLookupService;
 
     private final EventMessageService eventMessageService;
     private final UserService userService;
@@ -58,7 +58,7 @@ public class MessageService {
 
     public MessagePage loadInitial(UUID conversationId, long userId) {
         // Membership assertion is done here
-        long lastReadSeq = conversationMembershipService
+        long lastReadSeq = membershipLookupService
                 .requireMembership(conversationId, userId)
                 .lastReadSeq();
 
@@ -78,7 +78,7 @@ public class MessageService {
     }
 
     public MessagePage loadOlder(UUID conversationId, long userId, long beforeSeq) {
-        conversationMembershipService.requireMembership(conversationId, userId);
+        membershipLookupService.requireMembership(conversationId, userId);
 
         List<MessageResponse> messages = messageRepository.fetchOlderMessages(conversationId, beforeSeq, PAGE_SIZE)
                 .stream()
@@ -98,7 +98,7 @@ public class MessageService {
             UUID clientId
     ) {
         // This also includes the membership check
-        if (!conversationService.canSendMessage(userId, conversationId)) {
+        if (!conversationService.canSendMessage(conversationId, userId)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Cannot send a message in this conversation.");
         }
 

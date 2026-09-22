@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ConversationMembershipService {
+public class MembershipLookupService {
 
     private final ConversationRepository conversationRepository;
 
@@ -24,6 +24,7 @@ public class ConversationMembershipService {
         return conversationRepository.getAllMembersExcept(conversationId, userId);
     }
 
+    // Maybe introduce Redis later
     public List<Long> getAllMemberIds(UUID conversationId) {
         return conversationRepository.getAllMemberIds(conversationId);
     }

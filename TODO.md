@@ -2,4 +2,4 @@
 
 - [ ] Compress logo image
 - [ ] Encrypt message content
-- [ ] Drop blockedByMe field in ConversationDetail
+- [ ] Fix concurrency risk in UserRelationService#addContact

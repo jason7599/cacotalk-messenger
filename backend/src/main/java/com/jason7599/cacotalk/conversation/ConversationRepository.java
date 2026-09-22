@@ -113,12 +113,12 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     // Note we check conflict on the direct user pair, not the clientId/conversationId.
     @Query(value = """
         INSERT INTO conversations (id, type, direct_user_id1, direct_user_id2)
-        VALUES (:conversationId, 'DIRECT', LEAST(:userId1, :userId2), GREATEST(:userId1, :userId2))
+        VALUES (:clientId, 'DIRECT', LEAST(:userId1, :userId2), GREATEST(:userId1, :userId2))
         ON CONFLICT (direct_user_id1, direct_user_id2) WHERE type = 'DIRECT'
         DO UPDATE SET id = conversations.id -- harmless no-op
         RETURNING id
     """, nativeQuery = true)
-    UUID resolveDirectConversation(long userId1, long userId2, UUID conversationId);
+    UUID resolveDirectConversation(long userId1, long userId2, UUID clientId);
 
     /*
     Here we distinguish whether the row already existed or not.
@@ -229,5 +229,20 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
               )
         )
     """, nativeQuery = true)
-    boolean canSendMessage(long userId, UUID conversationId);
+    boolean canSendMessage(UUID conversationId, long userId);
+
+    @Modifying
+    @Query(value = """
+        DELETE FROM conversation_members
+        WHERE conversation_id = :conversationId AND user_id = :userId
+    """, nativeQuery = true)
+    int removeMember(UUID conversationId, long userId);
+
+    @Query(value = """
+        SELECT group_creator_id
+        FROM conversations
+        WHERE conversation_id = :conversationId
+            AND type = 'GROUP' -- this makes the result Optional.empty() in case the given conversationId exists but is not a group convo
+    """, nativeQuery = true)
+    Optional<Long> getGroupCreatorId(UUID conversationId);
 }

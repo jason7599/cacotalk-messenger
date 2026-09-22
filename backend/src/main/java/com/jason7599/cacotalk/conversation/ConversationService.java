@@ -9,6 +9,8 @@ import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.userrelation.UserRelationService;
+import com.jason7599.cacotalk.websocket.RealtimeEvent;
+import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -28,10 +31,11 @@ public class ConversationService {
 
     private final ConversationRepository conversationRepository;
 
-    private final ConversationMembershipService conversationMembershipService;
+    private final MembershipLookupService membershipLookupService;
     private final UserRelationService userRelationService;
     private final UserService userService;
     private final EventMessageService eventMessageService;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     private ConversationSummary summaryFromProjection(ConversationSummary.Projection p) {
         return new ConversationSummary(
@@ -71,12 +75,12 @@ public class ConversationService {
 
     // Called when user opens a conversation
     public ConversationDetail getConversationDetail(UUID conversationId, long userId) {
-        long lastReadSeq = conversationMembershipService.requireMembership(conversationId, userId).lastReadSeq();
+        long lastReadSeq = membershipLookupService.requireMembership(conversationId, userId).lastReadSeq();
 
         ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
 
-        List<UserResponse> members = conversationMembershipService.getAllMembersExcept(conversationId, userId);
+        List<UserResponse> members = membershipLookupService.getAllMembersExcept(conversationId, userId);
 
         return new ConversationDetail(
                 p.getId(),
@@ -175,7 +179,65 @@ public class ConversationService {
     // On DIRECT: check no block status exists
     // On GROUP: check is_closed is false
     // Membership check is also done
-    public boolean canSendMessage(long userId, UUID conversationId) {
-        return conversationRepository.canSendMessage(userId, conversationId);
+    public boolean canSendMessage(UUID conversationId, long userId) {
+        return conversationRepository.canSendMessage(conversationId, userId);
+    }
+
+    // Returns Optional.empty() if room doesn't exist or is not a GROUP conversation
+    /*
+    I did consider putting this in MembershipLookupService. Decided against it after a while
+    MembershipLookupService, at least as of now, concerns the conversation_members table queries.
+    This instead is a query on the conversations table itself.
+    So yeah, it lives here for now.
+     */
+    public Optional<Long> getGroupCreatorId(UUID conversationId) {
+        return conversationRepository.getGroupCreatorId(conversationId);
+    }
+
+    @Transactional
+    public boolean leaveConversation(UUID conversationId, long userId) {
+
+        // This means a retry on the leave request would lead to a 403, rather than being textbook "idempotent"
+        // But it's fine. Throwing 403 is still a no-op anyway.
+        // Can even argue this is semantically more correct - trying to leave a conversation that a user is not a member of.
+        membershipLookupService.requireMembership(conversationId, userId);
+
+        // Either convo itself doesn't exist, or is not a GROUP convo.
+        long creatorId = getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+
+        if (userId == creatorId) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Group creator cannot leave the group.");
+        }
+
+        // Membership didn't exist.
+        // Given how it passed the requireMembership check earlier,
+        // this has to be a genuine concurrent race, safe to terminate early.
+        if (conversationRepository.removeMember(conversationId, userId) == 0) {
+            return false;
+        }
+
+        // Ahh... this shit again. Maybe I really should consider caching username into AuthPrincipal.
+        // SAFE: userId passed requireMembership and authentication filter
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        UserResponse user = userService.findById(userId).get();
+
+        // Persist MEMBER_LEFT message
+        // this triggers a NEW_MESSAGE realtime event broadcast
+        eventMessageService.sendEventMessage(
+                conversationId,
+                new EventMessage.MemberLeft(user)
+        );
+
+        // This is for clients in multi-session settings
+        // Since the MEMBER_LEFT event message is broadcasted after the membership row removal
+        // The session of the requester can do an optimistic UI update, whereas the other sessions will
+        // miss the event unless we fire a separate signal like this
+        realtimeEventPublisher.sendToUser(
+                userId,
+                new RealtimeEvent.RemovedFromGroup(conversationId)
+        );
+
+        return true;
     }
 }

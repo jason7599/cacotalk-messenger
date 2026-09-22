@@ -26,8 +26,9 @@ public class EventMessageService {
     private final MessageRepository messageRepository;
     private final ObjectMapper objectMapper;
 
-    private final RealtimeEventPublisher  realtimeEventPublisher;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
+    // Inserts, and broadcasts.
     @Transactional
     public MessageResponse sendEventMessage(UUID conversationId, EventMessage eventMessage) {
         MessageEntity inserted = messageRepository.insertMessage(

@@ -30,7 +30,6 @@
   "type": "DIRECT" | "GROUP",
   "otherMembers": UserResponse[],
   "blockedMe": boolean,
-  "blockedByMe": boolean,
   "groupCreatorId": number | null,
   "isClosed": boolean,
   "lastSeq" : number,
@@ -40,7 +39,7 @@
 ```
 
 - `otherMembers` exclude the authenticated user.
-- `blockedMe` and `blockedByMe` are only meaningful for DIRECT conversations, and defaults to false for GROUP
+- `blockedMe` is only meaningful for DIRECT conversations, and defaults to false for GROUP
 - `isClosed` is only meaningful in GROUP conversations, and defaults to false for DIRECT
 
 ## Global Error Codes
@@ -160,3 +159,31 @@ User is not a member of the conversation.
 #### `404 NOT FOUND`
 
 Conversation was not found.
+
+
+## Leave Group Conversation
+
+Requests to leave a group conversation.
+
+Authenticated user must not be the creator of the group.
+
+### Request
+```
+DELETE /conversations/{conversationId}/members/me
+```
+
+### Response
+
+#### `204 NO CONTENT`
+Successfully left the group.
+
+#### `400 BAD REQUEST`
+User is the creator of this group.
+
+#### `403 FORBIDDEN`
+User was not a member of this group.
+
+#### `404 NOT FOUND`
+The given `conversationId` was not found, or is not a group conversation.
+
+The response does not distinguish which.
