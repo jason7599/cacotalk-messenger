@@ -241,7 +241,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     @Query(value = """
         SELECT group_creator_id
         FROM conversations
-        WHERE conversation_id = :conversationId
+        WHERE id = :conversationId
             AND type = 'GROUP' -- this makes the result Optional.empty() in case the given conversationId exists but is not a group convo
     """, nativeQuery = true)
     Optional<Long> getGroupCreatorId(UUID conversationId);
