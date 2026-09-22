@@ -3,9 +3,12 @@ import { useActiveConversationStore } from "../activeConversationStore";
 import { useAuth } from "../../auth/AuthProvider";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
+import LeaveConversationModal from "./LeaveConversationModal";
+import { useModal } from "../../../components/ModalProvider";
 
 export default function ConversationHeader() {
     const myId = useAuth().user!.userId;
+    const { openModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;
     const clearActiveConversation = useActiveConversationStore((s) => s.clearActiveConversation);
@@ -40,9 +43,9 @@ export default function ConversationHeader() {
     // Direct: the other person is not in contacts and NOT blocked by me
     // Group: I'm not the creator, and the creator is either not in my contacts or is blocked
     const showWarning =
-        (meta.type === "DIRECT" && (!isSubjectUserInContacts && !isSubjectUserBlocked))
+        (meta.type === "DIRECT" && (!meta.blockedMe && !isSubjectUserInContacts && !isSubjectUserBlocked))
         || (meta.type === "GROUP" && !createdByMe && (!isSubjectUserInContacts || isSubjectUserBlocked))
-        ;
+    ;
 
     function getGroupDisplayTitle() {
         const names = otherMembers.map(({ username }) =>
@@ -397,13 +400,18 @@ export default function ConversationHeader() {
                                         />
 
                                         {isBlockStatePending
-                                            ? "RESTORING..."
-                                            : "RESTORE LINK"}
+                                            ? "UNBLOCKING..."
+                                            : "UNBLOCK"}
                                     </button>
                                 )}
                                 <button
                                     type="button"
-                                    // TODO:
+                                    onClick={() => openModal(
+                                        <LeaveConversationModal 
+                                            groupCreatorId={subjectUserId}
+                                            groupCreatorBlocked={isSubjectUserBlocked}
+                                        />)
+                                    }
                                     className="
                                         group flex min-w-31 items-center justify-center gap-2
                                         bg-[#1d090b]

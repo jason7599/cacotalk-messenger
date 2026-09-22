@@ -20,3 +20,7 @@ export async function apiResolveDirectConversation(targetId: number): Promise<st
 export async function apiCreateGroupConversation(initMemberIds: number[]): Promise<string> {
     return (await api.post("/conversations/group", { initMemberIds, clientId: crypto.randomUUID() })).data;
 }
+
+export async function apiLeaveConversation(conversationId: string): Promise<void> {
+    await api.delete(`/conversations/${conversationId}/members/me`);
+}

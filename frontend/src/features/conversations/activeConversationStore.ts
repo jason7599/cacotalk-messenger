@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import { apiGetConversationDetail, apiResolveDirectConversation } from "./conversationsApi";
+import { apiGetConversationDetail, apiLeaveConversation, apiResolveDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
+import { useConversationsStore } from "./conversationsStore";
 
 export type ActiveConversationState = {
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
@@ -20,6 +21,7 @@ export type ActiveConversationState = {
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
+    leaveConversation: () => Promise<void>;
 };
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
@@ -193,6 +195,17 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
+    
+    const leaveConversation = async () => {
+        const conversationId = get().conversation?.id;
+        if (!conversationId) return;
+
+        await apiLeaveConversation(conversationId);
+        get().clearActiveConversation();
+
+        useConversationsStore.getState().removeLocal(conversationId);
+    };
+
     return {
         status: "IDLE",
         error: null,
@@ -205,5 +218,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         openDirectConversation,
         loadOlderMessages,
         upsertMessage,
+        leaveConversation
     };
 }));
