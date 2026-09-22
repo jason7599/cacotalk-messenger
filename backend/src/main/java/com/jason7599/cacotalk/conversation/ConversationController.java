@@ -5,6 +5,8 @@ import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.conversation.dto.CreateGroupConversationRequest;
 import com.jason7599.cacotalk.conversation.dto.InviteMembersRequest;
+import com.jason7599.cacotalk.user.dto.UserResponse;
+import com.jason7599.cacotalk.userrelation.UserRelationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class ConversationController {
 
     private final ConversationService conversationService;
+    private final UserRelationService userRelationService;
 
     // List all the authenticated user's conversation summaries
     @GetMapping
@@ -89,5 +92,13 @@ public class ConversationController {
             @PathVariable UUID conversationId
     ) {
         conversationService.leaveConversation(conversationId, authUser.userId());
+    }
+
+    @GetMapping("/{conversationId}/invitable")
+    public List<UserResponse> getInvitableUsers(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        return userRelationService.getInvitableUsers(conversationId, authUser.userId());
     }
 }
