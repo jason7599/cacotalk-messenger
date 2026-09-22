@@ -14,7 +14,7 @@ import java.util.List;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = EventMessage.GroupCreated.class, name = "GROUP_CREATED"),
-        @JsonSubTypes.Type(value = EventMessage.MembersInvited.class, name = "MEMBER_INVITED"),
+        @JsonSubTypes.Type(value = EventMessage.MembersInvited.class, name = "MEMBERS_INVITED"),
         @JsonSubTypes.Type(value = EventMessage.MemberLeft.class, name = "MEMBER_LEFT"),
         @JsonSubTypes.Type(value = EventMessage.MemberRemoved.class, name = "MEMBER_REMOVED"),
         @JsonSubTypes.Type(value = EventMessage.GroupClosed.class, name = "GROUP_CLOSED"),
@@ -23,7 +23,7 @@ public sealed interface EventMessage {
 
     enum Type {
         GROUP_CREATED,
-        MEMBER_INVITED,
+        MEMBERS_INVITED,
         MEMBER_LEFT,
         MEMBER_REMOVED,
         GROUP_CLOSED
@@ -39,7 +39,7 @@ public sealed interface EventMessage {
 
     record MembersInvited(List<UserResponse> members) implements EventMessage {
         @Override
-        public Type type() { return Type.MEMBER_INVITED; }
+        public Type type() { return Type.MEMBERS_INVITED; }
     }
 
     record MemberLeft(UserResponse subject) implements EventMessage {

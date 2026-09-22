@@ -57,7 +57,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     ? {
                         type: "DIRECT",
                         blockedMe: detail.blockedMe,
-                        blockedByMe: detail.blockedByMe,
                         createdAt: detail.createdAt,
                     }
                     : {

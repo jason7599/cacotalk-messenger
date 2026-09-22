@@ -15,9 +15,9 @@ export type UserMessage = MessageBase & {
 
 export type EventData =
     | { type: "GROUP_CREATED"; initMembers: UserInfo[] }
-    | { type: "USER_INVITED"; subject: UserInfo }
-    | { type: "USER_LEFT"; subject: UserInfo }
-    | { type: "USER_REMOVED"; subject: UserInfo }
+    | { type: "MEMBERS_INVITED"; members: UserInfo[] }
+    | { type: "MEMBER_LEFT"; subject: UserInfo }
+    | { type: "MEMBER_REMOVED"; subject: UserInfo }
     | { type: "GROUP_CLOSED"; }
 ;
 

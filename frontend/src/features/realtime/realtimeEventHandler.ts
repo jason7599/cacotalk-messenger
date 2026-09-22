@@ -1,12 +1,12 @@
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
-import type { ChatMessage } from "../messages/types";
+import type { ChatMessage, EventData } from "../messages/types";
 import type { RealtimeEvent } from "./types";
 
 export function handleRealtimeEvent(event: RealtimeEvent) {
     switch (event.type) {
         case "NEW_MESSAGE": return handleNewMessage(event.message);
-        case "BLOCK_STATUS_CHANGE": return handleBlockStatusChange(event.blockerId, event.targetId, event.blocked);
+        case "REMOVED_FROM_GROUP": return handleRemovedFromGroup(event.conversationId);
         default:
             console.log(event);
     }
@@ -16,8 +16,28 @@ function handleNewMessage(message: ChatMessage) {
     // this itself checks if the conversation id matches, so we can just call it
     useActiveConversationStore.getState().upsertMessage(message);
     useConversationsStore.getState().onNewMessage(message);
+
+    if (message.type === "EVENT") {
+        handleEventMessage(message.event);
+    }
 }
 
-function handleBlockStatusChange(blockerId: number, targetId: number, blocked: boolean) {
-    useActiveConversationStore.getState().updateBlockStatus(blockerId, targetId, blocked);
+// TODO:
+function handleEventMessage(event: EventData) {
+    switch (event.type) {
+    case "GROUP_CREATED":
+        break;
+    case "MEMBERS_INVITED":
+        break;
+    case "MEMBER_LEFT":
+        break;
+    case "MEMBER_REMOVED":
+        break;
+    case "GROUP_CLOSED":
+        break;
+    }
+}
+
+function handleRemovedFromGroup(conversationId: string) {
+    
 }
