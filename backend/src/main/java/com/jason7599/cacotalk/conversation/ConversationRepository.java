@@ -245,4 +245,19 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             AND type = 'GROUP' -- this makes the result Optional.empty() in case the given conversationId exists but is not a group convo
     """, nativeQuery = true)
     Optional<Long> getGroupCreatorId(UUID conversationId);
+
+    // See docs/010-concurrency-control.md
+    // Since this is hashed, there is possibility that unrelated requests end up colliding
+    // But it's gonna be trivial.
+    @Query(value = """
+        SELECT pg_advisory_xact_lock(hashtextextended(CAST(:conversationId AS TEXT), 0))
+    """, nativeQuery = true)
+    void lockGroupInvite(UUID conversationId);
+
+    @Query(value = """
+        SELECT COUNT(*)
+        FROM conversation_members
+        WHERE conversation_id = :conversationId
+    """, nativeQuery = true)
+    long countMembers(UUID conversationId);
 }

@@ -4,6 +4,7 @@ import com.jason7599.cacotalk.auth.AuthUser;
 import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
 import com.jason7599.cacotalk.conversation.dto.CreateGroupConversationRequest;
+import com.jason7599.cacotalk.conversation.dto.InviteMembersRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -64,6 +65,20 @@ public class ConversationController {
                 authUser.userId(),
                 request.initMemberIds(),
                 request.clientId()
+        );
+    }
+
+    @PostMapping("/{conversationId}/members")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void inviteMembers(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId,
+            @RequestBody @Valid InviteMembersRequest request
+    ) {
+        conversationService.inviteMembers(
+                conversationId,
+                authUser.userId(),
+                request.memberIds()
         );
     }
 

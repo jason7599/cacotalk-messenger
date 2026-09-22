@@ -61,6 +61,6 @@ public class UserRelationController {
 
     @GetMapping("/invitable")
     public List<UserResponse> getInvitableUsers(@AuthenticationPrincipal AuthUser user) {
-        return userRelationService.getInvitableUsers(user.userId());
+        return userRelationService.getInvitableUsers(null, user.userId());
     }
 }

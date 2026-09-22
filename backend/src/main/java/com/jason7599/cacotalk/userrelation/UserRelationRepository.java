@@ -1,11 +1,13 @@
 package com.jason7599.cacotalk.userrelation;
 
 import com.jason7599.cacotalk.user.dto.UserResponse;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -122,7 +124,9 @@ public class UserRelationRepository {
         );
     }
 
-    public List<UserResponse> getInvitableUsers(long userId) {
+    // If conversationId is non-null, users who are already members of this conversation are excluded
+    // If null, conversation membership is not considered and should be used on group creation
+    public List<UserResponse> getInvitableUsers(@Nullable UUID conversationId, long userId) {
         return jdbc.query("""
             SELECT
                 u.id,
@@ -134,19 +138,27 @@ public class UserRelationRepository {
                 ON c.contact_id = blocked_me.user_id
                 AND blocked_me.blocked_id = ? -- userId
             WHERE c.user_id = ? -- userId
-                AND blocked_me IS NULL
+                AND blocked_me.user_id IS NULL
+                AND (
+                    ? IS NULL
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM conversation_members cm
+                        WHERE cm.conversation_id = ? AND cm.user_id = u.id
+                    )
+                )
             ORDER BY u.username
         """,
-            (rs, rowNum) -> new UserResponse(
-                    rs.getLong("id"),
-                    rs.getString("username")
-            ),
-                userId,
-                userId
+                (rs, rowNum) -> new UserResponse(
+                        rs.getLong("id"),
+                        rs.getString("username")
+                ),
+                userId, userId,
+                conversationId, conversationId
         );
     }
 
-    public boolean validateInvitable(long userId, List<Long> targetIds) {
+    public boolean validateInvitable(@Nullable UUID conversationId, long userId, List<Long> targetIds) {
         String placeholders = targetIds.stream()
                 .map(id -> "?")
                 .collect(Collectors.joining(","));
@@ -160,11 +172,26 @@ public class UserRelationRepository {
                     AND blocked_me.blocked_id = ?
                 WHERE c.user_id = ?
                     AND c.contact_id IN (%s)
-                    AND blocked_me IS NULL
+                    AND blocked_me.user_id IS NULL
+                    AND (
+                        ? IS NULL
+                        OR NOT EXISTS (
+                        SELECT 1
+                        FROM conversation_members cm
+                        WHERE cm.conversation_id = ?
+                            AND cm.user_id = c.contact_id
+                        )
+                    )
             """
                 .formatted(placeholders),
             Long.class,
-            Stream.concat(Stream.of(userId, userId), targetIds.stream()).toArray()
+            Stream.concat(
+                    Stream.of(userId, userId),
+                    Stream.concat(
+                            targetIds.stream(),
+                            Stream.of(conversationId, conversationId)
+                    )
+            ).toArray()
         );
 
         return res != null && res == targetIds.size();

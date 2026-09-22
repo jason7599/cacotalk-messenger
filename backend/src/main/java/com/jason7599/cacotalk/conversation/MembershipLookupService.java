@@ -28,4 +28,8 @@ public class MembershipLookupService {
     public List<Long> getAllMemberIds(UUID conversationId) {
         return conversationRepository.getAllMemberIds(conversationId);
     }
+
+    public long countMembers(UUID conversationId) {
+        return conversationRepository.countMembers(conversationId);
+    }
 }

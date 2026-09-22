@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ConversationService {
 
-    private static final int GROUP_CONVERSATION_MINIMUM_SIZE = 3;
-    private static final int GROUP_CONVERSATION_MAXIMUM_SIZE = 100;
+    private static final int GROUP_MINIMUM_MEMBER_COUNT = 3;
+    private static final int GROUP_MAXIMUM_MEMBER_COUNT = 100;
 
     private final ConversationRepository conversationRepository;
 
@@ -134,15 +134,15 @@ public class ConversationService {
         initMemberIds = initMemberIds.stream().distinct().toList();
 
         // + 1 to include the requester
-        if (initMemberIds.size() + 1 < GROUP_CONVERSATION_MINIMUM_SIZE) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "A group needs at least %d other members.".formatted(GROUP_CONVERSATION_MINIMUM_SIZE - 1));
+        if (initMemberIds.size() + 1 < GROUP_MINIMUM_MEMBER_COUNT) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "A group needs at least %d other members.".formatted(GROUP_MINIMUM_MEMBER_COUNT - 1));
         }
 
-        if (initMemberIds.size() + 1 > GROUP_CONVERSATION_MAXIMUM_SIZE) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "A group can have at most %d members.".formatted(GROUP_CONVERSATION_MAXIMUM_SIZE));
+        if (initMemberIds.size() + 1 > GROUP_MAXIMUM_MEMBER_COUNT) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "A group can have at most %d members.".formatted(GROUP_MAXIMUM_MEMBER_COUNT));
         }
 
-        if (!userRelationService.validateInvitable(userId, initMemberIds)) {
+        if (!userRelationService.validateInvitable(null, userId, initMemberIds)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Some members cannot be added.");
         }
 
@@ -164,6 +164,18 @@ public class ConversationService {
                 .mapToLong(Long::longValue)
                 .toArray();
 
+        // This is technically a TOCTOU scenario.
+        // The members being inserted here may not be "invitable" at this point of time,
+        // regardless of the validateInvitable check above.
+        // But I'd make the conscious decision to overlook this one.
+        // Not only would it be very unlikely to happen due to the tiny window, the result isn't catastrophic.
+        // Worst case: user A just right now blocked user B, but got invited by user B in a group convo in the same instant.
+        // Just leave bro.
+        // Not to mention, it'd be incredibly complex to implement this robustly.
+        // Let's just go thru what we'd have to lock to ensure correctness here:
+        // 1. Users blocking the group creator.
+        // 2. Group creator (assuming other sessions) removing contacts.
+        // Too much hassle for something definitely not worth.
         conversationRepository.insertMembers(clientId, allMemberIds);
 
         List<UserResponse> initMembers = userService.findAllById(initMemberIds);
@@ -239,5 +251,51 @@ public class ConversationService {
         );
 
         return true;
+    }
+
+    @Transactional
+    public void inviteMembers(UUID conversationId, long userId, List<Long> targetIds) {
+        if (targetIds.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Empty list provided.");
+        }
+
+        long creatorId = getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+
+        if (userId != creatorId) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+        }
+
+        targetIds = targetIds.stream().distinct().toList();
+
+        // This also fails if one or more of the targets are already a member in the group.
+        // Here again, possible TOCTOU, but deciding to overlook it.
+        // Same reason as createGroupConversation. See above....
+        if (!userRelationService.validateInvitable(conversationId, userId, targetIds)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Some members cannot be added.");
+        }
+
+        // ****************************** LOCKKKKKKKKK ******************************
+        // This lock isn't for the validation shit, but rather to ensure the member count doesn't exceed the limit.
+        // So far, this lock is only used here in the invite members flow.
+        // Since every membership insertion (outside the initial group creation) happens here, this should be safe.
+        conversationRepository.lockGroupInvite(conversationId);
+
+        if (membershipLookupService.countMembers(conversationId) + targetIds.size() > GROUP_MAXIMUM_MEMBER_COUNT) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Group can have at most %d members.".formatted(GROUP_MAXIMUM_MEMBER_COUNT));
+        }
+
+        conversationRepository.insertMembers(conversationId, targetIds.stream().mapToLong(Long::longValue).toArray());
+
+        List<UserResponse> invited = userService.findAllById(targetIds);
+
+        eventMessageService.sendEventMessage(
+                conversationId,
+                new EventMessage.MembersInvited(invited)
+        );
+
+        // Here a separate AddedToGroup event isn't necessary, as we broadcast the event message after the insertion.
+
+        // An extra count check here would be redundant
     }
 }
