@@ -39,5 +39,5 @@ function handleEventMessage(event: EventData) {
 }
 
 function handleRemovedFromGroup(conversationId: string) {
-    
+    console.log(`removed from convo ${conversationId}`);
 }

@@ -140,7 +140,7 @@ public class UserRelationRepository {
             WHERE c.user_id = ? -- userId
                 AND blocked_me.user_id IS NULL
                 AND (
-                    ? IS NULL
+                    CAST(? AS uuid) IS NULL
                     OR NOT EXISTS (
                         SELECT 1
                         FROM conversation_members cm
@@ -174,7 +174,7 @@ public class UserRelationRepository {
                     AND c.contact_id IN (%s)
                     AND blocked_me.user_id IS NULL
                     AND (
-                        ? IS NULL
+                        CAST(? AS uuid) IS NULL
                         OR NOT EXISTS (
                         SELECT 1
                         FROM conversation_members cm
