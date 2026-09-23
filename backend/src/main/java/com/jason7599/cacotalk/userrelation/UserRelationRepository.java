@@ -45,8 +45,8 @@ public class UserRelationRepository {
         );
     }
 
-    public void removeContact(long userId, long targetId) {
-        jdbc.update("""
+    public int removeContact(long userId, long targetId) {
+        return jdbc.update("""
                 DELETE FROM contacts
                 WHERE user_id = ? AND contact_id = ?
                 """,
@@ -87,8 +87,8 @@ public class UserRelationRepository {
         );
     }
 
-    public void addBlock(long userId, long targetId) {
-        jdbc.update("""
+    public int addBlock(long userId, long targetId) {
+        return jdbc.update("""
             INSERT INTO blocks (user_id, blocked_id)
             VALUES (?, ?)
             ON CONFLICT DO NOTHING
@@ -98,8 +98,8 @@ public class UserRelationRepository {
         );
     }
 
-    public void removeBlock(long userId, long targetId) {
-        jdbc.update("""
+    public int removeBlock(long userId, long targetId) {
+        return jdbc.update("""
             DELETE FROM blocks
             WHERE user_id = ? AND blocked_id = ?
             """,

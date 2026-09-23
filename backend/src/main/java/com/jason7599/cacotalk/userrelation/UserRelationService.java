@@ -1,9 +1,10 @@
 package com.jason7599.cacotalk.userrelation;
 
 import com.jason7599.cacotalk.exceptions.ApiException;
-import com.jason7599.cacotalk.user.UserEntity;
-import com.jason7599.cacotalk.user.UserRepository;
+import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
+import com.jason7599.cacotalk.websocket.RealtimeEvent;
+import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,9 @@ import java.util.UUID;
 public class UserRelationService {
 
     private final UserRelationRepository userRelationRepository;
-    private final UserRepository userRepository;
+
+    private final UserService userService;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     public List<UserResponse> getContacts(long userId) {
         return userRelationRepository.getContacts(userId);
@@ -34,7 +37,7 @@ public class UserRelationService {
             throw new ApiException(HttpStatus.FORBIDDEN, "Cannot add a blocked user as a contact.");
         }
 
-        UserEntity target = userRepository.findById(targetId)
+        UserResponse target = userService.findById(targetId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
 
         // This is technically a TOCTOU scenario.
@@ -43,14 +46,34 @@ public class UserRelationService {
         // Scenario: User A adds user B. But this devilish mofo user A with another tab open, blocks user B
         // Outcome: User A has user B as contact, despite also having user B blocked.
         // Good job dude
-        userRelationRepository.addContact(userId, targetId);
+        if (userRelationRepository.addContact(userId, targetId) == 1) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.ContactChanged(target, true)
+            );
+        }
 
-        return new UserResponse(target);
+        return target;
     }
 
     @Transactional
     public void removeContact(long userId, long targetId) {
-        userRelationRepository.removeContact(userId, targetId);
+        if (userId == targetId) {
+            return; // ignore bullshit request
+            // jokes aside, fits with DELETE REST convention
+        }
+
+        UserResponse target = userService.findById(targetId).orElse(null);
+        if (target == null) {
+            return; // same thing here
+        }
+
+        if (userRelationRepository.removeContact(userId, targetId) == 1) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.ContactChanged(target, false)
+            );
+        }
     }
 
     public List<UserResponse> getBlockedUsers(long userId) {
@@ -63,18 +86,45 @@ public class UserRelationService {
             throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot block self");
         }
 
-        UserEntity target = userRepository.findById(targetId)
+        UserResponse target = userService.findById(targetId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
 
-        userRelationRepository.removeContact(userId, targetId);
-        userRelationRepository.addBlock(userId, targetId);
+        // auto remove from contact
+        // hm. Or we can let the FE be smart and do contact removal when it gets BLOCK_CHANGED (true)
+        if (userRelationRepository.removeContact(userId, targetId) == 1) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.ContactChanged(target, false)
+            );
+        }
 
-        return new UserResponse(target);
+        if (userRelationRepository.addBlock(userId, targetId) == 1) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.BlockChanged(target, true)
+            );
+        }
+
+        return target;
     }
 
     @Transactional
     public void unblockUser(long userId, long targetId) {
-        userRelationRepository.removeBlock(userId, targetId);
+        if (userId == targetId) {
+            return;
+        }
+
+        UserResponse target = userService.findById(targetId).orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        if (userRelationRepository.removeBlock(userId, targetId) == 1) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.BlockChanged(target, false)
+            );
+        }
     }
 
     // Returns users the requesting user is allowed to invite.
