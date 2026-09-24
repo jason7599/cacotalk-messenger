@@ -329,4 +329,23 @@ public class ConversationService {
                 new RealtimeEvent.RemovedFromGroup(conversationId)
         );
     }
+
+    @Transactional
+    public void closeConversation(UUID conversationId, long userId) {
+        long creatorId = getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+
+        if (userId != creatorId) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+        }
+
+        if (conversationRepository.closeConversation(conversationId) == 0) {
+            return;
+        }
+
+        eventMessageService.sendEventMessage(
+                conversationId,
+                new EventMessage.GroupClosed()
+        );
+    }
 }

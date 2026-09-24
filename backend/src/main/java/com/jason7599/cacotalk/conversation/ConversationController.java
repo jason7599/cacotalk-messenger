@@ -111,4 +111,13 @@ public class ConversationController {
     ) {
         conversationService.removeMember(conversationId, authUser.userId(), targetId);
     }
+
+    @PatchMapping("/{conversationId}/close")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void closeConversation(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        conversationService.closeConversation(conversationId, authUser.userId());
+    }
 }

@@ -279,3 +279,27 @@ Authenticated user is not the creator of thie group.
 
 #### `404 NOT FOUND`
 Conversation was not found, or is not a group conversation.
+
+
+# Others
+
+## Close Group Conversation
+
+Closes a group conversation. 
+
+Authenticated user must be the creator of the group.
+
+### Request
+```
+PATCH /conversations/{conversationId}/close
+```
+
+### Response
+#### `204 NO CONTENT`
+Group was successfully closed, or was already closed.
+
+#### `403 FORBIDDEN`
+Authenticated user is not the creator of this group.
+
+#### `404 NOT FOUND`
+Conversation was not found, or is not a group conversation.

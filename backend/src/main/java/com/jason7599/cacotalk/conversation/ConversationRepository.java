@@ -260,4 +260,13 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         WHERE conversation_id = :conversationId
     """, nativeQuery = true)
     long countMembers(UUID conversationId);
+
+    @Modifying
+    @Query(value = """
+        UPDATE conversations
+        SET is_closed = TRUE
+        WHERE id = :conversationId
+            AND is_closed = FALSE
+    """, nativeQuery = true)
+    int closeConversation(UUID conversationId);
 }
