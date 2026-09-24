@@ -11,7 +11,7 @@ export default function MessageComposer() {
     const sendMessage = useMessageSendStore((s) => s.send);
 
     const blockedByMe = useBlockedUsersStore((s) =>
-        meta.type === "DIRECT" && s.blockedUsers.some((b) => b.userId === otherMembers[0]!.userId)
+        meta.type === "DIRECT" && !!s.blockedUsersById[otherMembers[0].userId]
     );
 
     const [content, setContent] = useState("");

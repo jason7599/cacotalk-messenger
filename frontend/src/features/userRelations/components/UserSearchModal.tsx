@@ -1,10 +1,11 @@
 import { Search, UserPlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useContactsStore } from "../contactsStore";
+import { useBlockedUsersStore } from "../blockedUsersStore";
 import { apiSearchUsers } from "../userRelationsApi";
 import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiClient";
-import type { UserSearchResult } from "../types";
+import type { UserInfo } from "../../../shared/types";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;
 const SEARCH_QUERY_MAX_LENGTH = 32;
@@ -13,11 +14,14 @@ const SEARCH_DEBOUNCE_MS = 350;
 export default function UserSearchModal() {
     const { closeModal } = useModal();
 
-    const addContact = useContactsStore((s) => s.addContact);
+    const contactsById = useContactsStore((s) => s.contactsById);
     const addingIds = useContactsStore((s) => s.addingIds);
+    const addContact = useContactsStore((s) => s.addContact);
+
+    const blockedUsersById = useBlockedUsersStore((s) => s.blockedUsersById);
 
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<UserSearchResult[]>([]);
+    const [results, setResults] = useState<UserInfo[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -83,17 +87,9 @@ export default function UserSearchModal() {
         };
     }, [query]);
 
-    async function handleAdd(user: UserSearchResult) {
+    async function handleAdd(userId: number) {
         try {
-            await addContact(user.userId);
-
-            setResults((current) =>
-                current.map((result) =>
-                    result.userId === user.userId
-                        ? { ...result, relation: "CONTACT" }
-                        : result
-                )
-            );
+            await addContact(userId);
         } catch (err) {
             setError(getErrorMessage(err));
         }
@@ -195,6 +191,9 @@ export default function UserSearchModal() {
                     </div>
                 ) : (
                     results.map((user) => {
+                        const isContact = !!contactsById[user.userId];
+                        const isBlocked = !!blockedUsersById[user.userId];
+                        
                         const isAdding = addingIds.has(user.userId);
 
                         return (
@@ -213,10 +212,10 @@ export default function UserSearchModal() {
                                     </p>
                                 </div>
 
-                                {user.relation === "NONE" && (
+                                {!isContact && !isBlocked && (
                                     <button
                                         type="button"
-                                        onClick={() => handleAdd(user)}
+                                        onClick={() => handleAdd(user.userId)}
                                         disabled={isAdding}
                                         className="
                                             flex items-center gap-2
@@ -238,13 +237,13 @@ export default function UserSearchModal() {
                                     </button>
                                 )}
 
-                                {user.relation === "CONTACT" && (
+                                {isContact && (
                                     <span className="text-[10px] tracking-[0.14em] text-[#9f8581]">
                                         CONTACT
                                     </span>
                                 )}
 
-                                {user.relation === "BLOCKED" && (
+                                {isBlocked && (
                                     <span className="text-[10px] tracking-[0.14em] text-[#e02632]">
                                         BLOCKED
                                     </span>

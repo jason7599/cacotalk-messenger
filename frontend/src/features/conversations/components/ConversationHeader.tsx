@@ -26,12 +26,8 @@ export default function ConversationHeader() {
     // IF ws connection drops and reconnects mid session, or anything causes the store to be out of sync,
     // these data will be stale. But I'd say it's acceptable for now. Let's just be smart with reconnection later
     // the !createdByMe inside is just a lil hack to avoid unnecessary lookups
-    const isSubjectUserInContacts = useContactsStore((s) =>
-        !createdByMe && s.contacts.some((c) => c.userId === subjectUserId)
-    );
-    const isSubjectUserBlocked = useBlockedUsersStore((s) =>
-        !createdByMe && s.blockedUsers.some((b) => b.userId === subjectUserId)
-    );
+    const isSubjectUserInContacts = useContactsStore((s) => !!s.contactsById[subjectUserId]);
+    const isSubjectUserBlocked = useBlockedUsersStore((s) => !!s.blockedUsersById[subjectUserId]);
 
     const isAddingContact = useContactsStore((s) => s.addingIds.has(subjectUserId));
 

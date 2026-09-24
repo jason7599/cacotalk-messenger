@@ -4,7 +4,7 @@ import { apiBlockUser, apiUnblockUser } from "./userRelationsApi";
 import { useContactsStore } from "./contactsStore";
 
 type BlockedUsersState = {
-    blockedUsers: UserInfo[];
+    blockedUsersById: Record<number, UserInfo>;
     pendingIds: Set<number>;
 
     // Local synchronization
@@ -18,44 +18,38 @@ type BlockedUsersState = {
     unblockUser: (userId: number) => Promise<void>;
 };
 
-function sortBlockedUsers(blockedUsers: UserInfo[]) {
-    return blockedUsers.sort((a, b) =>
-        a.username.localeCompare(b.username)
-    );
-}
-
 export const useBlockedUsersStore = create<BlockedUsersState>((set, get) => ({
-    blockedUsers: [],
+    blockedUsersById: {},
     pendingIds: new Set(),
 
     setBlockedUsers: (blockedUsers) => {
         set({
-            blockedUsers: sortBlockedUsers([...blockedUsers])
+            blockedUsersById: Object.fromEntries(
+                blockedUsers.map((b) => [b.userId, b])
+            )
         });
     },
 
     upsertLocal: (blockedUser) => {
         set((state) => ({
-            blockedUsers: sortBlockedUsers([
-                ...state.blockedUsers.filter(
-                    (existing) => existing.userId !== blockedUser.userId
-                ),
-                blockedUser
-            ])
+            blockedUsersById: {
+                ...state.blockedUsersById,
+                [blockedUser.userId]: blockedUser
+            }
         }));
     },
 
     removeLocal: (userId) => {
-        set((state) => ({
-            blockedUsers: state.blockedUsers.filter(
-                (user) => user.userId !== userId
-            )
-        }));
+        set((state) => {
+            const blockedUsersById = { ...state.blockedUsersById };
+            delete blockedUsersById[userId];
+            return { blockedUsersById };
+        });
     },
 
     reset: () => {
         set({
-            blockedUsers: [],
+            blockedUsersById: {},
             pendingIds: new Set()
         });
     },

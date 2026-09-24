@@ -3,7 +3,7 @@ import type { UserInfo } from "../../shared/types";
 import { apiAddContact, apiRemoveContact } from "./userRelationsApi";
 
 type ContactsState = {
-    contacts: UserInfo[];
+    contactsById: Record<number, UserInfo>;
     addingIds: Set<number>;
 
     // Local synchronization
@@ -17,44 +17,38 @@ type ContactsState = {
     removeContact: (contactId: number) => Promise<void>;
 };
 
-function sortContacts(contacts: UserInfo[]) {
-    return contacts.sort((a, b) =>
-        a.username.localeCompare(b.username)
-    );
-}
-
 export const useContactsStore = create<ContactsState>((set, get) => ({
-    contacts: [],
+    contactsById: {},
     addingIds: new Set(),
 
     setContacts: (contacts) => {
         set({
-            contacts: sortContacts([...contacts])
+            contactsById: Object.fromEntries(
+                contacts.map((c) => [c.userId, c])
+            )
         });
     },
 
     upsertLocal: (contact) => {
         set((state) => ({
-            contacts: sortContacts([
-                ...state.contacts.filter(
-                    (existing) => existing.userId !== contact.userId
-                ),
-                contact
-            ])
+            contactsById: {
+                ...state.contactsById,
+                [contact.userId]: contact
+            }
         }));
     },
 
     removeLocal: (contactId) => {
-        set((state) => ({
-            contacts: state.contacts.filter(
-                (contact) => contact.userId !== contactId
-            )
-        }));
+        set((state) => {
+            const contactsById = { ...state.contactsById };
+            delete contactsById[contactId];
+            return { contactsById };
+        });
     },
 
     reset: () => {
         set({
-            contacts: [],
+            contactsById: {},
             addingIds: new Set()
         });
     },

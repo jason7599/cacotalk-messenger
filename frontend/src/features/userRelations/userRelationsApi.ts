@@ -1,8 +1,12 @@
 import api from "../../shared/apiClient";
 import type { UserInfo } from "../../shared/types";
-import type { UserSearchResult } from "./types";
 
-export async function apiSearchUsers(query: string): Promise<UserSearchResult[]> {
+// The backend actually returns a UserSearchResponse, which is basically
+// UserInfo + a relation field which can be "NONE", "BLOCKED", or "CONTACT".
+// But, to keep consistent with the style of "keep the local memory in sync, and trust the local stores" approach,
+// decided to let the component itself check for the relations. 
+// Didn't modify the backend api shape (yet), so it still does return the relation field
+export async function apiSearchUsers(query: string): Promise<UserInfo[]> {
     return (await api.get(`/users/search?query=${query}`)).data;
 }
 

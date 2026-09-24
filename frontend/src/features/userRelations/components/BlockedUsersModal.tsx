@@ -7,30 +7,30 @@ import { useMemo, useState } from "react";
 export default function BlockedUsersModal() {
     const { openModal, closeModal } = useModal();
 
-    const blockedUsers = useBlockedUsersStore((s) => s.blockedUsers);
+    const blockedUsersById = useBlockedUsersStore((s) => s.blockedUsersById);
     const pendingIds = useBlockedUsersStore((s) => s.pendingIds);
     const unblockUser = useBlockedUsersStore((s) => s.unblockUser);
 
-    async function handleUnblock(userId: number) {
-        await unblockUser(userId);
-    }
+    const blockedCount = Object.keys(blockedUsersById).length;
 
     const [query, setQuery] = useState("");
 
     const filtered = useMemo(() => {
         const normalized = query.trim().toLowerCase();
 
-        if (!normalized) {
-            return blockedUsers;
-        }
-
-        return blockedUsers.filter((u) => u.username.toLowerCase().includes(normalized));
-    }, [blockedUsers, query]);
+        return Object.values(blockedUsersById)
+            .filter((user) =>
+                !normalized
+                || user.username.toLowerCase().includes(normalized)
+            )
+            .sort((a, b) =>
+                a.username.localeCompare(b.username)
+            );
+    }, [blockedUsersById, query]);
 
     return (
         <div className="w-115 max-w-[90vw] text-[#eee2d5]">
             <header className="mb-6 border-b-2 border-[#64141b] pb-5">
-
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                         <button
@@ -58,9 +58,22 @@ export default function BlockedUsersModal() {
                                 BLACKLIST // ACTIVE
                             </p>
 
-                            <h2 className="text-3xl font-black tracking-[-0.03em]">
-                                BANISHED SOULS
-                            </h2>
+                            <div className="flex items-end gap-3">
+                                <h2 className="text-3xl font-black tracking-[-0.03em]">
+                                    BANISHED SOULS
+                                </h2>
+
+                                <span
+                                    className="
+                                        pb-1
+                                        text-[9px]
+                                        tracking-[0.16em]
+                                        text-[#7f6668]
+                                    "
+                                >
+                                    {blockedCount} {blockedCount === 1 ? "SOUL" : "SOULS"}
+                                </span>
+                            </div>
 
                             <p className="mt-2 text-xs tracking-[0.08em] text-[#9f8581]">
                                 REVIEW THOSE CAST INTO SILENCE.
@@ -138,7 +151,7 @@ export default function BlockedUsersModal() {
                         />
 
                         <p className="text-sm font-bold text-[#9f8581]">
-                            {blockedUsers.length === 0
+                            {blockedCount === 0
                                 ? "THE BLACKLIST IS EMPTY"
                                 : "NO MATCHING SOULS"}
                         </p>
@@ -184,7 +197,7 @@ export default function BlockedUsersModal() {
 
                                 <button
                                     type="button"
-                                    onClick={() => handleUnblock(user.userId)}
+                                    onClick={() => unblockUser(user.userId)}
                                     disabled={pending}
                                     className="
                                         flex items-center gap-2
@@ -200,9 +213,9 @@ export default function BlockedUsersModal() {
                                         active:translate-x-0.5
                                         active:translate-y-0.5
                                         active:shadow-none
+                                        disabled:pointer-events-none
                                         disabled:cursor-not-allowed
                                         disabled:opacity-40
-                                        disabled:pointer-events-none
                                     "
                                 >
                                     <Unlock size={14} strokeWidth={2.5} />
@@ -224,7 +237,7 @@ export default function BlockedUsersModal() {
                     text-[#7f6668]
                 "
             >
-                BLACKLIST RECORDS // LOCAL RELATION s
+                BLACKLIST RECORDS // {blockedCount} TOTAL // LOCAL RELATIONS
             </footer>
         </div>
     );

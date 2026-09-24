@@ -7,19 +7,24 @@ import { useMemo, useState } from "react";
 
 export default function ContactList() {
     const { openModal } = useModal();
-    const contacts = useContactsStore((s) => s.contacts);
+
+    const contactsById = useContactsStore((s) => s.contactsById);
+    const contactCount = Object.keys(contactsById).length;
 
     const [query, setQuery] = useState("");
 
     const filtered = useMemo(() => {
         const normalized = query.trim().toLowerCase();
 
-        if (!normalized) {
-            return contacts;
-        }
-
-        return contacts.filter((c) => c.username.toLowerCase().includes(normalized));
-    }, [contacts, query]);
+        return Object.values(contactsById)
+            .filter((contact) =>
+                !normalized
+                || contact.username.toLowerCase().includes(normalized)
+            )
+            .sort((a, b) =>
+                a.username.localeCompare(b.username)
+            );
+    }, [contactsById, query]);
 
     return (
         <div className="flex h-full min-h-0 flex-col">
@@ -40,9 +45,26 @@ export default function ContactList() {
                         SOUL DIRECTORY
                     </h2>
 
-                    <span className="text-[9px] tracking-[0.16em] text-[#7f6668]">
-                        UNIT 02
-                    </span>
+                    <div
+                        className="
+                            flex items-center gap-2
+                            text-[9px]
+                            tracking-[0.16em]
+                            text-[#7f6668]
+                        "
+                    >
+                        <span>
+                            {contactCount} {contactCount === 1 ? "SOUL" : "SOULS"}
+                        </span>
+
+                        <span className="text-[#4b1b1f]">
+                            //
+                        </span>
+
+                        <span>
+                            UNIT 02
+                        </span>
+                    </div>
                 </div>
             </header>
 
@@ -107,7 +129,7 @@ export default function ContactList() {
             <div className="min-h-0 flex-1 overflow-y-auto">
                 {filtered.length === 0 ? (
                     <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
-                        {contacts.length === 0 ? (
+                        {contactCount === 0 ? (
                             <>
                                 <div
                                     className="
@@ -172,7 +194,7 @@ export default function ContactList() {
                     text-[#7f6668]
                 "
             >
-                REGISTERED SOULS // DIRECTORY ONLINE
+                REGISTERED SOULS // {contactCount} TOTAL // DIRECTORY ONLINE
             </footer>
         </div>
     );

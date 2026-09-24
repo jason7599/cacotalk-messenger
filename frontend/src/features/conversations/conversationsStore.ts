@@ -37,11 +37,10 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
     removeLocal: (conversationId) => {
         set((state) => {
-            const { [conversationId]: _, ...rest } = state.conversationsById;
-            return {
-                conversationsById: rest
-            };
-        })
+            const conversationsById = { ...state.conversationsById };
+            delete conversationsById[conversationId];
+            return { conversationsById };
+        });
     },
 
     onNewMessage: async (message) => {
