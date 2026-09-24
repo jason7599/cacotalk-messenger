@@ -1,10 +1,11 @@
-import { Ban, Lock, X, Users, ShieldAlert, LogOut, UserPlus } from "lucide-react";
+import { Ban, Lock, X, Users } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { useAuth } from "../../auth/AuthProvider";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
-import LeaveConversationModal from "./LeaveConversationModal";
+import ConversationWarning from "./ConversationWarning";
 import { useModal } from "../../../components/ModalProvider";
+import GroupMembersModal from "./GroupMembersModal";
 
 export default function ConversationHeader() {
     const myId = useAuth().user!.userId;
@@ -18,7 +19,7 @@ export default function ConversationHeader() {
     const subjectUserId = meta.type === "DIRECT"
         ? otherMembers[0]!.userId
         : meta.groupCreatorId
-        ;
+    ;
 
     const createdByMe = meta.type === "GROUP" && meta.groupCreatorId === myId;
 
@@ -32,10 +33,8 @@ export default function ConversationHeader() {
         !createdByMe && s.blockedUsers.some((b) => b.userId === subjectUserId)
     );
 
-    const addContact = useContactsStore((s) => s.addContact);
     const isAddingContact = useContactsStore((s) => s.addingIds.has(subjectUserId));
 
-    const blockUser = useBlockedUsersStore((s) => s.blockUser);
     const unblockUser = useBlockedUsersStore((s) => s.unblockUser);
     const isBlockStatePending = useBlockedUsersStore((s) => s.pendingIds.has(subjectUserId));
 
@@ -45,7 +44,7 @@ export default function ConversationHeader() {
     const showWarning =
         (meta.type === "DIRECT" && (!meta.blockedMe && !isSubjectUserInContacts && !isSubjectUserBlocked))
         || (meta.type === "GROUP" && !createdByMe && (!isSubjectUserInContacts || isSubjectUserBlocked))
-    ;
+        ;
 
     function getGroupDisplayTitle() {
         const names = otherMembers.map(({ username }) =>
@@ -79,7 +78,7 @@ export default function ConversationHeader() {
                 otherMembers.find(
                     (member) => member.userId === meta.groupCreatorId
                 )!.username
-                ;
+            ;
         }
     }
 
@@ -117,17 +116,24 @@ export default function ConversationHeader() {
                     <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
                         {meta.type === "GROUP" ? (
                             <>
-                                <span
+                                <button
+                                    type="button"
+                                    onClick={() => openModal(<GroupMembersModal />)}
                                     className="
                                         flex items-center gap-1
                                         text-[9px]
                                         tracking-[0.16em]
                                         text-[#a71924]
+                                        transition
+                                        hover:text-[#e02632]
+                                        hover:underline
+                                        hover:decoration-dotted
+                                        hover:underline-offset-3
                                     "
                                 >
                                     <Users size={11} strokeWidth={2.3} />
                                     GROUP // {otherMembers.length + 1} SOULS
-                                </span>
+                                </button>
 
                                 {creatorLabel && (
                                     <>
@@ -218,6 +224,41 @@ export default function ConversationHeader() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-5">
+                    {meta.type === "GROUP" && (
+                        <button
+                            type="button"
+                            aria-label="View members"
+                            onClick={() => openModal(<GroupMembersModal />)}
+                            className="
+                                group relative grid h-12 w-12 place-items-center
+                                border-2 border-[#4b1b1f]
+                                bg-[#13090a]
+                                text-[#8f5559]
+                                shadow-[2px_2px_0_#321316]
+                                transition
+                                hover:-translate-y-px
+                                hover:border-[#8f2830]
+                                hover:bg-[#211012]
+                                hover:text-[#d03a44]
+                                hover:shadow-[3px_3px_0_#4b1b1f]
+                                active:translate-y-0
+                                active:shadow-none
+                            "
+                        >
+                            <Users size={18} strokeWidth={2.5} />
+
+                            <span
+                                className="
+                                    absolute inset-x-1 bottom-0.75
+                                    h-px scale-x-0
+                                    bg-[#a71924]
+                                    transition-transform
+                                    group-hover:scale-x-100
+                                "
+                            />
+                        </button>
+                    )}
+
                     <button
                         type="button"
                         aria-label="Close conversation"
@@ -238,6 +279,7 @@ export default function ConversationHeader() {
                         "
                     >
                         <X size={18} strokeWidth={2.8} />
+
                         <span
                             className="
                                 absolute inset-x-1 bottom-0.75
@@ -249,195 +291,17 @@ export default function ConversationHeader() {
                         />
                     </button>
                 </div>
+
             </div>
 
             {showWarning && (
-                <div
-                    className="
-                        flex flex-wrap items-stretch
-                        border-t-2 border-[#4b1b1f]
-                        bg-[#16090a]
-                    "
-                >
-                    <div
-                        className="
-                            flex min-w-0 flex-1 items-center gap-3
-                            px-5 py-3
-                        "
-                    >
-                        <div
-                            className="
-                                grid h-8 w-8 shrink-0 place-items-center
-                                border border-[#71401d]
-                                bg-[#211308]
-                                text-[#d88928]
-                            "
-                        >
-                            <ShieldAlert size={15} strokeWidth={2.4} />
-                        </div>
-
-                        <div className="min-w-0">
-                            <p
-                                className="
-                                    text-[8px] font-bold
-                                    tracking-[0.22em]
-                                    text-[#7f5954]
-                                "
-                            >
-                                WARNING
-                            </p>
-                            <p
-                                className="
-                                    mt-0.5 text-[10px]
-                                    tracking-[0.12em]
-                                    text-[#c7a7a0]
-                                "
-                            >
-                                {meta.type === "DIRECT"
-                                    ? "UNRECOGNIZED SOUL // NOT IN CONTACTS"
-                                    : isSubjectUserBlocked
-                                        ? "GROUP ORIGIN FLAGGED // CREATOR BLOCKED"
-                                        : "UNKNOWN ORIGIN // CREATOR NOT IN CONTACTS"
-                                }
-                            </p>
-                        </div>
-                    </div>
-
-                    <div
-                        className="
-                            flex shrink-0 items-stretch
-                            border-l border-[#4b1b1f]
-                        "
-                    >
-                        {!isSubjectUserBlocked && (
-                            <button
-                                type="button"
-                                disabled={isAddingContact}
-                                onClick={() => addContact(subjectUserId)}
-                                className="
-                                    group flex min-w-35 items-center justify-center gap-2
-                                    border-r border-[#4b1b1f]
-                                    bg-[#13090a]
-                                    px-4 py-3
-                                    text-[9px] font-black tracking-[0.16em]
-                                    text-[#aa918b]
-                                    transition
-                                    hover:bg-[#211012]
-                                    hover:text-[#eee2d5]
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-40
-                                "
-                            >
-                                <UserPlus
-                                    size={13}
-                                    strokeWidth={2.5}
-                                    className="text-[#8d5558] group-hover:text-[#d28b91]"
-                                />
-
-                                {isAddingContact
-                                    ? "LINKING..."
-                                    : "ACCEPT SOUL"}
-                            </button>
-                        )}
-
-                        {meta.type === "DIRECT" ? (
-                            <button
-                                type="button"
-                                disabled={isBlockStatePending}
-                                onClick={() => blockUser(subjectUserId)}
-                                className="
-                                    group flex min-w-31 items-center justify-center gap-2
-                                    bg-[#1d090b]
-                                    px-4 py-3
-                                    text-[9px] font-black tracking-[0.16em]
-                                    text-[#a71924]
-                                    transition
-                                    hover:bg-[#310c10]
-                                    hover:text-[#f13a45]
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-40
-                                "
-                            >
-                                <Ban
-                                    size={13}
-                                    strokeWidth={2.6}
-                                    className="
-                                        transition-transform
-                                        group-hover:-rotate-12
-                                    "
-                                />
-
-                                BLOCK
-                            </button>
-                        ) : (
-                            <>
-                                {isSubjectUserBlocked && (
-                                    <button
-                                        type="button"
-                                        disabled={isBlockStatePending}
-                                        onClick={() => unblockUser(subjectUserId)}
-                                        className="
-                                            group flex min-w-35 items-center justify-center gap-2
-                                            border-r border-[#4b1b1f]
-                                            bg-[#13090a]
-                                            px-4 py-3
-                                            text-[9px] font-black tracking-[0.16em]
-                                            text-[#8f7370]
-                                            transition
-                                            hover:bg-[#211012]
-                                            hover:text-[#d8b3ad]
-                                            disabled:cursor-not-allowed
-                                            disabled:opacity-40
-                                        "
-                                    >
-                                        <span
-                                            className="
-                                                h-1.5 w-1.5
-                                                bg-[#64141b]
-                                                transition
-                                                group-hover:bg-[#d12c37]
-                                            "
-                                        />
-
-                                        {isBlockStatePending
-                                            ? "UNBLOCKING..."
-                                            : "UNBLOCK"}
-                                    </button>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => openModal(
-                                        <LeaveConversationModal 
-                                            groupCreatorId={subjectUserId}
-                                            groupCreatorBlocked={isSubjectUserBlocked}
-                                        />)
-                                    }
-                                    className="
-                                        group flex min-w-31 items-center justify-center gap-2
-                                        bg-[#1d090b]
-                                        px-4 py-3
-                                        text-[9px] font-black tracking-[0.16em]
-                                        text-[#a71924]
-                                        transition
-                                        hover:bg-[#310c10]
-                                        hover:text-[#f13a45]
-                                    "
-                                >
-                                    <LogOut
-                                        size={13}
-                                        strokeWidth={2.6}
-                                        className="
-                                            transition-transform
-                                            group-hover:translate-x-0.5
-                                        "
-                                    />
-
-                                    ABANDON
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
+                <ConversationWarning
+                    meta={meta}
+                    subjectUserId={subjectUserId}
+                    isSubjectUserBlocked={isSubjectUserBlocked}
+                    isAddingContact={isAddingContact}
+                    isBlockStatePending={isBlockStatePending}
+                />
             )}
         </header>
     );
