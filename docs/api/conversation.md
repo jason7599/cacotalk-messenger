@@ -48,6 +48,9 @@
 
 The request does not contain a valid authenticated session.
 
+
+# Conversation Data API 
+
 ## Get Conversation Summaries
 
 Fetch lightweight information about conversations that the authenticated user is a member of.
@@ -77,6 +80,31 @@ Returns a `ConversationSummary`.
 
 #### `404 NOT FOUND`
 Conversation was not found, or user is not a member. The response does not distinguish which.
+
+
+## Get Conversation Detail
+
+### Request
+```
+GET /conversations/{conversationId}
+```
+
+### Response
+
+#### `200 OK`
+
+Returns a `ConversationDetail` object.
+
+#### `403 FORBIDDEN`
+
+User is not a member of the conversation.
+
+#### `404 NOT FOUND`
+
+Conversation was not found.
+
+
+# Conversation Creation API
 
 
 ## Get or Create Direct Conversation
@@ -132,6 +160,8 @@ POST /conversations/group
 #### `201 CREATED`
 Returns the UUID of the created (or already present) group conversation.
 
+If the group conversation was created (not already present), a `GROUP_CREATED` event message is broadcast to all members.
+
 #### `400 BAD REQUEST`
 `initMemberIds` has fewer than 2 or more than 99 entries (after removing duplicates).
 
@@ -139,26 +169,61 @@ Returns the UUID of the created (or already present) group conversation.
 One or more members in the list cannot be added (not a contact, or has blocked the requester - the response doesn't distinguish which).
 
 
-## Get Conversation Detail
+# Group Conversation Membership API
+
+
+## Get Invitable Users
+
+Gets the list of users that are invitable to the user's group conversation.
+
+Unlike the ["Get Invitable Users" in user-relation](./user-relation.md#get-invitable-users), this API takes a conversation ID as a parameter and filters those who are already in the conversation.
+
+So the result is compose of: Users in the authenticated user's contact list, minus those who blocked the authenticated user, and minus those who are already in the given conversation.
 
 ### Request
 ```
-GET /conversations/{conversationId}
+GET /conversations/{conversationId}/invitable
 ```
 
 ### Response
 
 #### `200 OK`
+Returns a list of `UserResponse`.
 
-Returns a `ConversationDetail` object.
+
+## Invite Members
+
+Invites one ore more users to an existing group conversation.
+
+The authenticated user must be the creator of this group.
+
+The users must be currently invitable by the creator, see above for the qualifications for an invitable user.
+
+Adding the users must not push the group over its maximum member count, which is 100 for now.
+
+### Request
+```
+POST /conversations/{conversationId}/members
+```
+#### Body
+```
+{
+  "memberIds": number[]
+}
+```
+
+### Response
+#### `204 NO CONTENT`
+Members were successfully added. A `MEMBERS_INVITED` event message is broadcast to all conversation members, including the newly added members.
+
+#### `400 BAD REQUEST`
+The provided list is empty, or adding the users would exceed the group's maximum member count.
 
 #### `403 FORBIDDEN`
-
-User is not a member of the conversation.
+The authenticated user is not the creator of this group, or one or more given members cannot be currently invited. 
 
 #### `404 NOT FOUND`
-
-Conversation was not found.
+The conversation does not exist, or is not a GROUP conversation.
 
 
 ## Leave Group Conversation
@@ -175,7 +240,11 @@ DELETE /conversations/{conversationId}/members/me
 ### Response
 
 #### `204 NO CONTENT`
-Successfully left the group.
+Successfully left the group. 
+
+A `MEMBER_LEFT` event message is broadcast to the remaining members.
+
+A `REMOVED_FROM_GROUP` realtime event is sent over websocket for the user's WebSocket sessions.
 
 #### `400 BAD REQUEST`
 User is the creator of this group.
@@ -186,4 +255,27 @@ User was not a member of this group.
 #### `404 NOT FOUND`
 The given `conversationId` was not found, or is not a group conversation.
 
-The response does not distinguish which.
+
+## Remove Group Member
+
+Removes a member from a group. 
+
+The authentication user must be the creator of this group.
+
+### Request
+```
+DELETE /conversations/{conversationId}/members/{targetId}
+```
+
+### Response
+#### `204 NO CONTENT`
+Member was successfully removed, or wasn't present.
+
+#### `400 BAD REQUEST`
+Group creator tried to remove self.
+
+#### `403 FORBIDDEN`
+Authenticated user is not the creator of thie group.
+
+#### `404 NOT FOUND`
+Conversation was not found, or is not a group conversation.

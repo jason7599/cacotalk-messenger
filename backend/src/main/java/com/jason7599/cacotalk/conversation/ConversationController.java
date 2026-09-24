@@ -71,6 +71,14 @@ public class ConversationController {
         );
     }
 
+    @GetMapping("/{conversationId}/invitable")
+    public List<UserResponse> getInvitableUsers(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId
+    ) {
+        return userRelationService.getInvitableUsers(conversationId, authUser.userId());
+    }
+
     @PostMapping("/{conversationId}/members")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void inviteMembers(
@@ -94,11 +102,13 @@ public class ConversationController {
         conversationService.leaveConversation(conversationId, authUser.userId());
     }
 
-    @GetMapping("/{conversationId}/invitable")
-    public List<UserResponse> getInvitableUsers(
+    @DeleteMapping("/{conversationId}/members/{targetId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMember(
             @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable UUID conversationId
+            @PathVariable UUID conversationId,
+            @PathVariable long targetId
     ) {
-        return userRelationService.getInvitableUsers(conversationId, authUser.userId());
+        conversationService.removeMember(conversationId, authUser.userId(), targetId);
     }
 }

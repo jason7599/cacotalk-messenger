@@ -207,7 +207,7 @@ public class ConversationService {
     }
 
     @Transactional
-    public boolean leaveConversation(UUID conversationId, long userId) {
+    public void leaveConversation(UUID conversationId, long userId) {
 
         // This means a retry on the leave request would lead to a 403, rather than being textbook "idempotent"
         // But it's fine. Throwing 403 is still a no-op anyway.
@@ -218,15 +218,15 @@ public class ConversationService {
         long creatorId = getGroupCreatorId(conversationId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
 
-        if (userId == creatorId) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Group creator cannot leave the group.");
+        if (userId != creatorId) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
         }
 
         // Membership didn't exist.
         // Given how it passed the requireMembership check earlier,
         // this has to be a genuine concurrent race, safe to terminate early.
         if (conversationRepository.removeMember(conversationId, userId) == 0) {
-            return false;
+            return;
         }
 
         // Ahh... this shit again. Maybe I really should consider caching username into AuthPrincipal.
@@ -249,8 +249,6 @@ public class ConversationService {
                 userId,
                 new RealtimeEvent.RemovedFromGroup(conversationId)
         );
-
-        return true;
     }
 
     @Transactional
@@ -297,5 +295,38 @@ public class ConversationService {
         // Here a separate AddedToGroup event isn't necessary, as we broadcast the event message after the insertion.
 
         // An extra count check here would be redundant
+    }
+
+    @Transactional
+    public void removeMember(UUID conversationId, long userId, long targetId) {
+        long creatorId = getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+
+        if (userId != creatorId) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+        }
+
+        if (userId == targetId) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot remove self.");
+        }
+
+        UserResponse target = userService.findById(targetId).orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        if (conversationRepository.removeMember(conversationId, targetId) == 0) {
+            return;
+        }
+
+        eventMessageService.sendEventMessage(
+                conversationId,
+                new EventMessage.MemberRemoved(target)
+        );
+
+        realtimeEventPublisher.sendToUser(
+                targetId,
+                new RealtimeEvent.RemovedFromGroup(conversationId)
+        );
     }
 }
