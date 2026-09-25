@@ -4,11 +4,12 @@ import type { ConversationMeta } from "../types";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useModal } from "../../../components/ModalProvider";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
+import type { UserInfo } from "../../../shared/types";
 
 // I could just read these from the zustand stores, but would be pointless to recompute things that are already in ConversationHeader
 type ConversationWarningProps = {
     meta: ConversationMeta;
-    subjectUserId: number;
+    subjectUser: UserInfo;
     isSubjectUserBlocked: boolean;
     isAddingContact: boolean;
     isBlockStatePending: boolean;
@@ -16,7 +17,7 @@ type ConversationWarningProps = {
 
 export default function ConversationWarning({
     meta, 
-    subjectUserId,
+    subjectUser,
     isSubjectUserBlocked,
     isAddingContact,
     isBlockStatePending
@@ -90,7 +91,7 @@ export default function ConversationWarning({
                     <button
                         type="button"
                         disabled={isAddingContact}
-                        onClick={() => addContact(subjectUserId)}
+                        onClick={() => addContact(subjectUser.userId)}
                         className="
                             group flex min-w-35 items-center justify-center gap-2
                             border-r border-[#4b1b1f]
@@ -121,7 +122,7 @@ export default function ConversationWarning({
                     <button
                         type="button"
                         disabled={isBlockStatePending}
-                        onClick={() => blockUser(subjectUserId)}
+                        onClick={() => blockUser(subjectUser.userId)}
                         className="
                             group flex min-w-31 items-center justify-center gap-2
                             bg-[#1d090b]
@@ -152,7 +153,7 @@ export default function ConversationWarning({
                             <button
                                 type="button"
                                 disabled={isBlockStatePending}
-                                onClick={() => unblockUser(subjectUserId)}
+                                onClick={() => unblockUser(subjectUser.userId)}
                                 className="
                                     group flex min-w-35 items-center justify-center gap-2
                                     border-r border-[#4b1b1f]
@@ -184,10 +185,7 @@ export default function ConversationWarning({
                         <button
                             type="button"
                             onClick={() => openModal(
-                                <LeaveConversationModal 
-                                    groupCreatorId={subjectUserId}
-                                    groupCreatorBlocked={isSubjectUserBlocked}
-                                />)
+                                <LeaveConversationModal groupCreator={subjectUser}/>)
                             }
                             className="
                                 group flex min-w-31 items-center justify-center gap-2

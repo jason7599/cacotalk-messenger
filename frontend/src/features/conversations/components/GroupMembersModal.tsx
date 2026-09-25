@@ -1,21 +1,29 @@
-import { Crown, UserPlus, Users, X } from "lucide-react";
-import { useAuth } from "../../auth/AuthProvider";
-import { useActiveConversationStore } from "../activeConversationStore";
-import { useModal } from "../../../components/ModalProvider";
-import { useContactsStore } from "../../userRelations/contactsStore";
-import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
+import { LockKeyhole, LogOut, UserPlus, X } from "lucide-react";
 
-export default function GroupMembersModal() {
+import { useAuth } from "../../auth/AuthProvider";
+import { useModal } from "../../../components/ModalProvider";
+import { useActiveConversationStore } from "../activeConversationStore";
+
+import GroupMemberRow from "./GroupMemberRow";
+import LeaveConversationModal from "./LeaveConversationModal";
+import type { UserInfo } from "../../../shared/types";
+
+type GroupMembersModalProps = {
+    groupCreator: UserInfo;
+};
+
+export default function GroupMembersModal({ groupCreator } : GroupMembersModalProps) {
     const myId = useAuth().user!.userId;
-    const { closeModal } = useModal();
+    const { openModal, closeModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;
     const { otherMembers, meta } = conversation;
-    
-    // shouldn't happen but we need the linter happy
+
     if (meta.type !== "GROUP") {
-        return null; 
+        return null;
     }
+
+    const amICreator = meta.groupCreatorId === myId;
 
     const members = [
         {
@@ -26,223 +34,202 @@ export default function GroupMembersModal() {
     ];
 
     return (
-        <div
-            className="
-                w-[min(92vw,30rem)]
-                border-2 border-[#64141b]
-                bg-[#100708]
-                shadow-[6px_6px_0_#48090e]
-            "
-        >
+        <div className="w-170 max-w-[92vw] text-[#eee2d5]">
             {/* Header */}
-            <div
-                className="
-                    flex items-center gap-4
-                    border-b-2 border-[#4b1b1f]
-                    bg-[#16090a]
-                    px-5 py-4
-                "
-            >
-                <div
-                    className="
-                        grid h-10 w-10 shrink-0 place-items-center
-                        border border-[#64141b]
-                        bg-[#1b090b]
-                        text-[#d62834]
-                    "
-                >
-                    <Users size={18} strokeWidth={2.4} />
-                </div>
+            <header className="mb-5 border-b-2 border-[#64141b] pb-4">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                        <p className="mb-1.5 text-[10px] tracking-[0.2em] text-[#a71924]">
+                            CHANNEL MANIFEST
+                        </p>
 
-                <div className="min-w-0 flex-1">
-                    <p
-                        className="
-                            text-xs font-black
-                            tracking-[0.18em]
-                            text-[#eee2d5]
-                        "
-                    >
-                        CHANNEL SOULS
-                    </p>
+                        <h2 className="text-2xl font-black tracking-[-0.03em]">
+                            GROUP MEMBERS
+                        </h2>
 
-                    <p
-                        className="
-                            mt-1 text-[9px]
-                            tracking-[0.18em]
-                            text-[#7f6668]
-                        "
-                    >
-                        {members.length} ENTITIES CONNECTED
-                    </p>
-                </div>
+                        <p className="mt-1.5 text-[10px] tracking-[0.08em] text-[#9f8581]">
+                            {members.length} SOULS CURRENTLY BOUND TO THIS CHANNEL.
+                        </p>
+                    </div>
 
-                <button
-                    type="button"
-                    aria-label="Close"
-                    onClick={closeModal}
-                    className="
-                        grid h-9 w-9 place-items-center
-                        border border-[#4b1b1f]
-                        text-[#8f5559]
-                        transition
-                        hover:border-[#a71924]
-                        hover:bg-[#250b0e]
-                        hover:text-[#ef3945]
-                    "
-                >
-                    <X size={16} strokeWidth={2.6} />
-                </button>
-            </div>
-
-            {/* Members */}
-            <div className="max-h-96 overflow-y-auto">
-                {members.map((member, index) => {
-                    const isMe = member.userId === myId;
-                    const isCreator = member.userId === meta.groupCreatorId;
-
-                    return (
-                        <div
-                            key={member.userId}
-                            className={`
-                                group flex items-center gap-4
-                                px-5 py-4
-                                transition
-                                hover:bg-[#18090b]
-                                ${index !== members.length - 1
-                                    ? "border-b border-[#321316]"
-                                    : ""
-                                }
-                            `}
-                        >
-                            {/* Initial */}
-                            <div
-                                className="
-                                    grid h-10 w-10 shrink-0 place-items-center
-                                    border border-[#522026]
-                                    bg-[#190b0d]
-                                    text-sm font-black
-                                    text-[#bb2933]
-                                    transition
-                                    group-hover:border-[#76212a]
-                                "
-                            >
-                                {member.username.charAt(0).toUpperCase()}
-                            </div>
-
-                            {/* Identity */}
-                            <div className="min-w-0 flex-1">
-                                <div className="flex min-w-0 items-center gap-2">
-                                    <p
-                                        className="
-                                            truncate
-                                            text-sm font-bold
-                                            text-[#d9c9c3]
-                                        "
-                                    >
-                                        {member.username}
-                                    </p>
-
-                                    {isMe && (
-                                        <span
-                                            className="
-                                                shrink-0
-                                                text-[8px] font-black
-                                                tracking-[0.16em]
-                                                text-[#8f5559]
-                                            "
-                                        >
-                                            // YOU
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="mt-1 flex items-center gap-2">
-                                    {isCreator ? (
-                                        <span
-                                            className="
-                                                flex items-center gap-1
-                                                text-[8px] font-bold
-                                                tracking-[0.16em]
-                                                text-[#b47b32]
-                                            "
-                                        >
-                                            <Crown size={9} strokeWidth={2.4} />
-                                            ORIGINATOR
-                                        </span>
-                                    ) : (
-                                        <span
-                                            className="
-                                                text-[8px]
-                                                tracking-[0.16em]
-                                                text-[#665054]
-                                            "
-                                        >
-                                            CHANNEL MEMBER
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Future member actions */}
-                            {!isMe && (
-                                <button
-                                    type="button"
-                                    className="
-                                        opacity-0
-                                        text-[8px] font-black
-                                        tracking-[0.15em]
-                                        text-[#75565a]
-                                        transition
-                                        hover:text-[#d9b9b4]
-                                        group-hover:opacity-100
-                                    "
-                                >
-                                    VIEW
-                                </button>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Footer */}
-            {!meta.isClosed && (
-                <div
-                    className="
-                        border-t-2 border-[#4b1b1f]
-                        bg-[#130809]
-                        p-4
-                    "
-                >
                     <button
                         type="button"
+                        onClick={closeModal}
+                        aria-label="Close group members"
                         className="
-                            group flex w-full items-center justify-center gap-2
-                            border border-[#64141b]
-                            bg-[#1a090b]
-                            px-4 py-3
-                            text-[9px] font-black
-                            tracking-[0.18em]
-                            text-[#a71924]
+                            grid h-9 w-9 shrink-0 place-items-center
+                            border-2 border-[#4b1b1f]
+                            bg-[#0c0506]
+                            text-[#9f8581]
+                            shadow-[2px_2px_0_#48090e]
                             transition
-                            hover:border-[#a71924]
-                            hover:bg-[#290c10]
-                            hover:text-[#ed3945]
+                            hover:border-[#e02632]
+                            hover:text-[#e02632]
+                            active:translate-x-0.5
+                            active:translate-y-0.5
+                            active:shadow-none
                         "
                     >
-                        <UserPlus
-                            size={13}
-                            strokeWidth={2.5}
-                            className="
-                                transition-transform
-                                group-hover:scale-110
-                            "
-                        />
-
-                        INVITE SOUL
+                        <X size={16} strokeWidth={2.5} />
                     </button>
                 </div>
-            )}
+            </header>
+
+            <div className="flex flex-col gap-5">
+                {/* Members */}
+                <section>
+                    <div className="mb-2.5 flex items-center gap-3">
+                        <span className="text-[10px] font-bold tracking-[0.18em] text-[#a71924]">
+                            01
+                        </span>
+
+                        <h3 className="text-xs font-bold tracking-[0.15em]">
+                            BOUND SOULS
+                        </h3>
+
+                        <div className="h-px flex-1 bg-[#4b1b1f]" />
+                    </div>
+
+                    <div className="max-h-104 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+                            {members.map((member) => {
+                                const isMe = member.userId === myId;
+                                const isCreator =
+                                    member.userId === meta.groupCreatorId;
+
+                                return (
+                                    <GroupMemberRow
+                                        key={member.userId}
+                                        member={member}
+                                        isMe={isMe}
+                                        isCreator={isCreator}
+                                        canRemoveMember={amICreator && !isMe}
+                                    />
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Channel controls */}
+                <section>
+                    <div className="mb-2.5 flex items-center gap-3">
+                        <span className="text-[10px] font-bold tracking-[0.18em] text-[#a71924]">
+                            02
+                        </span>
+
+                        <h3 className="text-xs font-bold tracking-[0.15em]">
+                            CHANNEL CONTROL
+                        </h3>
+
+                        <div className="h-px flex-1 bg-[#4b1b1f]" />
+                    </div>
+
+                    {amICreator ? (
+                        <>
+                            {meta.isClosed ? (
+                                <div
+                                    className="
+                                        border-2 border-[#4b1b1f]
+                                        bg-[#0c0506]
+                                        px-4 py-3
+                                        text-center
+                                        shadow-[3px_3px_0_#48090e]
+                                    "
+                                >
+                                    <p className="text-xs font-bold tracking-[0.12em] text-[#9f8581]">
+                                        CHANNEL SEALED
+                                    </p>
+
+                                    <p className="mt-1 text-[10px] text-[#665054]">
+                                        This channel has been condemned to silence.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        type="button"
+                                        className="
+                                            group flex items-center justify-center gap-2
+                                            border-2 border-[#4b1b1f]
+                                            bg-[#0c0506]
+                                            px-3 py-2.5
+                                            text-[10px] font-bold
+                                            tracking-[0.12em]
+                                            text-[#eee2d5]
+                                            shadow-[3px_3px_0_#48090e]
+                                            transition
+                                            hover:border-[#e02632]
+                                            hover:bg-[#190b0d]
+                                            active:translate-x-0.5
+                                            active:translate-y-0.5
+                                            active:shadow-none
+                                        "
+                                    >
+                                        <UserPlus
+                                            size={14}
+                                            strokeWidth={2.5}
+                                            className="
+                                                text-[#a71924]
+                                                transition-colors
+                                                group-hover:text-[#e02632]
+                                            "
+                                        />
+
+                                        INVITE SOUL
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="
+                                            flex items-center justify-center gap-2
+                                            border-2 border-[#e02632]
+                                            bg-[#a71924]
+                                            px-3 py-2.5
+                                            text-[10px] font-bold
+                                            tracking-[0.12em]
+                                            text-[#eee2d5]
+                                            shadow-[3px_3px_0_#520a10]
+                                            transition
+                                            hover:bg-[#e02632]
+                                            active:translate-x-0.5
+                                            active:translate-y-0.5
+                                            active:shadow-none
+                                        "
+                                    >
+                                        <LockKeyhole size={14} strokeWidth={2.6} />
+                                        CLOSE CHANNEL
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => openModal(<LeaveConversationModal groupCreator={groupCreator}/>)}
+                            className="
+                                flex w-full items-center justify-center gap-2
+                                border-2 border-[#64141b]
+                                bg-[#190b0d]
+                                px-4 py-2.5
+                                text-xs font-bold
+                                tracking-[0.15em]
+                                text-[#eee2d5]
+                                shadow-[3px_3px_0_#48090e]
+                                transition
+                                hover:border-[#e02632]
+                                hover:bg-[#a71924]
+                                active:translate-x-0.5
+                                active:translate-y-0.5
+                                active:shadow-none
+                            "
+                        >
+                            <LogOut size={15} strokeWidth={2.5} />
+                            LEAVE CHANNEL
+                        </button>
+                    )}
+                </section>
+            </div>
         </div>
     );
 }

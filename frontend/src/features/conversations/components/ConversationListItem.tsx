@@ -145,13 +145,13 @@ function getEventMessagePreview(message: EventMessage) {
         case "GROUP_CREATED":
             return "GROUP CHANNEL ESTABLISHED";
 
-        case "USER_INVITED":
-            return "A SOUL ENTERED THE CHANNEL";
+        case "MEMBERS_INVITED":
+            return "NEW BLOOD HAS ENTERED THE CHANNEL";
 
-        case "USER_LEFT":
+        case "MEMBER_LEFT":
             return "A SOUL LEFT THE CHANNEL";
 
-        case "USER_REMOVED":
+        case "MEMBER_REMOVED":
             return "A SOUL WAS REMOVED";
 
         case "GROUP_CLOSED":

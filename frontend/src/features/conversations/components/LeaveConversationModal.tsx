@@ -4,13 +4,13 @@ import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiClient";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
+import type { UserInfo } from "../../../shared/types";
 
 type LeaveConversationModalProps = {
-    groupCreatorId: number;
-    groupCreatorBlocked: boolean;
+    groupCreator: UserInfo;
 };
 
-export default function LeaveConversationModal({ groupCreatorId, groupCreatorBlocked }: LeaveConversationModalProps) {
+export default function LeaveConversationModal({ groupCreator }: LeaveConversationModalProps) {
     const { closeModal } = useModal();
 
     const leaveConversation = useActiveConversationStore((s) => s.leaveConversation);
@@ -21,17 +21,19 @@ export default function LeaveConversationModal({ groupCreatorId, groupCreatorBlo
     const [error, setError] = useState<string | null>(null);
     const [blockCreator, setBlockCreator] = useState(false);
 
+    const hasBlockedCreator = useBlockedUsersStore((s) => !!s.blockedUsersById[groupCreator.userId]);
+
     async function handleLeave() {
         if (isLeaving) return;
 
         setError(null);
         setIsLeaving(true);
-        
+
         try {
-            if (!groupCreatorBlocked && blockCreator) {
-                await blockUser(groupCreatorId);
+            if (!hasBlockedCreator && blockCreator) {
+                await blockUser(groupCreator.userId);
             }
-            
+
             await leaveConversation();
 
             closeModal();
@@ -130,7 +132,7 @@ export default function LeaveConversationModal({ groupCreatorId, groupCreatorBlo
                             </div>
                         </div>
 
-                        {!groupCreatorBlocked && (
+                        {!hasBlockedCreator && (
                             <label
                                 className="
                                     mt-4 flex cursor-pointer items-start gap-3
@@ -167,7 +169,6 @@ export default function LeaveConversationModal({ groupCreatorId, groupCreatorBlo
                                         <span className="h-2 w-2 bg-[#eee2d5]" />
                                     )}
                                 </span>
-
                                 <span className="min-w-0">
                                     <span
                                         className="
@@ -186,7 +187,12 @@ export default function LeaveConversationModal({ groupCreatorId, groupCreatorBlo
                                             text-[#8f7370]
                                         "
                                     >
-                                        Also block the group creator. This denies any future invitations from this soul.
+                                        Also block{" "}
+                                        <span className="font-bold text-[#d7b9b4]">
+                                            {groupCreator.username}
+                                        </span>
+                                        , the creator of this channel. This prevents future invitations from
+                                        this soul.
                                     </span>
                                 </span>
                             </label>

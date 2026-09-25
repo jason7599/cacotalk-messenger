@@ -102,6 +102,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
     };
 
     const openDirectConversation = async (targetId: number) => {
+        get().clearActiveConversation();
+
         const myRequestId = ++requestId;
 
         // TODO? do a local search in the conversationsStore list first?

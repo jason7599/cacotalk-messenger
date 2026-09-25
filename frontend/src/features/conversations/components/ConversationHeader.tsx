@@ -16,23 +16,22 @@ export default function ConversationHeader() {
 
     const { otherMembers, meta } = conversation;
 
-    const subjectUserId = meta.type === "DIRECT"
-        ? otherMembers[0]!.userId
-        : meta.groupCreatorId
-    ;
-
     const createdByMe = meta.type === "GROUP" && meta.groupCreatorId === myId;
+
+    const subjectUser = meta.type === "DIRECT"
+        ? otherMembers[0]!
+        : createdByMe ? { userId: myId, username: "YOU" } : otherMembers.find((m) => m.userId === meta.groupCreatorId)!
+    ;
 
     // IF ws connection drops and reconnects mid session, or anything causes the store to be out of sync,
     // these data will be stale. But I'd say it's acceptable for now. Let's just be smart with reconnection later
-    // the !createdByMe inside is just a lil hack to avoid unnecessary lookups
-    const isSubjectUserInContacts = useContactsStore((s) => !!s.contactsById[subjectUserId]);
-    const isSubjectUserBlocked = useBlockedUsersStore((s) => !!s.blockedUsersById[subjectUserId]);
+    const isSubjectUserInContacts = useContactsStore((s) => !createdByMe && !!s.contactsById[subjectUser.userId]);
+    const isSubjectUserBlocked = useBlockedUsersStore((s) => !!s.blockedUsersById[subjectUser.userId]);
 
-    const isAddingContact = useContactsStore((s) => s.addingIds.has(subjectUserId));
+    const isAddingContact = useContactsStore((s) => s.addingIds.has(subjectUser.userId));
 
     const unblockUser = useBlockedUsersStore((s) => s.unblockUser);
-    const isBlockStatePending = useBlockedUsersStore((s) => s.pendingIds.has(subjectUserId));
+    const isBlockStatePending = useBlockedUsersStore((s) => s.pendingIds.has(subjectUser.userId));
 
     // Show warning when:
     // Direct: the other person is not in contacts and NOT blocked by me
@@ -40,7 +39,7 @@ export default function ConversationHeader() {
     const showWarning =
         (meta.type === "DIRECT" && (!meta.blockedMe && !isSubjectUserInContacts && !isSubjectUserBlocked))
         || (meta.type === "GROUP" && !createdByMe && (!isSubjectUserInContacts || isSubjectUserBlocked))
-        ;
+    ;
 
     function getGroupDisplayTitle() {
         const names = otherMembers.map(({ username }) =>
@@ -114,7 +113,7 @@ export default function ConversationHeader() {
                             <>
                                 <button
                                     type="button"
-                                    onClick={() => openModal(<GroupMembersModal />)}
+                                    onClick={() => openModal(<GroupMembersModal groupCreator={subjectUser}/>)}
                                     className="
                                         flex items-center gap-1
                                         text-[9px]
@@ -199,7 +198,7 @@ export default function ConversationHeader() {
                                                 <button
                                                     type="button"
                                                     disabled={isBlockStatePending}
-                                                    onClick={() => unblockUser(subjectUserId)}
+                                                    onClick={() => unblockUser(subjectUser.userId)}
                                                     className="
                                                         text-[9px] font-bold tracking-[0.16em]
                                                         text-[#7f6668] underline decoration-dotted
@@ -224,7 +223,7 @@ export default function ConversationHeader() {
                         <button
                             type="button"
                             aria-label="View members"
-                            onClick={() => openModal(<GroupMembersModal />)}
+                            onClick={() => openModal(<GroupMembersModal groupCreator={subjectUser}/>)}
                             className="
                                 group relative grid h-12 w-12 place-items-center
                                 border-2 border-[#4b1b1f]
@@ -293,7 +292,7 @@ export default function ConversationHeader() {
             {showWarning && (
                 <ConversationWarning
                     meta={meta}
-                    subjectUserId={subjectUserId}
+                    subjectUser={subjectUser}
                     isSubjectUserBlocked={isSubjectUserBlocked}
                     isAddingContact={isAddingContact}
                     isBlockStatePending={isBlockStatePending}
