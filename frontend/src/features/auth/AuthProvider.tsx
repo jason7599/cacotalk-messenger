@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode })  {
         try {
             setUser((await apiGetAuthUser()));
         } catch (err) {
-            console.log(err);
             throw err;
         }
     }

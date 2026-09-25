@@ -12,6 +12,7 @@ export type RegisterRequest = {
 
 export type AuthUserResponse = {
     userId: number;
+    username: string;
 };
 
 export async function apiGetAuthUser(): Promise<AuthUserResponse> {
