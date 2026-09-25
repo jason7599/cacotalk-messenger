@@ -218,8 +218,8 @@ public class ConversationService {
         long creatorId = getGroupCreatorId(conversationId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
 
-        if (userId != creatorId) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+        if (userId == creatorId) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Creator cannot leave the group.");
         }
 
         // Membership didn't exist.
