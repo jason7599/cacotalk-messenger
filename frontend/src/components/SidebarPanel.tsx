@@ -5,12 +5,15 @@ import SettingsModal from "./SettingsModal";
 import cacotalkEmblem from "../assets/cacotalk-logo.png";
 import ContactList from "../features/userRelations/components/ContactList";
 import ConversationList from "../features/conversations/components/ConversationList";
+import { useAuth } from "../features/auth/AuthProvider";
 
 export default function Sidebar() {
-    const [panel, setPanel] =
-        useState<"contacts" | "conversations">("conversations");
+    const [panel, setPanel] = useState<"contacts" | "conversations">("conversations");
 
     const { openModal } = useModal();
+    const { user } = useAuth();
+
+    if (!user) return;
 
     const navButton = `
         relative grid h-12 w-full place-items-center
@@ -118,10 +121,96 @@ export default function Sidebar() {
                     text-[#eee2d5]
                 "
             >
-                {panel === "conversations"
-                    ? <ConversationList />
-                    : <ContactList />
-                }
+                <div className="min-h-0 flex-1">
+                    {panel === "conversations"
+                        ? <ConversationList />
+                        : <ContactList />
+                    }
+                </div>
+
+                {/* Current user */}
+                <div
+                    className="
+                        relative overflow-hidden
+                        border-b-2 border-[#64141b]
+                        bg-[#100708]
+                        px-4 py-4
+                    "
+                >
+                    <div
+                        className="
+                            pointer-events-none absolute
+                            right-3 top-2
+                            text-[8px] font-bold
+                            tracking-[0.18em]
+                            text-[#321316]
+                        "
+                    >
+                        IDENTITY // VERIFIED
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="
+                                relative grid h-14 w-14 shrink-0 place-items-center
+                                border-2 border-[#a71924]
+                                bg-[#190b0d]
+                                text-xl font-black
+                                text-[#e02632]
+                                shadow-[4px_4px_0_#48090e]
+                            "
+                        >
+                            {user.username.charAt(0).toUpperCase()}
+
+                            <span
+                                className="
+                                    absolute -bottom-1 -right-1
+                                    h-2.5 w-2.5
+                                    border border-[#100708]
+                                    bg-[#e02632]
+                                "
+                            />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                            <p
+                                className="
+                                    text-[9px] font-bold
+                                    tracking-[0.18em]
+                                    text-[#a71924]
+                                "
+                            >
+                                ACTIVE OPERATOR
+                            </p>
+
+                            <p
+                                className="
+                                    mt-0.5 truncate
+                                    text-lg font-black
+                                    tracking-[-0.02em]
+                                    text-[#eee2d5]
+                                "
+                            >
+                                {user.username}
+                            </p>
+
+                            <div
+                                className="
+                                    mt-1 flex items-center gap-2
+                                    text-[9px]
+                                    tracking-[0.12em]
+                                    text-[#665054]
+                                "
+                            >
+                                <span>STATUS</span>
+                                <span className="h-px w-4 bg-[#4b1b1f]" />
+                                <span className="font-bold text-[#9f8581]">
+                                    CONNECTED
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
         </aside >
     );

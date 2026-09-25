@@ -169,7 +169,7 @@ export default function GroupMemberRow({
                                 bg-[#0c0506]
                                 px-2
                                 text-[8px] font-bold
-                                tracking-[0.1em]
+                                tracking-widest
                                 text-[#9f8581]
                                 transition
                                 hover:border-[#e02632]
@@ -222,7 +222,7 @@ export default function GroupMemberRow({
                                         bg-[#0c0506]
                                         px-2
                                         text-[8px] font-bold
-                                        tracking-[0.1em]
+                                        tracking-widest
                                         text-[#9f8581]
                                         transition
                                         hover:border-[#e02632]
