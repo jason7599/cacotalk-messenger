@@ -81,7 +81,8 @@ None
 
 ```json
 {
-  "userId": 42
+  "userId": 42,
+  "username": "Alice"
 }
 ```
 

@@ -1,5 +1,6 @@
 package com.jason7599.cacotalk.auth;
 
+import com.jason7599.cacotalk.auth.dto.AuthUserResponse;
 import com.jason7599.cacotalk.auth.dto.LoginRequest;
 import com.jason7599.cacotalk.auth.dto.RegisterRequest;
 import com.jason7599.cacotalk.auth.session.SessionService;
@@ -58,6 +59,12 @@ public class AuthService {
         }
 
         return sessionService.create(user.getId());
+    }
+
+    public AuthUserResponse getAuthUser(long userId) {
+        return new AuthUserResponse(userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Unauthorized"))
+        );
     }
 
     public void logout(String token) {

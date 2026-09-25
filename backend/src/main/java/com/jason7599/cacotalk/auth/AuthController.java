@@ -58,11 +58,9 @@ public class AuthController {
         clearSessionCookie(response);
     }
 
-    // Looks cursed as for now
-    // Explanation for confused future me: See SessionAuthenticationFilter
     @GetMapping("/me")
-    public AuthUserResponse getAuthUser(@AuthenticationPrincipal AuthUser user) {
-        return new AuthUserResponse(user.userId());
+    public AuthUserResponse getAuthUser(@AuthenticationPrincipal AuthUser authUser) {
+        return authService.getAuthUser(authUser.userId());
     }
 
     private void setSessionCookie(
