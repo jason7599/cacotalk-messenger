@@ -18,7 +18,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             c.type AS conversationType,
 
             members.preview AS membersPreview,
-            members.cnt AS memberCount,
+            COALESCE(members.cnt, 0) AS memberCount,
 
             c.group_creator_id,
 
@@ -42,7 +42,13 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         LEFT JOIN (
             SELECT
                 conversation_id,
-                JSONB_AGG(json_build_object('userId', user_id, 'username', username) ORDER BY username)
+                JSONB_AGG(
+                    json_build_object(
+                        'userId', user_id,
+                         'username', username
+                    )
+                    ORDER BY username
+                )
                     FILTER (WHERE rnk <= :previewCount) AS preview,
                 COUNT(*) AS cnt
             FROM (

@@ -46,10 +46,9 @@ public class ConversationService {
         return new ConversationSummary(
                 p.getConversationId(),
                 p.getConversationType(),
-                objectMapper.readValue(
-                        p.getMembersPreview(),
-                        new TypeReference<List<UserResponse>>() {}
-                ),
+                p.getMembersPreview() != null
+                    ? objectMapper.readValue(p.getMembersPreview(), new TypeReference<>() {})
+                    : List.of(),
                 p.getMemberCount(),
                 p.getGroupCreatorId(),
                 p.getLastReadSeq(),
