@@ -92,8 +92,7 @@ export default function GroupMembersModal({ groupCreator } : GroupMembersModalPr
                         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
                             {members.map((member) => {
                                 const isMe = member.userId === myId;
-                                const isCreator =
-                                    member.userId === meta.groupCreatorId;
+                                const isCreator = member.userId === meta.groupCreatorId;
 
                                 return (
                                     <GroupMemberRow

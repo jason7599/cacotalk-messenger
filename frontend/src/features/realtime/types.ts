@@ -6,4 +6,9 @@ export type RealtimeEvent =
     | { type: "CONTACT_CHANGED"; subject: UserInfo; added: boolean }
     | { type: "BLOCK_CHANGED"; subject: UserInfo; added: boolean }
     | { type: "REMOVED_FROM_GROUP"; conversationId: string }
+    | { type: "MEMBER_REMOVED";
+        conversationId: string;
+        subject: UserInfo;
+        previewPatch: UserInfo[];
+        newMemberCount: number; }
 ;

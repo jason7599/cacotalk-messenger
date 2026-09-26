@@ -3,6 +3,8 @@ import type { ConversationSummary } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { apiGetConversationSummary } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiClient";
+import type { UserInfo } from "../../shared/types";
+import { useAuthStore } from "../auth/authStore";
 
 type ConversationsState = {
     conversationsById: Record<string, ConversationSummary>;
@@ -12,6 +14,7 @@ type ConversationsState = {
     upsertLocal: (conversation: ConversationSummary) => void;
     removeLocal: (conversationId: string) => void;
     onNewMessage: (message: ChatMessage) => Promise<void>;
+    patchMembers: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => void;
     reset: () => void;
 };
 
@@ -81,6 +84,34 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
                     }
                 }
             };
+        })
+    },
+
+    patchMembers: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => {
+        set((state) => {
+            const current = state.conversationsById[conversationId];
+            if (!current) {
+                // no-op, but this shouldn't happen
+                console.warn(`patchMembers called on absent conversation ${conversationId}`);
+                return state;
+            }
+
+            const myId = useAuthStore.getState().user!.userId;
+            const meIdx = previewPatch.findIndex((m) => m.userId === myId);
+            const dropIdx = meIdx === -1 ? previewPatch.length - 1 : meIdx;
+
+            const newPreview = previewPatch.filter((_, i) => i !== dropIdx);
+
+            return {
+                conversationsById: {
+                    ...state.conversationsById,
+                    [conversationId]: {
+                        ...current,
+                        membersPreview: newPreview,
+                        memberCount: newMemberCount
+                    }
+                }
+            }
         })
     },
 

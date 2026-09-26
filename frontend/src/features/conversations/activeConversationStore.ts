@@ -22,6 +22,7 @@ export type ActiveConversationState = {
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
     leaveConversation: () => Promise<void>;
+    onMemberRemoved: (memberId: number) => void; 
 };
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
@@ -208,6 +209,14 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         useConversationsStore.getState().removeLocal(conversationId);
     };
 
+    const onMemberRemoved = (memberId: number) => {
+        set((state) => {
+            state.conversation!.otherMembers = state.conversation!.otherMembers.filter(
+                (m) => m.userId !== memberId
+            );
+        });
+    };
+
     return {
         status: "IDLE",
         error: null,
@@ -220,6 +229,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         openDirectConversation,
         loadOlderMessages,
         upsertMessage,
-        leaveConversation
+        leaveConversation,
+        onMemberRemoved
     };
 }));
