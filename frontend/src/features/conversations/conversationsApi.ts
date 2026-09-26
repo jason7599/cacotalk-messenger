@@ -24,3 +24,7 @@ export async function apiCreateGroupConversation(initMemberIds: number[]): Promi
 export async function apiLeaveConversation(conversationId: string): Promise<void> {
     await api.delete(`/conversations/${conversationId}/members/me`);
 }
+
+export async function apiRemoveMember(conversationId: string, targetId: number): Promise<void> {
+    await api.delete(`/conversations/${conversationId}/members/${targetId}`);
+}

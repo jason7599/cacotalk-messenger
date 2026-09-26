@@ -5,13 +5,14 @@ import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { selectGroupCreator, useActiveConversationStore } from "../activeConversationStore";
 import { useAuthStore } from "../../auth/authStore";
+import RemoveMemberModal from "./RemoveMemberModal";
 
 type GroupMemberItemProps = {
     member: UserInfo;
 };
 
 export default function GroupMemberItem({ member }: GroupMemberItemProps) {
-    const { closeModal } = useModal();
+    const { openModal, closeModal } = useModal();
 
     const me = useAuthStore((s) => s.user!);
     const isMe = member.userId === me.userId;
@@ -36,7 +37,7 @@ export default function GroupMemberItem({ member }: GroupMemberItemProps) {
         openDirectConversation(member.userId);
     }
 
-     return (
+    return (
         <div
             className="
                 group relative
@@ -254,6 +255,7 @@ export default function GroupMemberItem({ member }: GroupMemberItemProps) {
                         <button
                             type="button"
                             aria-label={`Remove ${member.username} from group`}
+                            onClick={() => openModal(<RemoveMemberModal member={member} />)}
                             title="Remove from group"
                             className="
                                 grid h-7 w-7 shrink-0 place-items-center
