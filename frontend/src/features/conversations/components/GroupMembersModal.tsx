@@ -1,7 +1,7 @@
 import { LockKeyhole, LogOut, UserPlus, X } from "lucide-react";
 import { useModal } from "../../../components/ModalProvider";
 import { useActiveConversationStore } from "../activeConversationStore";
-import GroupMemberRow from "./GroupMemberRow";
+import GroupMemberRow from "./GroupMemberItem";
 import LeaveConversationModal from "./LeaveConversationModal";
 import { useAuthStore } from "../../auth/authStore";
 
@@ -79,20 +79,12 @@ export default function GroupMembersModal() {
 
                     <div className="max-h-104 overflow-y-auto pr-1">
                         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
-                            {members.map((member) => {
-                                const isMe = member.userId === me.userId;
-                                const isCreator = member.userId === meta.groupCreator.userId;
-
-                                return (
-                                    <GroupMemberRow
-                                        key={member.userId}
-                                        member={member}
-                                        isMe={isMe}
-                                        isCreator={isCreator}
-                                        canRemoveMember={amICreator && !isMe}
-                                    />
-                                );
-                            })}
+                            {members.map((member) => 
+                                <GroupMemberRow
+                                    key={member.userId}
+                                    member={member}
+                                />
+                            )}
                         </div>
                     </div>
                 </section>

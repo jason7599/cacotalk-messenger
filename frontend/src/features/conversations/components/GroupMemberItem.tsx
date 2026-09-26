@@ -6,11 +6,11 @@ import { useContactsStore } from "../../userRelations/contactsStore";
 import { selectGroupCreator, useActiveConversationStore } from "../activeConversationStore";
 import { useAuthStore } from "../../auth/authStore";
 
-type GroupMemberRowProps = {
+type GroupMemberItemProps = {
     member: UserInfo;
 };
 
-export default function GroupMemberRow({ member }: GroupMemberRowProps) {
+export default function GroupMemberItem({ member }: GroupMemberItemProps) {
     const { closeModal } = useModal();
 
     const me = useAuthStore((s) => s.user!);
@@ -18,6 +18,8 @@ export default function GroupMemberRow({ member }: GroupMemberRowProps) {
 
     const groupCreator = useActiveConversationStore(selectGroupCreator)!;
     const isCreator = member.userId === groupCreator.userId;
+
+    const canRemoveMember = me.userId === groupCreator.userId;
 
     const isContact = useContactsStore((s) => !!s.contactsById[member.userId]);
     const isAdding = useContactsStore((s) => s.addingIds.has(member.userId));
@@ -248,7 +250,7 @@ export default function GroupMemberRow({ member }: GroupMemberRowProps) {
                         </>
                     )}
 
-                    {isCreator && isMe && (
+                    {canRemoveMember && (
                         <button
                             type="button"
                             aria-label={`Remove ${member.username} from group`}
