@@ -7,7 +7,7 @@
 {
   "id": UUID string,
   "type": "DIRECT" | "GROUP",
-  "membersPreview": string[],
+  "membersPreview": UserResponse[],
   "memberCount": number,
   "groupCreatorId": number | null,
   "lastReadSeq": number,
@@ -15,7 +15,7 @@
   "lastMessage": MessageResponse
 }
 ```
-- `membersPreview` contains the usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user.
+- `membersPreview` contains the userId and usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user.
 - `memberCount` does not include the authenticated user. e.g., A direct conversation has a `memberCount` of 1, not 2.
 - `groupCreatorId` is only used for group conversations and is `null` for direct conversations.
 - `lastReadSeq` is the highest conversation sequence the authenticated user has read.

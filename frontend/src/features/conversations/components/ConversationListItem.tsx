@@ -184,8 +184,8 @@ function formatMessageTimestamp(timestamp: string) {
 
 function getDisplayName(conversation: ConversationSummary) {
     if (conversation.membersPreview.length === 0) {
-        return conversation.type === "GROUP" ? "EMPTY CHANNEL" : "UNKNOWN SOUL";
+        return "EMPTY CHANNEL";
     }
 
-    return conversation.membersPreview.join(", ");
+    return conversation.membersPreview.map((m) => m.username).join(", ");
 }

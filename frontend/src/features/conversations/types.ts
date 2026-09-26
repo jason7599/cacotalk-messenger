@@ -3,7 +3,7 @@ import type { ChatMessage } from "../messages/types";
 
 type SummaryBase = {
     id: string;
-    membersPreview: string[];
+    membersPreview: UserInfo[];
     memberCount: number;
     lastReadSeq: number;
     createdAt: string;
