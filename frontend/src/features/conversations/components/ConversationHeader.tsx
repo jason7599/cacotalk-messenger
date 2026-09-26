@@ -1,14 +1,14 @@
 import { Ban, Lock, X, Users } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
-import { useAuth } from "../../auth/AuthProvider";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import ConversationWarning from "./ConversationWarning";
 import { useModal } from "../../../components/ModalProvider";
 import GroupMembersModal from "./GroupMembersModal";
+import { useAuthStore } from "../../auth/authStore";
 
 export default function ConversationHeader() {
-    const myId = useAuth().user!.userId;
+    const myId = useAuthStore((s) => s.user!.userId);
     const { openModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;

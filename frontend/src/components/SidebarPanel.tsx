@@ -5,15 +5,14 @@ import SettingsModal from "./SettingsModal";
 import cacotalkEmblem from "../assets/cacotalk-logo.png";
 import ContactList from "../features/userRelations/components/ContactList";
 import ConversationList from "../features/conversations/components/ConversationList";
-import { useAuth } from "../features/auth/AuthProvider";
+import { useAuthStore } from "../features/auth/authStore";
 
 export default function Sidebar() {
     const [panel, setPanel] = useState<"contacts" | "conversations">("conversations");
 
     const { openModal } = useModal();
-    const { user } = useAuth();
+    const user = useAuthStore((s) => s.user!);
 
-    if (!user) return;
 
     const navButton = `
         relative grid h-12 w-full place-items-center

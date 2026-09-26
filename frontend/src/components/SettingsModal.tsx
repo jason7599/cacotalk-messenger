@@ -1,11 +1,11 @@
 import { ChevronRight, LogOut, ShieldBan, X } from "lucide-react";
-import { useAuth } from "../features/auth/AuthProvider";
 import { useModal } from "./ModalProvider";
 import { useState } from "react";
 import BlockedUsersModal from "../features/userRelations/components/BlockedUsersModal";
+import { useAuthStore } from "../features/auth/authStore";
 
 export default function SettingsModal() {
-    const { logout } = useAuth();
+    const logout = useAuthStore((s) => s.logout);
     const { openModal, closeModal } = useModal();
 
     const [confirmLogout, setConfirmLogout] = useState(false);

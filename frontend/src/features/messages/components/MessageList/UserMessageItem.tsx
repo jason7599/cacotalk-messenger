@@ -1,4 +1,4 @@
-import { useAuth } from "../../../auth/AuthProvider";
+import { useAuthStore } from "../../../auth/authStore";
 import { formatMessageTimestamp } from "../../formatters";
 import type { UserMessage } from "../../types";
 
@@ -7,8 +7,8 @@ type UserMessageItemProps = {
 };
 
 export default function UserMessageItem({ message }: UserMessageItemProps) {
-    const meId = useAuth().user!.userId;
-    const isMine = message.senderId === meId;
+    const myId = useAuthStore((s) => s.user!.userId);
+    const isMine = message.senderId === myId;
 
     return (
         <div

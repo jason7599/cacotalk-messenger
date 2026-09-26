@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { apiLogin, apiRegister } from "../features/auth/authApi";
-import { useAuth } from "../features/auth/AuthProvider";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
 import { getErrorMessage } from "../shared/apiClient";
+import { useAuthStore } from "../features/auth/authStore";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;
@@ -13,7 +13,7 @@ const PASSWORD_MAX_LENGTH = 32;
 const USERNAME_PATTERN = /^(?=.*[a-z])[a-z0-9]+$/; // separated length to dedupe further
 
 export default function AuthPage() {
-    const { refreshUser } = useAuth();
+    const refreshUser = useAuthStore((s) => s.refreshUser);
 
     const [isLogin, setIsLogin] = useState(true);
 

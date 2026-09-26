@@ -1,19 +1,17 @@
 import { LockKeyhole, LogOut, UserPlus, X } from "lucide-react";
-
-import { useAuth } from "../../auth/AuthProvider";
 import { useModal } from "../../../components/ModalProvider";
 import { useActiveConversationStore } from "../activeConversationStore";
-
 import GroupMemberRow from "./GroupMemberRow";
 import LeaveConversationModal from "./LeaveConversationModal";
 import type { UserInfo } from "../../../shared/types";
+import { useAuthStore } from "../../auth/authStore";
 
 type GroupMembersModalProps = {
     groupCreator: UserInfo;
 };
 
 export default function GroupMembersModal({ groupCreator } : GroupMembersModalProps) {
-    const myId = useAuth().user!.userId;
+    const myId = useAuthStore((s) => s.user!.userId);
     const { openModal, closeModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;

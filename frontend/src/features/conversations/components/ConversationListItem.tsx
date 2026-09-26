@@ -2,14 +2,14 @@ import { Users } from "lucide-react";
 import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
 import type { ChatMessage, EventMessage } from "../../messages/types";
-import { useAuth } from "../../auth/AuthProvider";
+import { useAuthStore } from "../../auth/authStore";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
 };
 
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
-    const myId = useAuth().user!.userId;
+    const myId = useAuthStore((s) => s.user!.userId);
 
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
     const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);

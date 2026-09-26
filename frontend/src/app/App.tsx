@@ -1,11 +1,18 @@
 import AuthPage from "../pages/AuthPage";
 import LoadingScreen from "../components/LoadingScreen";
 import MainPage from "../pages/MainPage";
-import { useAuth } from "../features/auth/AuthProvider";
 import { BootstrapProvider } from "./BootstrapProvider";
+import { useAuthStore } from "../features/auth/authStore";
+import { useEffect } from "react";
 
 export default function App() {
-	const { user, loadingUser } = useAuth();
+	const user = useAuthStore((s) => s.user);
+	const loadingUser = useAuthStore((s) => s.loadingUser);
+	const init = useAuthStore((s) => s.init);
+
+	useEffect(() => {
+		init();
+	}, [init]);
 
 	if (loadingUser) {
 		return <LoadingScreen title="VERIFYING YOUR SOUL"/>;
