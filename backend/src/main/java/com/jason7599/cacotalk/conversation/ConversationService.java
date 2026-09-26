@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ConversationService {
 
+    private static final int SUMMARY_MEMBER_PREVIEW_COUNT = 3;
+
     private static final int GROUP_MINIMUM_MEMBER_COUNT = 3;
     private static final int GROUP_MAXIMUM_MEMBER_COUNT = 100;
 
@@ -66,14 +68,14 @@ public class ConversationService {
     }
 
     public List<ConversationSummary> getConversationSummaries(long userId) {
-        return conversationRepository.getConversationSummaries(userId)
+        return conversationRepository.getConversationSummaries(userId, SUMMARY_MEMBER_PREVIEW_COUNT)
                 .stream()
                 .map(this::summaryFromProjection)
                 .toList();
     }
 
     public ConversationSummary getConversationSummary(UUID conversationId, long userId) {
-        ConversationSummary.Projection p = conversationRepository.getConversationSummary(conversationId, userId)
+        ConversationSummary.Projection p = conversationRepository.getConversationSummary(conversationId, userId, SUMMARY_MEMBER_PREVIEW_COUNT)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found"));
 
         return summaryFromProjection(p);
@@ -212,6 +214,35 @@ public class ConversationService {
         return conversationRepository.getGroupCreatorId(conversationId);
     }
 
+    // Separated as a helper method because it's both used in leaveConversation and removeMember.
+    // MUST be called after the actual membership removal.
+    // Fetches the new preview patch, and the new member count,
+    // and broadcasts a MemberRemoved event for the remaining users.
+    // Also sends a RemovedFromGroup event for the leaving/removed user.
+    // See the RealtimeEvent file for more explanation
+    private void onMemberRemoved(UUID conversationId, UserResponse subject) {
+        List<UserResponse> allMembers = conversationRepository.getAllMembers(conversationId);
+
+        // -1 to exclude the viewing user.
+        int newMemberCount = allMembers.size() - 1;
+        List<UserResponse> previewPatch = allMembers.subList(0, Math.min(allMembers.size(), SUMMARY_MEMBER_PREVIEW_COUNT + 1));
+
+        realtimeEventPublisher.broadcast(
+                conversationId,
+                new RealtimeEvent.MemberRemoved(
+                        conversationId,
+                        subject,
+                        previewPatch,
+                        newMemberCount
+                )
+        );
+
+        realtimeEventPublisher.sendToUser(
+                subject.userId(),
+                new RealtimeEvent.RemovedFromGroup(conversationId)
+        );
+    }
+
     @Transactional
     public void leaveConversation(UUID conversationId, long userId) {
 
@@ -247,14 +278,37 @@ public class ConversationService {
                 new EventMessage.MemberLeft(user)
         );
 
-        // This is for clients in multi-session settings
-        // Since the MEMBER_LEFT event message is broadcasted after the membership row removal
-        // The session of the requester can do an optimistic UI update, whereas the other sessions will
-        // miss the event unless we fire a separate signal like this
-        realtimeEventPublisher.sendToUser(
-                userId,
-                new RealtimeEvent.RemovedFromGroup(conversationId)
+        onMemberRemoved(conversationId, user);
+    }
+
+    @Transactional
+    public void removeMember(UUID conversationId, long userId, long targetId) {
+        long creatorId = getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+
+        if (userId != creatorId) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+        }
+
+        if (userId == targetId) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot remove self.");
+        }
+
+        UserResponse target = userService.findById(targetId).orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        if (conversationRepository.removeMember(conversationId, targetId) == 0) {
+            return;
+        }
+
+        eventMessageService.sendEventMessage(
+                conversationId,
+                new EventMessage.MemberRemoved(target)
         );
+
+        onMemberRemoved(conversationId, target);
     }
 
     @Transactional
@@ -301,41 +355,6 @@ public class ConversationService {
         // Here a separate AddedToGroup event isn't necessary, as we broadcast the event message after the insertion.
 
         // An extra count check here would be redundant
-    }
-
-    @Transactional
-    public void removeMember(UUID conversationId, long userId, long targetId) {
-        long creatorId = getGroupCreatorId(conversationId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
-
-        if (userId != creatorId) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
-        }
-
-        if (userId == targetId) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot remove self.");
-        }
-
-        UserResponse target = userService.findById(targetId).orElse(null);
-        if (target == null) {
-            return;
-        }
-
-        if (conversationRepository.removeMember(conversationId, targetId) == 0) {
-            return;
-        }
-
-        eventMessageService.sendEventMessage(
-                conversationId,
-                new EventMessage.MemberRemoved(target)
-        );
-
-        // TODO: broadcast MemberRemoved event
-
-        realtimeEventPublisher.sendToUser(
-                targetId,
-                new RealtimeEvent.RemovedFromGroup(conversationId)
-        );
     }
 
     @Transactional

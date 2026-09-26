@@ -39,7 +39,9 @@ public sealed interface RealtimeEvent {
     /*
     Not to be confused with the below MemberRemoved...
     This is for the leaving/removed user himself.
-    More specifically, a self-sync purpose for multi session users.
+    Since the MEMBER_LEFT event message is broadcasted after the membership row removal.
+    The session of the requester can do a UI update with the API response, whereas the other sessions will
+    miss the event unless we fire a separate signal like this
      */
     record RemovedFromGroup(UUID conversationId) implements RealtimeEvent {
         @Override public Type type() { return Type.REMOVED_FROM_GROUP; }
@@ -63,7 +65,7 @@ public sealed interface RealtimeEvent {
             UUID conversationId,
             UserResponse subject,
             List<UserResponse> previewPatch,
-            int memberCount
+            int newMemberCount // still doesn't include the user
     ) implements RealtimeEvent {
         @Override public Type type() { return Type.MEMBER_REMOVED; }
     }

@@ -43,7 +43,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             SELECT
                 conversation_id,
                 JSONB_AGG(json_build_object('userId', user_id, 'username', username) ORDER BY username)
-                    FILTER (WHERE rnk <= 3) AS preview,
+                    FILTER (WHERE rnk <= :previewCount) AS preview,
                 COUNT(*) AS cnt
             FROM (
                 SELECT
@@ -76,12 +76,12 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     @Query(value = CONVERSATION_SUMMARY_QUERY + """
         AND c.last_seq > 0 -- ignore empty conversations in bootstrap fetch
     """, nativeQuery = true)
-    List<ConversationSummary.Projection> getConversationSummaries(long userId);
+    List<ConversationSummary.Projection> getConversationSummaries(long userId, int previewCount);
 
     @Query(value = CONVERSATION_SUMMARY_QUERY + """
         AND c.id = :conversationId
     """, nativeQuery = true)
-    Optional<ConversationSummary.Projection> getConversationSummary(UUID conversationId, long userId);
+    Optional<ConversationSummary.Projection> getConversationSummary(UUID conversationId, long userId, int previewCount);
 
     @Query(value = """
         SELECT
