@@ -1,8 +1,9 @@
 import { create } from "zustand";
-import { apiGetAuthUser, apiLogout, type AuthUserResponse } from "./authApi";
+import { apiGetAuthUser, apiLogout } from "./authApi";
+import type { UserInfo } from "../../shared/types";
 
 type AuthState = {
-    user: AuthUserResponse | null;
+    user: UserInfo | null;
     loadingUser: boolean;
 
     init: () => Promise<void>;

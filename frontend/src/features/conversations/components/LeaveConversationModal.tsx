@@ -2,17 +2,14 @@ import { LogOut, X } from "lucide-react";
 import { useState } from "react";
 import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiClient";
-import { useActiveConversationStore } from "../activeConversationStore";
+import { selectGroupCreator, useActiveConversationStore } from "../activeConversationStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
-import type { UserInfo } from "../../../shared/types";
 
-type LeaveConversationModalProps = {
-    groupCreator: UserInfo;
-};
-
-export default function LeaveConversationModal({ groupCreator }: LeaveConversationModalProps) {
+export default function LeaveConversationModal() {
     const { closeModal } = useModal();
 
+    const groupCreator = useActiveConversationStore(selectGroupCreator)!;
+    
     const leaveConversation = useActiveConversationStore((s) => s.leaveConversation);
     const blockUser = useBlockedUsersStore((s) => s.blockUser);
 

@@ -6,6 +6,7 @@ import type { ActiveConversation, ConversationMeta } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 import { useConversationsStore } from "./conversationsStore";
+import { useAuthStore } from "../auth/authStore";
 
 export type ActiveConversationState = {
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
@@ -24,6 +25,11 @@ export type ActiveConversationState = {
     leaveConversation: () => Promise<void>;
     onMemberRemoved: (memberId: number) => void; 
 };
+
+export const selectGroupCreator = (state: ActiveConversationState) => {
+    const meta = state.conversation?.meta;
+    return meta?.type === "GROUP" ? meta.groupCreator : null;
+}
 
 export const useActiveConversationStore = create<ActiveConversationState>()(immer((set, get) => {
     // internal only stale guard
@@ -55,6 +61,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
 
             if (requestId !== myRequestId) return;
 
+            const me = useAuthStore.getState().user!;
+            
             const meta: ConversationMeta =
                 detail.type === "DIRECT"
                     ? {
@@ -64,7 +72,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     }
                     : {
                         type: "GROUP",
-                        groupCreatorId: detail.groupCreatorId!,
+                        groupCreator: (detail.groupCreatorId === me.userId ? me : detail.otherMembers.find((m) => m.userId === detail.groupCreatorId)!),
                         isClosed: detail.isClosed,
                         createdAt: detail.createdAt,
                     }
@@ -198,7 +206,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
-    
     const leaveConversation = async () => {
         const conversationId = get().conversation?.id;
         if (!conversationId) return;

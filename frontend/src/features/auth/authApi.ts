@@ -1,4 +1,5 @@
 import api from "../../shared/apiClient";
+import type { UserInfo } from "../../shared/types";
 
 export type LoginRequest = {
     username: string;
@@ -10,12 +11,7 @@ export type RegisterRequest = {
     password: string;
 };
 
-export type AuthUserResponse = {
-    userId: number;
-    username: string;
-};
-
-export async function apiGetAuthUser(): Promise<AuthUserResponse> {
+export async function apiGetAuthUser(): Promise<UserInfo> {
     return (await api.get("/auth/me")).data;
 }
 

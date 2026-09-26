@@ -3,22 +3,21 @@ import type { UserInfo } from "../../../shared/types";
 import { useModal } from "../../../components/ModalProvider";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import { useContactsStore } from "../../userRelations/contactsStore";
-import { useActiveConversationStore } from "../activeConversationStore";
+import { selectGroupCreator, useActiveConversationStore } from "../activeConversationStore";
+import { useAuthStore } from "../../auth/authStore";
 
 type GroupMemberRowProps = {
     member: UserInfo;
-    isMe: boolean;
-    isCreator: boolean;
-    canRemoveMember: boolean;
 };
 
-export default function GroupMemberRow({
-    member,
-    isMe,
-    isCreator,
-    canRemoveMember,
-}: GroupMemberRowProps) {
+export default function GroupMemberRow({ member }: GroupMemberRowProps) {
     const { closeModal } = useModal();
+
+    const me = useAuthStore((s) => s.user!);
+    const isMe = member.userId === me.userId;
+
+    const groupCreator = useActiveConversationStore(selectGroupCreator)!;
+    const isCreator = member.userId === groupCreator.userId;
 
     const isContact = useContactsStore((s) => !!s.contactsById[member.userId]);
     const isAdding = useContactsStore((s) => s.addingIds.has(member.userId));
@@ -249,7 +248,7 @@ export default function GroupMemberRow({
                         </>
                     )}
 
-                    {canRemoveMember && (
+                    {isCreator && isMe && (
                         <button
                             type="button"
                             aria-label={`Remove ${member.username} from group`}

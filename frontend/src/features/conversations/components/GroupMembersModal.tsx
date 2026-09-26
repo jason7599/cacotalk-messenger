@@ -3,15 +3,10 @@ import { useModal } from "../../../components/ModalProvider";
 import { useActiveConversationStore } from "../activeConversationStore";
 import GroupMemberRow from "./GroupMemberRow";
 import LeaveConversationModal from "./LeaveConversationModal";
-import type { UserInfo } from "../../../shared/types";
 import { useAuthStore } from "../../auth/authStore";
 
-type GroupMembersModalProps = {
-    groupCreator: UserInfo;
-};
-
-export default function GroupMembersModal({ groupCreator } : GroupMembersModalProps) {
-    const myId = useAuthStore((s) => s.user!.userId);
+export default function GroupMembersModal() {
+    const me = useAuthStore((s) => s.user!);
     const { openModal, closeModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;
@@ -21,15 +16,9 @@ export default function GroupMembersModal({ groupCreator } : GroupMembersModalPr
         return null;
     }
 
-    const amICreator = meta.groupCreatorId === myId;
+    const amICreator = meta.groupCreator.userId === me.userId;
 
-    const members = [
-        {
-            userId: myId,
-            username: "YOU",
-        },
-        ...otherMembers,
-    ];
+    const members = [me, ...otherMembers];
 
     return (
         <div className="w-170 max-w-[92vw] text-[#eee2d5]">
@@ -91,8 +80,8 @@ export default function GroupMembersModal({ groupCreator } : GroupMembersModalPr
                     <div className="max-h-104 overflow-y-auto pr-1">
                         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
                             {members.map((member) => {
-                                const isMe = member.userId === myId;
-                                const isCreator = member.userId === meta.groupCreatorId;
+                                const isMe = member.userId === me.userId;
+                                const isCreator = member.userId === meta.groupCreator.userId;
 
                                 return (
                                     <GroupMemberRow
@@ -203,7 +192,7 @@ export default function GroupMembersModal({ groupCreator } : GroupMembersModalPr
                     ) : (
                         <button
                             type="button"
-                            onClick={() => openModal(<LeaveConversationModal groupCreator={groupCreator}/>)}
+                            onClick={() => openModal(<LeaveConversationModal />)}
                             className="
                                 flex w-full items-center justify-center gap-2
                                 border-2 border-[#64141b]

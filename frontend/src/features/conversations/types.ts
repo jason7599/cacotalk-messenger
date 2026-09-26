@@ -32,7 +32,7 @@ export type ConversationDetail = {
 export type ConversationMeta = 
     { createdAt: string } & (
         | { type: "DIRECT"; blockedMe: boolean; }
-        | { type: "GROUP"; groupCreatorId: number; isClosed: boolean; }
+        | { type: "GROUP"; groupCreator: UserInfo; isClosed: boolean; }
     )
 ;
 

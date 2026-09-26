@@ -8,7 +8,7 @@ import GroupMembersModal from "./GroupMembersModal";
 import { useAuthStore } from "../../auth/authStore";
 
 export default function ConversationHeader() {
-    const myId = useAuthStore((s) => s.user!.userId);
+    const me = useAuthStore((s) => s.user!);
     const { openModal } = useModal();
 
     const conversation = useActiveConversationStore((s) => s.conversation)!;
@@ -16,11 +16,11 @@ export default function ConversationHeader() {
 
     const { otherMembers, meta } = conversation;
 
-    const createdByMe = meta.type === "GROUP" && meta.groupCreatorId === myId;
+    const createdByMe = meta.type === "GROUP" && meta.groupCreator.userId === me.userId;
 
     const subjectUser = meta.type === "DIRECT"
         ? otherMembers[0]!
-        : createdByMe ? { userId: myId, username: "YOU" } : otherMembers.find((m) => m.userId === meta.groupCreatorId)!
+        : meta.groupCreator
     ;
 
     // IF ws connection drops and reconnects mid session, or anything causes the store to be out of sync,
@@ -59,23 +59,10 @@ export default function ConversationHeader() {
         return `${names.slice(0, 3).join(", ")} +${names.length - 3}`;
     }
 
-    let displayTitle: string;
-    let creatorLabel: string | null = null;
-    if (meta.type === "DIRECT") {
-        displayTitle = otherMembers[0]!.username;
-    } else {
-        displayTitle = getGroupDisplayTitle();
-
-        if (createdByMe) {
-            creatorLabel = "YOU";
-        } else {
-            creatorLabel =
-                otherMembers.find(
-                    (member) => member.userId === meta.groupCreatorId
-                )!.username
-            ;
-        }
-    }
+    const displayTitle = meta.type === "DIRECT" 
+        ? otherMembers[0]!.username 
+        : getGroupDisplayTitle()
+    ;
 
     return (
         <header
@@ -113,7 +100,7 @@ export default function ConversationHeader() {
                             <>
                                 <button
                                     type="button"
-                                    onClick={() => openModal(<GroupMembersModal groupCreator={subjectUser}/>)}
+                                    onClick={() => openModal(<GroupMembersModal/>)}
                                     className="
                                         flex items-center gap-1
                                         text-[9px]
@@ -130,7 +117,7 @@ export default function ConversationHeader() {
                                     GROUP // {otherMembers.length + 1} SOULS
                                 </button>
 
-                                {creatorLabel && (
+                                {meta.type === "GROUP" && (
                                     <>
                                         <span className="text-[#4b1b1f]">//</span>
 
@@ -144,7 +131,7 @@ export default function ConversationHeader() {
                                         >
                                             CREATED BY:{" "}
                                             <span className="font-bold text-[#b99792]">
-                                                {creatorLabel}
+                                                {meta.groupCreator.username}
                                             </span>
                                         </span>
                                     </>
@@ -223,7 +210,7 @@ export default function ConversationHeader() {
                         <button
                             type="button"
                             aria-label="View members"
-                            onClick={() => openModal(<GroupMembersModal groupCreator={subjectUser}/>)}
+                            onClick={() => openModal(<GroupMembersModal/>)}
                             className="
                                 group relative grid h-12 w-12 place-items-center
                                 border-2 border-[#4b1b1f]
