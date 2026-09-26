@@ -126,7 +126,7 @@ So. 2 broadcasts.
 2. `RealtimeEvent.MembersPreviewPatch` for updating the preview.
 
 ```java
-record MembersPreviewPatch(UUID conversationId, List<UserResponse> patch, int memberCount) implements RealtimeEvent {
+record MembersPreviewPatch(UUID conversationId, List<UserResponse> patch) implements RealtimeEvent {
     @Override public Type type() { return Type.MEMBERS_PREVIEW_PATCH; }
 }
 ```
@@ -134,3 +134,26 @@ record MembersPreviewPatch(UUID conversationId, List<UserResponse> patch, int me
 One query instead of loads of per-viewer queries, clean architecture, with a cost of 2 broadcasts.
 
 Sounds like a good deal to me.
+
+### Kinda gonna walk back on my previous decision
+
+No more relying on `EventMessage`. Alright? 
+
+`EventMessage` is just a persisted message of type EVENT.
+
+`RealtimeEvent` is where all the live sync happens.
+
+That is such a clean split.
+
+Though, this does reinvoke the earlier problem, especially with `MEMBERS_INVITED`.
+
+Unlike the clean split in members getting removed, here, `EventMessage` holds all the relevant information for the FE client.
+
+So, making a separate `RealtimeEvent` for this would technically be redundant info.
+
+But, I'm still going for it, mostly for 2 already established reasons.
+
+1. I already embraced 2 broadcasts.
+2. FE can stay dumb.
+
+Done

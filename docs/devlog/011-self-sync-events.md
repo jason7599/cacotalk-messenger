@@ -83,6 +83,8 @@ OK. RealtimeEvent and EventMessage are doing kinda similar jobs, and it is kinda
 - `RealtimeEvent`: All events sent over WebSocket. So this one is the mother of all events. Hail.
 - `EventMessage`: Our domain event type message, i.e., `messages` with `type = 'EVENT`. So this itself arrives via `RealtimeEvent.NEW_MESSAGE`. So `EventMessage` by nature is scoped to a conversation. It cannot not have a relevant conversation.
 
+### !!!The below stuff are kinda outdated thanks to the discovery in [the next log](./012-member-preview-sync.md)!!!
+
 So, the idea is to rely on `EventMessage`s for UI sync whenever I can.
 
 Think about the group creation flow. As per my design, a `EventMessage.GROUP_CREATED` message is automatically and atomically inserted along group creation. That is the first message of every group conversation.

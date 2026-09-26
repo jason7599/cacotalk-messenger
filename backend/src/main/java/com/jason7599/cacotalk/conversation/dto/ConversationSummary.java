@@ -3,6 +3,7 @@ package com.jason7599.cacotalk.conversation.dto;
 import com.jason7599.cacotalk.conversation.ConversationType;
 import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
+import com.jason7599.cacotalk.user.dto.UserResponse;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,7 +13,7 @@ public record ConversationSummary(
         UUID id,
         ConversationType type,
 
-        List<String> membersPreview,// list of usernames of other users. excludes requesting user. Should be size 1 for DIRECT
+        List<UserResponse> membersPreview,// preview list of other users. excludes requesting user. Should be size 1 for DIRECT
         int memberCount, // exclude user
 
         Long groupCreatorId, // GROUP type only
@@ -26,7 +27,7 @@ public record ConversationSummary(
     public interface Projection {
         UUID getConversationId();
         ConversationType getConversationType();
-        String[] getMembersPreview();
+        String getMembersPreview(); // raw JSON blob of {userId, username} array.
         int getMemberCount();
         Long getGroupCreatorId();
         long getLastSeq();

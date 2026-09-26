@@ -42,11 +42,13 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
         LEFT JOIN (
             SELECT
                 conversation_id,
-                ARRAY_AGG(username ORDER BY username) FILTER (WHERE rnk <= 3) AS preview,
+                JSONB_AGG(json_build_object('userId', user_id, 'username', username) ORDER BY username)
+                    FILTER (WHERE rnk <= 3) AS preview,
                 COUNT(*) AS cnt
             FROM (
                 SELECT
                     cm.conversation_id,
+                    u.id AS user_id,
                     u.username,
                     ROW_NUMBER() OVER (
                         PARTITION BY cm.conversation_id

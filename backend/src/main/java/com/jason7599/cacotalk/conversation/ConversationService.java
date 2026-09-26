@@ -15,8 +15,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,11 +38,16 @@ public class ConversationService {
     private final EventMessageService eventMessageService;
     private final RealtimeEventPublisher realtimeEventPublisher;
 
+    private final ObjectMapper objectMapper;
+
     private ConversationSummary summaryFromProjection(ConversationSummary.Projection p) {
         return new ConversationSummary(
                 p.getConversationId(),
                 p.getConversationType(),
-                Arrays.asList(p.getMembersPreview()),
+                objectMapper.readValue(
+                        p.getMembersPreview(),
+                        new TypeReference<List<UserResponse>>() {}
+                ),
                 p.getMemberCount(),
                 p.getGroupCreatorId(),
                 p.getLastReadSeq(),
@@ -323,6 +329,8 @@ public class ConversationService {
                 conversationId,
                 new EventMessage.MemberRemoved(target)
         );
+
+        // TODO: broadcast MemberRemoved event
 
         realtimeEventPublisher.sendToUser(
                 targetId,
