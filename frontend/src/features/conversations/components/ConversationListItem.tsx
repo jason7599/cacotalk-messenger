@@ -13,6 +13,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
 
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
     const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);
+    const isLoading = useActiveConversationStore((s) => s.status === "LOADING" && s.loadingConversationId === conversation.id);
 
     const displayName = getDisplayName(conversation);
     const lastMessagePreview = getMessagePreview(conversation.lastMessage);
@@ -21,16 +22,39 @@ export default function ConversationListItem({ conversation }: ConversationListI
     const unreadCount = (conversation.lastMessage?.seq ?? 0) - conversation.lastReadSeq;
 
     const rowStyle = isActive
-        ? "border-[#a71924] bg-[#2b0e12] hover:bg-[#330f14]"
-        : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]";
+        ? "border-[#a71924] bg-[#2b0e12]"
+        : isLoading
+            ? "border-[#e02632] bg-[#3a1117] ring-1 ring-[#e02632]/40 animate-pulse"
+            : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]"
+    ;
 
-    const avatarStyle = isActive
+    const avatarStyle = isLoading
         ? "border-[#e02632] text-[#e02632]"
-        : "border-[#4b1b1f] text-[#7f6668]";
+        : isActive
+            ? "border-[#e02632] text-[#e02632]"
+            : "border-[#4b1b1f] text-[#7f6668]"
+    ;
 
-    const nameStyle = isActive ? "text-[#eee2d5]" : "text-[#cbb9b6]";
-    const previewStyle = isActive ? "text-[#bfa6a3]" : "text-[#7f6668]";
-    const timestampStyle = isActive ? "text-[#9f6267]" : "text-[#6f595b]";
+    const nameStyle = isLoading
+        ? "text-[#f3d7d9]"
+        : isActive
+            ? "text-[#eee2d5]"
+            : "text-[#cbb9b6]"
+    ;
+
+    const previewStyle = isLoading
+        ? "text-[#d08a90]"
+        : isActive
+            ? "text-[#bfa6a3]"
+            : "text-[#7f6668]"
+    ;
+
+    const timestampStyle = isLoading
+        ? "text-[#d96b75]"
+        : isActive
+            ? "text-[#9f6267]"
+            : "text-[#6f595b]"
+    ;
 
     let lastMessageSenderName: string | null = null;
     if (conversation.lastMessage?.type === "USER") {

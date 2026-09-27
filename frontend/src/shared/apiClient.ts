@@ -10,6 +10,19 @@ const api = axios.create({
     },
 });
 
+// artificial delay for dev to see loading states better
+// TODO: cleanup
+if (import.meta.env.DEV) {
+    const DEV_API_DELAY_MS = Number(
+        import.meta.env.VITE_DEV_API_DELAY_MS ?? 0
+    );
+
+    api.interceptors.response.use(async (response) => {
+        await new Promise((r) => setTimeout(r, DEV_API_DELAY_MS));
+        return response;
+    });
+}
+
 export default api;
 
 export function getErrorMessage(err: unknown) {

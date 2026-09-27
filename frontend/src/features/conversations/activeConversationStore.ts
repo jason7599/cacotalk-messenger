@@ -13,6 +13,7 @@ export type ActiveConversationState = {
     error: string | null;
 
     conversation: ActiveConversation | null;
+    loadingConversationId: string | null;
 
     loadingOlder: boolean;
     loadOlderError: string | null;
@@ -46,6 +47,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             conversation: null,
             status: "LOADING",
             error: null,
+            loadingConversationId: conversationId,
             loadingOlder: false,
             loadOlderError: null
         });
@@ -88,14 +90,16 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     lastSeq: detail.lastSeq,
                     prevLastReadSeq: detail.prevLastReadSeq
                 },
-                status: "READY"
+                status: "READY",
+                loadingConversationId: null,
             });
         } catch (err) {
             if (requestId !== myRequestId) return;
 
             set({
                 status: "ERROR",
-                error: getErrorMessage(err)
+                error: getErrorMessage(err),
+                loadingConversationId: null,
             });
         }
     };
@@ -106,6 +110,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             status: "IDLE",
             error: null,
             conversation: null,
+            loadingConversationId: null,
             loadingOlder: false,
         });
     };
@@ -119,7 +124,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         // Nah
         set({
             status: "LOADING",
-            error: null
+            error: null,
+            loadingConversationId: null,
         });
 
         try {
@@ -228,6 +234,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         status: "IDLE",
         error: null,
         conversation: null,
+        loadingConversationId: null,
         loadingOlder: false,
         loadOlderError: null,
 
