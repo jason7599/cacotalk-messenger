@@ -165,8 +165,8 @@ If the group conversation was created (not already present), a `GROUP_CREATED` e
 #### `400 BAD REQUEST`
 `initMemberIds` has fewer than 2 or more than 99 entries (after removing duplicates).
 
-#### `403 FORBIDDEN`
-One or more members in the list cannot be added (not a contact, or has blocked the requester - the response doesn't distinguish which).
+#### `409 CONFLICT`
+One or more members in the list cannot be added, due to not being "invitable". See below for qualifications of being invitable.
 
 
 # Group Conversation Membership API
@@ -220,10 +220,13 @@ Members were successfully added. A `MEMBERS_INVITED` event message is broadcast 
 The provided list is empty, or adding the users would exceed the group's maximum member count.
 
 #### `403 FORBIDDEN`
-The authenticated user is not the creator of this group, or one or more given members cannot be currently invited. 
+The authenticated user is not the creator of this group.
 
 #### `404 NOT FOUND`
 The conversation does not exist, or is not a GROUP conversation.
+
+#### `409 CONFLICT`
+One or more members in the list cannot be added.
 
 
 ## Leave Group Conversation

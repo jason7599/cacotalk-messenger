@@ -150,7 +150,7 @@ public class ConversationService {
         }
 
         if (!userRelationService.validateInvitable(null, userId, initMemberIds)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Some members cannot be added.");
+            throw new ApiException(HttpStatus.CONFLICT, "Some members cannot be added.");
         }
 
         // conversation with clientId already exists.
@@ -329,7 +329,7 @@ public class ConversationService {
         // Here again, possible TOCTOU, but deciding to overlook it.
         // Same reason as createGroupConversation. See above....
         if (!userRelationService.validateInvitable(conversationId, userId, targetIds)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Some members cannot be added.");
+            throw new ApiException(HttpStatus.CONFLICT, "Some members cannot be added.");
         }
 
         // ****************************** LOCKKKKKKKKK ******************************
