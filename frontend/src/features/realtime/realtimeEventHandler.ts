@@ -1,6 +1,8 @@
 import type { UserInfo } from "../../shared/types";
+import { useAuthStore } from "../auth/authStore";
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
+import { useMessageSendStore } from "../messages/messageSendStore";
 import type { ChatMessage } from "../messages/types";
 import { useBlockedUsersStore } from "../userRelations/blockedUsersStore";
 import { useContactsStore } from "../userRelations/contactsStore";
@@ -8,7 +10,7 @@ import type { RealtimeEvent } from "./types";
 
 export function handleRealtimeEvent(event: RealtimeEvent) {
     switch (event.type) {
-        case "NEW_MESSAGE": return handleNewMessage(event.message);
+        case "NEW_MESSAGE": return handleNewMessage(event.message, event.clientId);
         case "CONTACT_CHANGED": return handleContactChanged(event.subject, event.added);
         case "BLOCK_CHANGED": return handleBlockChanged(event.subject, event.added);
         case "REMOVED_FROM_GROUP": return handleRemovedFromGroup(event.conversationId);
@@ -16,8 +18,25 @@ export function handleRealtimeEvent(event: RealtimeEvent) {
     }
 }
 
-function handleNewMessage(message: ChatMessage) {
+function handleNewMessage(message: ChatMessage, clientId?: string) {
+    // remove from pending queue if this client had this message in the queue.
+    // This happens if this WS event arrives earlier than the sendMessage API response.
+    // Removing it from pending fixes a UI flicker issue where otherwise
+    // you could see the message in both states - one persisted, one pending.
+    if (message.type === "USER" && message.senderId === useAuthStore.getState().user!.userId && clientId) {
+        // I could make this resolveByClientId method return a boolean, whether this message was
+        // indeed sitting in the pending queue or not.
+        // The idea being, if it were not, we would assume the API response came first and
+        // the upserts happened already. So if it returns false, we would terminate early.
+        // However, it will also return false on multi-session/tab user scenarios.
+        // In which case, we do need the upserts.
+        // So, no fancy tricks here.
+        // The below upserts are idempotent, so it won't hurt anyway.
+        useMessageSendStore.getState().resolveByClientId(message.conversationId, clientId);
+    }
+
     useConversationsStore.getState().onNewMessage(message);
+    
     if (useActiveConversationStore.getState().conversation?.id === message.conversationId) {
         useActiveConversationStore.getState().upsertMessage(message);
     }
