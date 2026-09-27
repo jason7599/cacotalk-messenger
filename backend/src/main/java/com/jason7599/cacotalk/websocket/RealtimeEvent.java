@@ -3,6 +3,7 @@ package com.jason7599.cacotalk.websocket;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.dto.UserResponse;
+import jakarta.annotation.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public sealed interface RealtimeEvent {
     @JsonGetter("type")
     default Type jsonType() { return type(); }
 
-    record NewMessage(MessageResponse message) implements RealtimeEvent {
+    record NewMessage(MessageResponse message, @Nullable UUID clientId) implements RealtimeEvent {
         @Override public Type type() { return Type.NEW_MESSAGE; }
     }
 

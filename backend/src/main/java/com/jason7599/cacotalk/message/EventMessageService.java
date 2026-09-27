@@ -53,7 +53,7 @@ public class EventMessageService {
 
         realtimeEventPublisher.broadcast(
                 conversationId,
-                new RealtimeEvent.NewMessage(message)
+                new RealtimeEvent.NewMessage(message, null)
         );
 
         return message;

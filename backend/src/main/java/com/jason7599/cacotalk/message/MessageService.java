@@ -166,7 +166,7 @@ public class MessageService {
 
         realtimeEventPublisher.broadcast(
                 conversationId,
-                new RealtimeEvent.NewMessage(message)
+                new RealtimeEvent.NewMessage(message, clientId)
         );
 
         return message;
