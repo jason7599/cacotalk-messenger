@@ -184,7 +184,7 @@ export default function GroupMembersModal() {
                     ) : (
                         <button
                             type="button"
-                            onClick={() => openModal(<LeaveConversationModal />)}
+                            onClick={() => openModal(<LeaveConversationModal groupCreator={meta.groupCreator}/>)}
                             className="
                                 flex w-full items-center justify-center gap-2
                                 border-2 border-[#64141b]
