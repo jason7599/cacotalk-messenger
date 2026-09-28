@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ApiErrorCodes.VALIDATION_ERROR.getStatus())
                 .body(new ApiErrorResponse(
-                        ApiErrorCodes.VALIDATION_ERROR.name(),
+                        ApiErrorCodes.VALIDATION_ERROR,
                         message
                 ));
     }
@@ -44,8 +44,6 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity
                 .status(ApiErrorCodes.INTERNAL_SERVER_ERROR.getStatus())
-                .body(new ApiErrorResponse(
-                        ApiErrorCodes.INTERNAL_SERVER_ERROR
-                ));
+                .body(new ApiErrorResponse(ApiErrorCodes.INTERNAL_SERVER_ERROR));
     }
 }
