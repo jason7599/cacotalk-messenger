@@ -34,11 +34,7 @@ export default function RemoveMemberModal({ member }: RemoveMemberModalProps) {
             if (!hasBlocked && doBlockUser) {
                 await blockUser(member.userId);
             }
-
-            // can call the api directly here without a store,
-            // because the api call triggers ws events that handles the ui sync.
-            // It kinda feels icky though, given how this is the first time in my code
-            // where a component calls an api directly.
+            
             await apiRemoveMember(conversationId, member.userId);
 
             closeModal();

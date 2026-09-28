@@ -154,7 +154,7 @@ export default function GroupMembersModal() {
                                             "
                                         />
 
-                                        INVITE SOUL
+                                        INVITE SOULS
                                     </button>
 
                                     <button

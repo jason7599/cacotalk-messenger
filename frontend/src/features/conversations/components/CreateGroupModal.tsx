@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../components/ModalProvider";
 import type { UserInfo } from "../../../shared/types";
 import { apiGetInvitableUsers } from "../../userRelations/userRelationsApi";
-import { getErrorMessage } from "../../../shared/apiError";
+import { ApiError, getErrorMessage } from "../../../shared/apiError";
 import { apiCreateGroupConversation } from "../conversationsApi";
 import { useActiveConversationStore } from "../activeConversationStore";
 
@@ -25,13 +25,34 @@ export default function CreateGroupModal() {
 
     const [query, setQuery] = useState("");
 
-    const canCreate = MIN_INVITE_COUNT <= selected.size && selected.size <= MAX_INVITE_COUNT;
+    const canCreate =
+        MIN_INVITE_COUNT <= selected.size &&
+        selected.size <= MAX_INVITE_COUNT
+    ;
+
+    async function loadInvitableUsers() {
+        const nextUsers = await apiGetInvitableUsers();
+        setUsers(nextUsers);
+
+        const validIds = new Set(
+            nextUsers.map((user) => user.userId)
+        );
+
+        setSelected((current) => {
+            const next = new Set(
+                [...current].filter((id) => validIds.has(id))
+            );
+
+            return next;
+        });
+    }
 
     useEffect(() => {
-        async function loadUsers() {
+        async function load() {
             setError(null);
+
             try {
-                setUsers((await apiGetInvitableUsers()));
+                await loadInvitableUsers();
             } catch (err) {
                 setError(getErrorMessage(err));
             } finally {
@@ -39,7 +60,7 @@ export default function CreateGroupModal() {
             }
         }
 
-        loadUsers();
+        load();
     }, []);
 
     const filtered = useMemo(() => {
@@ -78,17 +99,30 @@ export default function CreateGroupModal() {
         }
 
         setCreating(true);
+        setError(null);
 
         try {
-            const id = await apiCreateGroupConversation(Array.from(selected));
+            const id = await apiCreateGroupConversation(
+                Array.from(selected)
+            );
+
             await setActiveConversation(id);
             closeModal();
         } catch (err) {
             setError(getErrorMessage(err));
+            
+            if (err instanceof ApiError && err.code === "MEMBERS_NOT_INVITABLE") {
+                try {
+                    await loadInvitableUsers();
+                } catch {
+                    // Preserve the original create error.
+                }
+            }
         } finally {
             setCreating(false);
         }
     }
+
 
     return (
         <div className="w-180 max-w-[92vw] text-[#eee2d5]">
