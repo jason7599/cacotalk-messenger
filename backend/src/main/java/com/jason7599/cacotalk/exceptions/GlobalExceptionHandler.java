@@ -1,7 +1,6 @@
 package com.jason7599.cacotalk.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,15 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<String> handleApiException(ApiException e) {
+    public ResponseEntity<ApiErrorResponse> handleApiException(ApiException e) {
         return ResponseEntity
-                .status(e.getStatus())
-                .body(e.getMessage());
+                .status(e.getErrorCode().getStatus())
+                .body(new ApiErrorResponse(e.getErrorCode()));
     }
 
     // Bean validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleValidationException(
+    public ResponseEntity<ApiErrorResponse> handleValidationException(
             MethodArgumentNotValidException e
     ) {
         String message = e.getBindingResult()
@@ -29,19 +28,24 @@ public class GlobalExceptionHandler {
                 .stream()
                 .findFirst()
                 .map(FieldError::getDefaultMessage)
-                .orElse("Invalid request");
+                .orElse(ApiErrorCodes.VALIDATION_ERROR.getMessage());
 
         return ResponseEntity
-                .badRequest()
-                .body(message);
+                .status(ApiErrorCodes.VALIDATION_ERROR.getStatus())
+                .body(new ApiErrorResponse(
+                        ApiErrorCodes.VALIDATION_ERROR.name(),
+                        message
+                ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneric(Exception e) {
+    public ResponseEntity<ApiErrorResponse> handleGeneric(Exception e) {
         log.error("Unhandled exception", e);
         
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Internal server error");
+                .status(ApiErrorCodes.INTERNAL_SERVER_ERROR.getStatus())
+                .body(new ApiErrorResponse(
+                        ApiErrorCodes.INTERNAL_SERVER_ERROR
+                ));
     }
 }

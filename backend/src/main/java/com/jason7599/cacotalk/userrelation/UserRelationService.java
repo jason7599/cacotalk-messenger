@@ -1,5 +1,6 @@
 package com.jason7599.cacotalk.userrelation;
 
+import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
@@ -8,7 +9,6 @@ import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,15 +30,15 @@ public class UserRelationService {
     @Transactional
     public UserResponse addContact(long userId, long targetId) {
         if (userId == targetId) {
-            throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot add self as contact.");
+            throw new ApiException(ApiErrorCodes.CANNOT_CONTACT_SELF);
         }
 
         if (userRelationRepository.hasBlocked(userId, targetId)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Cannot add a blocked user as a contact.");
+            throw new ApiException(ApiErrorCodes.CANNOT_CONTACT_BLOCKED_USER);
         }
 
         UserResponse target = userService.findById(targetId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.USER_NOT_FOUND));
 
         // This is technically a TOCTOU scenario.
         // One that I will consciously overlook.
@@ -83,11 +83,11 @@ public class UserRelationService {
     @Transactional
     public UserResponse blockUser(long userId, long targetId) {
         if (userId == targetId) {
-            throw new  ApiException(HttpStatus.BAD_REQUEST, "Cannot block self");
+            throw new ApiException(ApiErrorCodes.CANNOT_BLOCK_SELF);
         }
 
         UserResponse target = userService.findById(targetId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found."));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.USER_NOT_FOUND));
 
         // auto remove from contact
         // hm. Or we can let the FE be smart and do contact removal when it gets BLOCK_CHANGED (true)

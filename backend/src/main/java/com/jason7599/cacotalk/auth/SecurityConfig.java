@@ -1,12 +1,14 @@
 package com.jason7599.cacotalk.auth;
 
 import com.jason7599.cacotalk.auth.session.SessionAuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
+import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
+import com.jason7599.cacotalk.exceptions.ApiErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -14,12 +16,15 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Configuration
@@ -33,7 +38,10 @@ public class SecurityConfig {
 
     @Bean
     @Order(2) // for dev override
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            AuthenticationEntryPoint authenticationEntryPoint
+    ) {
         return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable) // TODO: configure CSRF protection before frontend integration / production
@@ -53,10 +61,26 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                        ))
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                )
                 .build();
+    }
+
+    // throw my custom error shape on unauthorized
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint(ObjectMapper objectMapper) {
+        return (request, response, authException) -> {
+            ApiErrorCodes code = ApiErrorCodes.UNAUTHORIZED;
+
+            response.setStatus(code.getStatus().value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+            objectMapper.writeValue(
+                    response.getOutputStream(),
+                    new ApiErrorResponse(code)
+            );
+        };
     }
 
     @Bean

@@ -1,7 +1,8 @@
 package com.jason7599.cacotalk.message;
 
-import com.jason7599.cacotalk.conversation.MembershipLookupService;
 import com.jason7599.cacotalk.conversation.ConversationService;
+import com.jason7599.cacotalk.conversation.MembershipLookupService;
+import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.dto.MessagePage;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
@@ -11,7 +12,6 @@ import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,8 +30,6 @@ public class MessageService {
 
     // Hard cap for initial load
     private static final int INITIAL_LOAD_LIMIT = 500;
-
-    private static final int MESSAGE_MAX_LENGTH = 2000;
 
     private final MessageRepository messageRepository;
 
@@ -99,12 +97,7 @@ public class MessageService {
     ) {
         // This also includes the membership check
         if (!conversationService.canSendMessage(conversationId, userId)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Cannot send a message in this conversation.");
-        }
-
-        content = content.trim();
-        if (content.isEmpty() ||  content.length() > MESSAGE_MAX_LENGTH) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Content has to have between 1-%d characters.".formatted(MESSAGE_MAX_LENGTH));
+            throw new ApiException(ApiErrorCodes.CANNOT_SEND_MESSAGE);
         }
 
         // TODO: Consider including username in AuthUser Principal and also caching it in Redis session
@@ -125,7 +118,7 @@ public class MessageService {
                 log.warn("clientId collision: user {} submitted clientId {} already owned by sender {} in conversation {}",
                         userId, clientId, existing.getSenderId(), existing.getId().conversationId());
 
-                throw new ApiException(HttpStatus.CONFLICT, "This message cannot be sent.");
+                throw new ApiException(ApiErrorCodes.CANNOT_SEND_MESSAGE);
             }
 
             // If the request matches with the existing value

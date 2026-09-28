@@ -1,9 +1,9 @@
 package com.jason7599.cacotalk.conversation;
 
+import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class MembershipLookupService {
 
     public ConversationMembership requireMembership(UUID conversationId, long userId) {
         return conversationRepository.getMembership(conversationId, userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.FORBIDDEN, "Not a member of this conversation."));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.NOT_A_MEMBER));
     }
 
     public List<UserResponse> getAllMembersExcept(UUID conversationId, long userId) {

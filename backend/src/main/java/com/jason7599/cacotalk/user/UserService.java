@@ -12,8 +12,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final int QUERY_MIN_LENGTH = 3;
-    private static final int QUERY_MAX_LENGTH = 32;
     private static final int QUERY_LIMIT = 20;
 
     private final UserRepository userRepository;
@@ -36,7 +34,7 @@ public class UserService {
     public List<UserSearchResponse> searchUsers(long requesterId, String query) {
         query = query.toLowerCase().trim();
 
-        if (query.length() < QUERY_MIN_LENGTH || query.length() > QUERY_MAX_LENGTH) {
+        if (query.length() < UserRules.USERNAME_MIN_LENGTH || query.length() > UserRules.USERNAME_MAX_LENGTH) {
             return List.of();
         }
 

@@ -2,6 +2,7 @@ package com.jason7599.cacotalk.conversation;
 
 import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
 import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
+import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.EventMessageService;
@@ -13,13 +14,11 @@ import com.jason7599.cacotalk.websocket.RealtimeEvent;
 import com.jason7599.cacotalk.websocket.RealtimeEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -28,9 +27,6 @@ import java.util.stream.Stream;
 public class ConversationService {
 
     private static final int SUMMARY_MEMBER_PREVIEW_COUNT = 3;
-
-    private static final int GROUP_MINIMUM_MEMBER_COUNT = 3;
-    private static final int GROUP_MAXIMUM_MEMBER_COUNT = 100;
 
     private final ConversationRepository conversationRepository;
 
@@ -75,7 +71,7 @@ public class ConversationService {
 
     public ConversationSummary getConversationSummary(UUID conversationId, long userId) {
         ConversationSummary.Projection p = conversationRepository.getConversationSummary(conversationId, userId, SUMMARY_MEMBER_PREVIEW_COUNT)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found"));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.CONVERSATION_NOT_FOUND));
 
         return summaryFromProjection(p);
     }
@@ -85,7 +81,7 @@ public class ConversationService {
         long lastReadSeq = membershipLookupService.requireMembership(conversationId, userId).lastReadSeq();
 
         ConversationDetail.Projection p = conversationRepository.getConversationDetail(conversationId, userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conversation not found."));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.CONVERSATION_NOT_FOUND));
 
         List<UserResponse> members = membershipLookupService.getAllMembersExcept(conversationId, userId);
 
@@ -105,11 +101,11 @@ public class ConversationService {
     @Transactional
     public UUID resolveDirectConversation(long userId, long targetId) {
         if (userId == targetId) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot have a direct conversation with self.");
+            throw new ApiException(ApiErrorCodes.NO_SELF_DIRECT_CONVERSATION);
         }
 
         if (!userService.exists(targetId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "User not found.");
+            throw new ApiException(ApiErrorCodes.USER_NOT_FOUND);
         }
 
         // no need to check userId as it should be validated by AuthenticationPrincipal
@@ -141,16 +137,16 @@ public class ConversationService {
         initMemberIds = initMemberIds.stream().distinct().toList();
 
         // + 1 to include the requester
-        if (initMemberIds.size() + 1 < GROUP_MINIMUM_MEMBER_COUNT) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "A group needs at least %d other members.".formatted(GROUP_MINIMUM_MEMBER_COUNT - 1));
+        if (initMemberIds.size() + 1 < ConversationRules.GROUP_MINIMUM_MEMBER_COUNT) {
+            throw new ApiException(ApiErrorCodes.GROUP_TOO_SMALL);
         }
 
-        if (initMemberIds.size() + 1 > GROUP_MAXIMUM_MEMBER_COUNT) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "A group can have at most %d members.".formatted(GROUP_MAXIMUM_MEMBER_COUNT));
+        if (initMemberIds.size() + 1 > ConversationRules.GROUP_MAXIMUM_MEMBER_COUNT) {
+            throw new ApiException(ApiErrorCodes.GROUP_TOO_BIG);
         }
 
         if (!userRelationService.validateInvitable(null, userId, initMemberIds)) {
-            throw new ApiException(HttpStatus.CONFLICT, "Some members cannot be added.");
+            throw new ApiException(ApiErrorCodes.MEMBERS_NOT_INVITABLE);
         }
 
         // conversation with clientId already exists.
@@ -202,15 +198,16 @@ public class ConversationService {
         return conversationRepository.canSendMessage(conversationId, userId);
     }
 
-    // Returns Optional.empty() if room doesn't exist or is not a GROUP conversation
+    // Throws if room doesn't exist or is not a GROUP conversation
     /*
     I did consider putting this in MembershipLookupService. Decided against it after a while
     MembershipLookupService, at least as of now, concerns the conversation_members table queries.
     This instead is a query on the conversations table itself.
     So yeah, it lives here for now.
      */
-    public Optional<Long> getGroupCreatorId(UUID conversationId) {
-        return conversationRepository.getGroupCreatorId(conversationId);
+    private long getGroupCreatorId(UUID conversationId) {
+        return conversationRepository.getGroupCreatorId(conversationId)
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.CONVERSATION_NOT_FOUND));
     }
 
     // Separated as a helper method because it's both used in leaveConversation and removeMember.
@@ -251,11 +248,10 @@ public class ConversationService {
         membershipLookupService.requireMembership(conversationId, userId);
 
         // Either convo itself doesn't exist, or is not a GROUP convo.
-        long creatorId = getGroupCreatorId(conversationId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+        long creatorId = getGroupCreatorId(conversationId);
 
         if (userId == creatorId) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Creator cannot leave the group.");
+            throw new ApiException(ApiErrorCodes.CREATOR_CANNOT_LEAVE);
         }
 
         // Membership didn't exist.
@@ -282,15 +278,14 @@ public class ConversationService {
 
     @Transactional
     public void removeMember(UUID conversationId, long userId, long targetId) {
-        long creatorId = getGroupCreatorId(conversationId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+        long creatorId = getGroupCreatorId(conversationId);
 
         if (userId != creatorId) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+            throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
         }
 
         if (userId == targetId) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Cannot remove self.");
+            throw new ApiException(ApiErrorCodes.CANNOT_REMOVE_SELF);
         }
 
         UserResponse target = userService.findById(targetId).orElse(null);
@@ -312,15 +307,10 @@ public class ConversationService {
 
     @Transactional
     public void inviteMembers(UUID conversationId, long userId, List<Long> targetIds) {
-        if (targetIds.isEmpty()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Empty list provided.");
-        }
-
-        long creatorId = getGroupCreatorId(conversationId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+        long creatorId = getGroupCreatorId(conversationId);
 
         if (userId != creatorId) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+            throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
         }
 
         targetIds = targetIds.stream().distinct().toList();
@@ -329,7 +319,7 @@ public class ConversationService {
         // Here again, possible TOCTOU, but deciding to overlook it.
         // Same reason as createGroupConversation. See above....
         if (!userRelationService.validateInvitable(conversationId, userId, targetIds)) {
-            throw new ApiException(HttpStatus.CONFLICT, "Some members cannot be added.");
+            throw new ApiException(ApiErrorCodes.MEMBERS_NOT_INVITABLE);
         }
 
         // ****************************** LOCKKKKKKKKK ******************************
@@ -338,8 +328,8 @@ public class ConversationService {
         // Since every membership insertion (outside the initial group creation) happens here, this should be safe.
         conversationRepository.lockGroupInvite(conversationId);
 
-        if (membershipLookupService.countMembers(conversationId) + targetIds.size() > GROUP_MAXIMUM_MEMBER_COUNT) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Group can have at most %d members.".formatted(GROUP_MAXIMUM_MEMBER_COUNT));
+        if (membershipLookupService.countMembers(conversationId) + targetIds.size() > ConversationRules.GROUP_MAXIMUM_MEMBER_COUNT) {
+            throw new ApiException(ApiErrorCodes.GROUP_TOO_BIG);
         }
 
         conversationRepository.insertMembers(conversationId, targetIds.stream().mapToLong(Long::longValue).toArray());
@@ -358,11 +348,10 @@ public class ConversationService {
 
     @Transactional
     public void closeConversation(UUID conversationId, long userId) {
-        long creatorId = getGroupCreatorId(conversationId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Group conversation not found."));
+        long creatorId = getGroupCreatorId(conversationId);
 
         if (userId != creatorId) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Not the creator of this group.");
+            throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
         }
 
         if (conversationRepository.closeConversation(conversationId) == 0) {

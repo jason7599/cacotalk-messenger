@@ -1,16 +1,14 @@
 package com.jason7599.cacotalk.exceptions;
 
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 public class ApiException extends RuntimeException {
 
-    private final HttpStatus status;
+    private final ApiErrorCodes errorCode;
 
-    public ApiException(HttpStatus status, String message) {
-        super(message);
-        this.status = status;
+    public ApiException(ApiErrorCodes errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
-
 }
