@@ -110,8 +110,8 @@ export default function CreateGroupModal() {
             closeModal();
         } catch (err) {
             setError(getErrorMessage(err));
-            
-            if (err instanceof ApiError && err.code === "MEMBERS_NOT_INVITABLE") {
+        
+            if (ApiError.is(err, "MEMBERS_NOT_INVITABLE")) {
                 try {
                     await loadInvitableUsers();
                 } catch {

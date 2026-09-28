@@ -38,8 +38,15 @@ export class ApiError extends Error {
         this.code = code;
         this.name = "ApiError";
     }
+
+    static is<C extends ApiErrorCode>(
+        err: unknown,
+        code: C
+    ): err is ApiError & { code: C } {
+        return err instanceof ApiError && err.code === code;
+    }
 };
 
-export function getErrorMessage(err: unknown): string {
+export function getErrorMessage(err: unknown) {
     return err instanceof Error ? err.message : "Something went wrong.";
 };
