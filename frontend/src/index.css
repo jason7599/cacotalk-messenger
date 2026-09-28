@@ -1,1 +1,114 @@
 @import "tailwindcss";
+
+/*
+ * CACOTALK DESIGN TOKENS
+ * ----------------------
+ * Every color, shadow, letter-spacing and small text size the app uses lives here.
+ * Tailwind turns each token into utilities automatically, e.g.
+ *   --color-bone        -> text-bone, bg-bone, border-bone, ...
+ *   --shadow-hard-md    -> shadow-hard-md
+ *   --tracking-caps     -> tracking-caps
+ *   --text-2xs          -> text-2xs
+ * Change a value here and it changes everywhere.
+ */
+@theme {
+    /* Surfaces, darkest -> lightest */
+    --color-void: #080304;          /* deepest wells, drop shadows under big blocks */
+    --color-pit: #0c0506;           /* inputs, icon buttons, inset tiles */
+    --color-sunken: #100708;        /* page background, headers, footers */
+    --color-panel: #190b0d;         /* cards, list rows, sidebar */
+    --color-panel-hover: #240d10;   /* hovered list rows */
+    --color-raised: #2b0e12;        /* modals, secondary buttons, active rows */
+
+    /* Lines */
+    --color-edge-soft: #321316;     /* hairline dividers */
+    --color-edge: #4b1b1f;          /* default borders */
+    --color-edge-strong: #64141b;   /* emphasized borders */
+
+    /* Crimson accent */
+    --color-crimson-deep: #5a171d;  /* own message bubbles, selected tiles */
+    --color-crimson: #a71924;       /* primary accent */
+    --color-crimson-bright: #e02632;/* hover / focus / live indicators */
+    --color-crimson-hot: #ff4b55;   /* armed "are you sure?" state, error rule */
+
+    /* Hard offset shadow colors (use with shadow-hard-*, e.g. "shadow-hard-lg shadow-shade-crimson") */
+    --color-shade: #48090e;
+    --color-shade-crimson: #520a10;
+
+    /* Text, brightest -> dimmest */
+    --color-bone: #eee2d5;          /* primary text */
+    --color-ash: #d7b9b4;           /* secondary emphasis */
+    --color-muted: #9f8581;         /* descriptions */
+    --color-faint: #7f6668;         /* meta labels, icons */
+    --color-dim: #5f4548;           /* placeholders, disabled */
+
+    /* Status */
+    --color-error: #ff7b73;
+    --color-warn: #d88928;
+    --color-warn-edge: #71401d;
+    --color-warn-bg: #211308;
+
+    /* Hard offset shadows (the "stamped" look). Color defaults to --color-shade. */
+    --shadow-hard-xs: 1px 1px 0 #48090e;
+    --shadow-hard-sm: 2px 2px 0 #48090e;
+    --shadow-hard-md: 3px 3px 0 #48090e;
+    --shadow-hard-lg: 4px 4px 0 #48090e;
+    --shadow-hard-xl: 6px 6px 0 #48090e;
+
+    /* Letter spacing for the ALL-CAPS labels */
+    --tracking-label: 0.12em;       /* small tags, meta */
+    --tracking-caps: 0.16em;        /* buttons, headings, footers */
+    --tracking-loud: 0.2em;         /* eyebrows above titles */
+
+    /* Tiny text */
+    --text-2xs: 10px;
+    --text-3xs: 9px;
+
+    /* Animations */
+    --animate-hellbar: hellbar 1.15s linear infinite;
+
+    @keyframes hellbar {
+        from { transform: translateX(-120%); }
+        to { transform: translateX(420%); }
+    }
+}
+
+@layer base {
+    body {
+        background-color: var(--color-sunken);
+        color: var(--color-bone);
+    }
+
+    ::placeholder {
+        color: var(--color-dim);
+    }
+}
+
+/* Shared input look: text inputs, textareas, and the <label> wrapper around search inputs. */
+@utility field {
+    border-width: 2px;
+    border-color: var(--color-edge);
+    background-color: var(--color-pit);
+    color: var(--color-bone);
+    outline: none;
+
+    &:focus,
+    &:focus-within {
+        border-color: var(--color-crimson-bright);
+    }
+}
+
+/* Small red label above a title, e.g. "CONTACT CONTROL". */
+@utility eyebrow {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs--line-height);
+    letter-spacing: var(--tracking-loud);
+    color: var(--color-crimson);
+}
+
+/* Tiny dim status line, e.g. "UNIT 01" or list footers. */
+@utility caption {
+    font-size: var(--text-3xs);
+    letter-spacing: var(--tracking-caps);
+    color: var(--color-faint);
+}

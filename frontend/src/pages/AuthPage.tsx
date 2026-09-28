@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { apiLogin, apiRegister } from "../features/auth/authApi";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
 import { useAuthStore } from "../features/auth/authStore";
 import { getErrorMessage } from "../shared/apiError";
+import { Button, ErrorText } from "../components/ui";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;
@@ -81,7 +82,7 @@ export default function AuthPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#100708] px-5 py-8 text-[#eee2d5]">
+        <main className="min-h-screen bg-sunken px-5 py-8">
             <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center">
 
                 <header className="mb-8 text-center">
@@ -90,19 +91,17 @@ export default function AuthPage() {
                         alt="CACOTALK"
                         className="h-60 w-80 object-contain"
                     />
-                    <p className="mt-3 text-xs tracking-[0.35em] text-[#9f8581]">
+                    <p className="mt-3 text-xs tracking-[0.35em] text-muted">
                         MESSENGER FROM DOWN BELOW
                     </p>
                 </header>
 
-                <section className="w-full border-2 border-[#64141b] bg-[#190b0d] p-7">
+                <section className="w-full border-2 border-edge-strong bg-panel p-7 shadow-hard-xl shadow-void">
 
                     <header className="mb-7">
-                        <p className="mb-2 text-xs tracking-[0.2em] text-[#a71924]">
-                            AUTHENTICATION RITUAL
-                        </p>
+                        <p className="eyebrow mb-2">AUTHENTICATION RITUAL</p>
 
-                        <h2 className="text-2xl font-bold">
+                        <h2 className="text-2xl font-black tracking-tight">
                             {isLogin ? "IDENTIFY YOURSELF" : "JOIN THE DAMNED"}
                         </h2>
                     </header>
@@ -112,66 +111,40 @@ export default function AuthPage() {
                         onSubmit={handleSubmit} 
                         className="flex flex-col gap-5"
                     >
-                        <label className="flex flex-col gap-2">
-                            <span className="text-xs tracking-[0.12em] text-[#9f8581]">
-                                USERNAME
-                            </span>
-
-                            <input
-                                type="text"
-                                name="username"
-                                autoComplete="username"
-                                className="w-full border-2 border-[#4b1b1f] bg-[#0c0506] px-4 py-3 text-[#eee2d5] outline-none transition focus:border-[#e02632]"
-                            />
-
-                            {!isLogin && (
-                                <span className="text-xs text-[#7f6668]">
+                        <Field
+                            label="USERNAME"
+                            name="username"
+                            autoComplete="username"
+                            hint={!isLogin && (
+                                <>
                                     {USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH} lowercase characters or digits.
                                     Must contain at least one letter.
-                                </span>
+                                </>
                             )}
-                        </label>
+                        />
 
-                        <label className="flex flex-col gap-2">
-                            <span className="text-xs tracking-[0.12em] text-[#9f8581]">
-                                PASSWORD
-                            </span>
-
-                            <input
-                                type="password"
-                                name="password"
-                                className="w-full border-2 border-[#4b1b1f] bg-[#0c0506] px-4 py-3 text-[#eee2d5] outline-none transition focus:border-[#e02632]"
-                            />
-
-                            {/* TODO:  */}
-                            {!isLogin && (
-                                <span className="text-xs text-[#7f6668]">
-                                    {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters.
-                                </span>
-                            )}
-                        </label>
+                        <Field
+                            label="PASSWORD"
+                            name="password"
+                            type="password"
+                            hint={!isLogin && <>{PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters.</>}
+                        />
 
                         {!isLogin &&
                             <>
-                                <label className="flex flex-col gap-2">
-                                    <span className="text-xs tracking-[0.12em] text-[#9f8581]">
-                                        CONFIRM PASSWORD
-                                    </span>
+                                <Field
+                                    label="CONFIRM PASSWORD"
+                                    name="confirmPassword"
+                                    type="password"
+                                />
 
-                                    <input
-                                        type="password"
-                                        name="confirmPassword"
-                                        className="w-full border-2 border-[#4b1b1f] bg-[#0c0506] px-4 py-3 text-[#eee2d5] outline-none transition focus:border-[#e02632]"
-                                    />
-                                </label>
-
-                                {/* captcha */}
+                                {/* captcha (intentionally styled like a "real" light-mode widget) */}
                                 <label className="flex cursor-pointer items-center justify-between border border-[#5f5f5f] bg-[#f5f5f5] px-3 py-2 text-black">
                                     <div className="flex items-center gap-3">
                                         <input
                                             type="checkbox"
                                             name="amHuman"
-                                            className="h-6 w-6 accent-[#e02632]"
+                                            className="h-6 w-6 accent-crimson-bright"
                                         />
                                         <span className="text-sm">
                                             I am a human
@@ -191,22 +164,9 @@ export default function AuthPage() {
                             </>
                         }
 
-                        {error && (
-                            <p className="text-sm pl-3 border-l-2 border-[#ff4b55] text-[#ff7b73]">
-                                {error}
-                            </p>
-                        )}
+                        {error && <ErrorText>{error}</ErrorText>}
 
-                        {/* submit */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="mt-1 flex items-center justify-center gap-2 border-2 border-[#e02632] bg-[#a71924] px-5 py-3 font-bold tracking-[0.15em] text-[#eee2d5] shadow-[4px_4px_0_#520a10] transition hover:bg-[#e02632] active:translate-x-0.75 active:translate-y-0.75 active:shadow-[1px_1px_0_#520a10] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {isLoading && (
-                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#eee2d5] border-t-transparent" />
-                            )}
-
+                        <Button type="submit" loading={isLoading} disabled={isLoading} className="mt-1">
                             {isLoading
                                 ? isLogin
                                     ? "DESCENDING..."
@@ -215,7 +175,7 @@ export default function AuthPage() {
                                     ? "DESCEND"
                                     : "JOIN THE DAMNED"
                             }
-                        </button>
+                        </Button>
 
                     </form>
 
@@ -226,7 +186,7 @@ export default function AuthPage() {
                             setError(null);
                             formRef.current?.reset();
                         }}
-                        className="mt-6 w-full text-xs tracking-[0.08em] text-[#9f8581] transition hover:text-[#e02632]"
+                        className="mt-6 w-full text-xs tracking-widest text-muted transition-colors hover:text-crimson-bright"
                     >
                         {isLogin
                             ? "NEW BLOOD? CREATE AN ACCOUNT"
@@ -236,5 +196,23 @@ export default function AuthPage() {
                 </section>
             </div>
         </main>
+    );
+}
+
+type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
+    label: string;
+    /** Small helper text under the input. */
+    hint?: ReactNode;
+};
+
+function Field({ label, hint, type = "text", ...inputProps }: FieldProps) {
+    return (
+        <label className="flex flex-col gap-2">
+            <span className="text-xs tracking-label text-muted">{label}</span>
+
+            <input type={type} className="field w-full px-4 py-3 transition-colors" {...inputProps} />
+
+            {hint && <span className="text-xs text-faint">{hint}</span>}
+        </label>
     );
 }

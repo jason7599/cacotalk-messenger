@@ -12,25 +12,17 @@ export default function EventMessageItem({ message }: EventMessageItemProps) {
         <div className="flex justify-center py-2">
             <div className="w-full max-w-xl">
                 <div className="flex items-center gap-3">
-                    <div className="h-px flex-1 bg-[#3b171a]" />
+                    <div className="h-px flex-1 bg-edge-soft" />
 
-                    <span className="text-[10px] font-bold tracking-[0.18em] text-[#6f4b49]">
+                    <span className="text-2xs font-bold tracking-caps text-faint">
                         {formatMessageTimestamp(message.createdAt)}
                     </span>
 
-                    <div className="h-px flex-1 bg-[#3b171a]" />
+                    <div className="h-px flex-1 bg-edge-soft" />
                 </div>
 
                 <div className="mt-2 flex items-start justify-center gap-3 px-4">
-                    <div
-                        className="
-                            mt-0.5 grid h-8 w-8 shrink-0 place-items-center
-                            border border-[#64141b]
-                            bg-[#190b0d]
-                            text-[#a71924]
-                            shadow-[2px_2px_0_#48090e]
-                        "
-                    >
+                    <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center border border-edge-strong bg-panel text-crimson shadow-hard-sm">
                         <UsersRound size={15} strokeWidth={2.4} />
                     </div>
 
@@ -50,14 +42,14 @@ function renderEvent(event: EventData) {
             
         return (
             <>
-                <p className="font-bold tracking-[0.12em] text-[#d8c8bb]">
-                    <span className="font-extrabold text-[#b98f83]">
+                <p className="font-bold tracking-label text-ash">
+                    <span className="font-extrabold text-muted">
                         {groupCreator.username}
                     </span>
                     {" "}FORMED THE CIRCLE
                 </p>
 
-                <p className="mt-1 text-[11px] leading-relaxed text-[#806b67]">
+                <p className="mt-1 text-xs leading-relaxed text-faint">
                     with{" "}
                     {event.initMembers.map((member) => member.username).join(" · ")}
                 </p>
@@ -70,8 +62,8 @@ function renderEvent(event: EventData) {
         
     case "MEMBER_LEFT":
         return (
-            <p className="text-xs font-bold tracking-[0.12em] text-[#d8c8bb]">
-                <span className="font-extrabold text-[#b98f83]">
+            <p className="text-xs font-bold tracking-label text-ash">
+                <span className="font-extrabold text-muted">
                     {event.subject.username}
                 </span>
                 {" "}LEFT THE CIRCLE
@@ -80,8 +72,8 @@ function renderEvent(event: EventData) {
 
     case "MEMBER_REMOVED":
         return (
-            <p className="text-xs font-bold tracking-[0.12em] text-[#d8c8bb]">
-                <span className="font-extrabold text-[#b98f83]">
+            <p className="text-xs font-bold tracking-label text-ash">
+                <span className="font-extrabold text-muted">
                     {event.subject.username}
                 </span>
                 {" "}WAS REMOVED FROM THE CIRCLE

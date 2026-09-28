@@ -1,10 +1,12 @@
-import { Ban, LogOut, ShieldAlert, UserPlus } from "lucide-react";
+import { Ban, LogOut, ShieldAlert, ShieldOff, UserPlus } from "lucide-react";
+import type { ReactNode } from "react";
 import LeaveConversationModal from "./LeaveConversationModal";
 import type { ConversationMeta } from "../types";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useModal } from "../../../components/ModalProvider";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import type { UserInfo } from "../../../shared/types";
+import { cn } from "../../../components/ui";
 
 // I could just read these from the zustand stores, but would be pointless to recompute things that are already in ConversationHeader
 type ConversationWarningProps = {
@@ -30,47 +32,15 @@ export default function ConversationWarning({
     const unblockUser = useBlockedUsersStore((s) => s.unblockUser);
 
     return (
-        <div
-            className="
-                flex flex-wrap items-stretch
-                border-t-2 border-[#4b1b1f]
-                bg-[#16090a]
-            "
-        >
-            <div
-                className="
-                    flex min-w-0 flex-1 items-center gap-3
-                    px-5 py-3
-                "
-            >
-                <div
-                    className="
-                        grid h-8 w-8 shrink-0 place-items-center
-                        border border-[#71401d]
-                        bg-[#211308]
-                        text-[#d88928]
-                    "
-                >
+        <div className="flex flex-wrap items-stretch border-t-2 border-edge bg-pit">
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3">
+                <div className="grid h-8 w-8 shrink-0 place-items-center border border-warn-edge bg-warn-bg text-warn">
                     <ShieldAlert size={15} strokeWidth={2.4} />
                 </div>
 
                 <div className="min-w-0">
-                    <p
-                        className="
-                            text-[8px] font-bold
-                            tracking-[0.22em]
-                            text-[#7f5954]
-                        "
-                    >
-                        WARNING
-                    </p>
-                    <p
-                        className="
-                            mt-0.5 text-[10px]
-                            tracking-[0.12em]
-                            text-[#c7a7a0]
-                        "
-                    >
+                    <p className="text-3xs font-bold tracking-loud text-faint">WARNING</p>
+                    <p className="mt-0.5 text-2xs tracking-label text-ash">
                         {meta.type === "DIRECT"
                             ? "UNRECOGNIZED SOUL // NOT IN CONTACTS"
                             : isSubjectUserBlocked
@@ -81,137 +51,76 @@ export default function ConversationWarning({
                 </div>
             </div>
 
-            <div
-                className="
-                    flex shrink-0 items-stretch
-                    border-l border-[#4b1b1f]
-                "
-            >
+            <div className="flex shrink-0 items-stretch divide-x divide-edge border-l border-edge">
                 {!isSubjectUserBlocked && (
-                    <button
-                        type="button"
+                    <WarningAction
                         disabled={isAddingContact}
                         onClick={() => addContact(subjectUser.userId)}
-                        className="
-                            group flex min-w-35 items-center justify-center gap-2
-                            border-r border-[#4b1b1f]
-                            bg-[#13090a]
-                            px-4 py-3
-                            text-[9px] font-black tracking-[0.16em]
-                            text-[#aa918b]
-                            transition
-                            hover:bg-[#211012]
-                            hover:text-[#eee2d5]
-                            disabled:cursor-not-allowed
-                            disabled:opacity-40
-                        "
+                        icon={<UserPlus size={13} strokeWidth={2.5} />}
                     >
-                        <UserPlus
-                            size={13}
-                            strokeWidth={2.5}
-                            className="text-[#8d5558] group-hover:text-[#d28b91]"
-                        />
-
-                        {isAddingContact
-                            ? "LINKING..."
-                            : "ACCEPT SOUL"}
-                    </button>
+                        {isAddingContact ? "LINKING..." : "ACCEPT SOUL"}
+                    </WarningAction>
                 )}
 
                 {meta.type === "DIRECT" ? (
-                    <button
-                        type="button"
+                    <WarningAction
+                        danger
                         disabled={isBlockStatePending}
                         onClick={() => blockUser(subjectUser.userId)}
-                        className="
-                            group flex min-w-31 items-center justify-center gap-2
-                            bg-[#1d090b]
-                            px-4 py-3
-                            text-[9px] font-black tracking-[0.16em]
-                            text-[#a71924]
-                            transition
-                            hover:bg-[#310c10]
-                            hover:text-[#f13a45]
-                            disabled:cursor-not-allowed
-                            disabled:opacity-40
-                        "
+                        icon={<Ban size={13} strokeWidth={2.6} className="transition-transform group-hover:-rotate-12" />}
                     >
-                        <Ban
-                            size={13}
-                            strokeWidth={2.6}
-                            className="
-                                transition-transform
-                                group-hover:-rotate-12
-                            "
-                        />
-
                         BLOCK
-                    </button>
+                    </WarningAction>
                 ) : (
                     <>
                         {isSubjectUserBlocked && (
-                            <button
-                                type="button"
+                            <WarningAction
                                 disabled={isBlockStatePending}
                                 onClick={() => unblockUser(subjectUser.userId)}
-                                className="
-                                    group flex min-w-35 items-center justify-center gap-2
-                                    border-r border-[#4b1b1f]
-                                    bg-[#13090a]
-                                    px-4 py-3
-                                    text-[9px] font-black tracking-[0.16em]
-                                    text-[#8f7370]
-                                    transition
-                                    hover:bg-[#211012]
-                                    hover:text-[#d8b3ad]
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-40
-                                "
+                                icon={<ShieldOff size={13} strokeWidth={2.5} />}
                             >
-                                <span
-                                    className="
-                                        h-1.5 w-1.5
-                                        bg-[#64141b]
-                                        transition
-                                        group-hover:bg-[#d12c37]
-                                    "
-                                />
-
-                                {isBlockStatePending
-                                    ? "UNBLOCKING..."
-                                    : "UNBLOCK"}
-                            </button>
+                                {isBlockStatePending ? "UNBLOCKING..." : "UNBLOCK"}
+                            </WarningAction>
                         )}
-                        <button
-                            type="button"
-                            onClick={() => openModal(
-                                <LeaveConversationModal groupCreator={subjectUser}/>)
-                            }
-                            className="
-                                group flex min-w-31 items-center justify-center gap-2
-                                bg-[#1d090b]
-                                px-4 py-3
-                                text-[9px] font-black tracking-[0.16em]
-                                text-[#a71924]
-                                transition
-                                hover:bg-[#310c10]
-                                hover:text-[#f13a45]
-                            "
-                        >
-                            <LogOut
-                                size={13}
-                                strokeWidth={2.6}
-                                className="
-                                    transition-transform
-                                    group-hover:translate-x-0.5
-                                "
-                            />
 
+                        <WarningAction
+                            danger
+                            onClick={() => openModal(<LeaveConversationModal groupCreator={subjectUser}/>)}
+                            icon={<LogOut size={13} strokeWidth={2.6} className="transition-transform group-hover:translate-x-0.5" />}
+                        >
                             ABANDON
-                        </button>
+                        </WarningAction>
                     </>
                 )}
             </div>
         </div>
+    );
+}
+
+type WarningActionProps = {
+    danger?: boolean;
+    disabled?: boolean;
+    onClick: () => void;
+    icon: ReactNode;
+    children: ReactNode;
+};
+
+function WarningAction({ danger = false, disabled, onClick, icon, children }: WarningActionProps) {
+    return (
+        <button
+            type="button"
+            disabled={disabled}
+            onClick={onClick}
+            className={cn(
+                "group flex min-w-32 items-center justify-center gap-2 px-4 py-3 text-3xs font-black tracking-caps transition-colors",
+                "disabled:pointer-events-none disabled:opacity-40",
+                danger
+                    ? "bg-sunken text-crimson hover:bg-raised hover:text-crimson-bright"
+                    : "bg-pit text-muted hover:bg-panel-hover hover:text-bone",
+            )}
+        >
+            {icon}
+            {children}
+        </button>
     );
 }

@@ -23,7 +23,7 @@ export default function ConversationPanel() {
     }
 
     return (
-        <div className="flex flex-1 h-full flex-col bg-[#100708]">
+        <div className="flex flex-1 h-full flex-col bg-sunken">
             {content}
         </div>
     );

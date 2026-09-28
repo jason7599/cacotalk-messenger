@@ -6,6 +6,7 @@ import ConversationWarning from "./ConversationWarning";
 import { useModal } from "../../../components/ModalProvider";
 import GroupMembersModal from "./GroupMembersModal";
 import { useAuthStore } from "../../auth/authStore";
+import { Avatar, IconButton } from "../../../components/ui";
 
 export default function ConversationHeader() {
     const me = useAuthStore((s) => s.user!);
@@ -65,134 +66,64 @@ export default function ConversationHeader() {
     ;
 
     return (
-        <header
-            className="
-                flex shrink-0 flex-col
-                border-b-2 border-[#4b1b1f]
-                bg-[#100708]
-            "
-        >
+        <header className="flex shrink-0 flex-col border-b-2 border-edge bg-sunken">
             <div className="flex items-center gap-4 px-5 py-10">
-                <div
-                    className="
-                        grid h-12 w-12 shrink-0 place-items-center
-                        border-2 border-[#64141b]
-                        bg-[#190b0d]
-                        text-lg font-black
-                        text-[#e02632]
-                        shadow-[3px_3px_0_#48090e]
-                    "
-                >
-                    {meta.type === "GROUP" ? (
-                        <Users size={22} strokeWidth={2.3} />
-                    ) : (
-                        displayTitle.charAt(0).toUpperCase()
-                    )}
-                </div>
+                <Avatar
+                    name={displayTitle}
+                    icon={meta.type === "GROUP" ? <Users size={22} strokeWidth={2.3} /> : undefined}
+                    size="lg"
+                />
 
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-black text-[#eee2d5]">
-                        {displayTitle}
-                    </p>
+                    <p className="truncate text-base font-black">{displayTitle}</p>
 
-                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
+                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-3xs tracking-caps">
                         {meta.type === "GROUP" ? (
                             <>
                                 <button
                                     type="button"
                                     onClick={() => openModal(<GroupMembersModal/>)}
-                                    className="
-                                        flex items-center gap-1
-                                        text-[9px]
-                                        tracking-[0.16em]
-                                        text-[#a71924]
-                                        transition
-                                        hover:text-[#e02632]
-                                        hover:underline
-                                        hover:decoration-dotted
-                                        hover:underline-offset-3
-                                    "
+                                    className="flex items-center gap-1 text-crimson transition-colors hover:text-crimson-bright hover:underline hover:decoration-dotted hover:underline-offset-3"
                                 >
                                     <Users size={11} strokeWidth={2.3} />
                                     GROUP // {otherMembers.length + 1} SOULS
                                 </button>
 
-                                {meta.type === "GROUP" && (
-                                    <>
-                                        <span className="text-[#4b1b1f]">//</span>
+                                <Slash />
 
-                                        <span
-                                            className="
-                                                min-w-0
-                                                text-[9px]
-                                                tracking-[0.16em]
-                                                text-[#9f8581]
-                                            "
-                                        >
-                                            CREATED BY:{" "}
-                                            <span className="font-bold text-[#b99792]">
-                                                {meta.groupCreator.username}
-                                            </span>
-                                        </span>
-                                    </>
-                                )}
+                                <span className="min-w-0 text-muted">
+                                    CREATED BY:{" "}
+                                    <span className="font-bold text-ash">{meta.groupCreator.username}</span>
+                                </span>
 
-                                <span className="text-[#4b1b1f]">//</span>
+                                <Slash />
 
-                                <span
-                                    className="
-                                        flex items-center gap-1
-                                        text-[9px]
-                                        tracking-[0.16em]
-                                        text-[#7f6668]
-                                    "
-                                >
+                                <span className="flex items-center gap-1 text-faint">
                                     {meta.isClosed && <Lock size={10} strokeWidth={2.3} />}
                                     {meta.isClosed ? "CHANNEL SEALED" : "CHANNEL OPEN"}
                                 </span>
                             </>
                         ) : (
                             <>
-                                <span
-                                    className="
-                                        text-[9px]
-                                        tracking-[0.16em]
-                                        text-[#a71924]
-                                    "
-                                >
-                                    DIRECT TRANSMISSION
-                                </span>
+                                <span className="text-crimson">DIRECT TRANSMISSION</span>
 
                                 {(meta.blockedMe || isSubjectUserBlocked) && (
                                     <>
-                                        <span className="text-[#4b1b1f]">//</span>
+                                        <Slash />
 
-                                        <span
-                                            className="
-                                                flex items-center gap-1
-                                                text-[9px]
-                                                tracking-[0.16em]
-                                                text-[#8f343b]
-                                            "
-                                        >
+                                        <span className="flex items-center gap-1 text-crimson">
                                             <Ban size={10} strokeWidth={2.3} />
                                             {meta.blockedMe ? "LINK RESTRICTED" : "SOUL BLOCKED"}
                                         </span>
 
                                         {isSubjectUserBlocked && (
                                             <>
-                                                <span className="text-[#4b1b1f]">//</span>
+                                                <Slash />
                                                 <button
                                                     type="button"
                                                     disabled={isBlockStatePending}
                                                     onClick={() => unblockUser(subjectUser.userId)}
-                                                    className="
-                                                        text-[9px] font-bold tracking-[0.16em]
-                                                        text-[#7f6668] underline decoration-dotted
-                                                        transition
-                                                        hover:text-[#eee2d5]
-                                                        disabled:opacity-50
-                                                    "
+                                                    className="font-bold text-faint underline decoration-dotted transition-colors hover:text-bone disabled:opacity-50"
                                                 >
                                                     {isBlockStatePending ? "UNBLOCKING..." : "UNBLOCK?"}
                                                 </button>
@@ -207,73 +138,24 @@ export default function ConversationHeader() {
 
                 <div className="flex shrink-0 items-center gap-5">
                     {meta.type === "GROUP" && (
-                        <button
-                            type="button"
+                        <IconButton
+                            size="xl"
                             aria-label="View members"
                             onClick={() => openModal(<GroupMembersModal/>)}
-                            className="
-                                group relative grid h-12 w-12 place-items-center
-                                border-2 border-[#4b1b1f]
-                                bg-[#13090a]
-                                text-[#8f5559]
-                                shadow-[2px_2px_0_#321316]
-                                transition
-                                hover:-translate-y-px
-                                hover:border-[#8f2830]
-                                hover:bg-[#211012]
-                                hover:text-[#d03a44]
-                                hover:shadow-[3px_3px_0_#4b1b1f]
-                                active:translate-y-0
-                                active:shadow-none
-                            "
                         >
                             <Users size={18} strokeWidth={2.5} />
-
-                            <span
-                                className="
-                                    absolute inset-x-1 bottom-0.75
-                                    h-px scale-x-0
-                                    bg-[#a71924]
-                                    transition-transform
-                                    group-hover:scale-x-100
-                                "
-                            />
-                        </button>
+                        </IconButton>
                     )}
 
-                    <button
-                        type="button"
+                    <IconButton
+                        variant="accent"
+                        size="xl"
                         aria-label="Close conversation"
                         onClick={clearActiveConversation}
-                        className="
-                            group relative grid h-12 w-12 place-items-center
-                            border-2 border-[#64141b]
-                            bg-[#1b090b]
-                            text-[#a71924]
-                            shadow-[2px_2px_0_#48090e]
-                            transition
-                            hover:-translate-y-px
-                            hover:border-[#e02632]
-                            hover:bg-[#2b0b0f]
-                            hover:text-[#ff3b47]
-                            hover:shadow-[3px_3px_0_#64141b]
-                            active:shadow-none
-                        "
                     >
                         <X size={18} strokeWidth={2.8} />
-
-                        <span
-                            className="
-                                absolute inset-x-1 bottom-0.75
-                                h-px scale-x-0
-                                bg-[#e02632]
-                                transition-transform
-                                group-hover:scale-x-100
-                            "
-                        />
-                    </button>
+                    </IconButton>
                 </div>
-
             </div>
 
             {showWarning && (
@@ -287,4 +169,8 @@ export default function ConversationHeader() {
             )}
         </header>
     );
+}
+
+function Slash() {
+    return <span className="text-edge">//</span>;
 }

@@ -4,6 +4,7 @@ import { useConversationsStore } from "../conversationsStore";
 import ConversationListItem from "./ConversationListItem";
 import { useModal } from "../../../components/ModalProvider";
 import CreateGroupModal from "./CreateGroupModal";
+import { Button, EmptyState, SidebarList } from "../../../components/ui";
 
 export default function ConversationList() {
     const { openModal } = useModal();
@@ -20,103 +21,37 @@ export default function ConversationList() {
     }, [conversationsById]);
 
     return (
-        <div className="flex h-full min-h-0 flex-col">
-            <header
-                className="
-                    border-b-2 border-[#4b1b1f]
-                    bg-[#100708]
-                    px-5 py-4
-                "
-            >
-                <p className="mb-1 text-[10px] tracking-[0.22em] text-[#a71924]">
-                    TRANSMISSIONS // LIVE
-                </p>
-
-                <div className="flex items-end justify-between gap-4">
-                    <h2 className="text-xl font-black tracking-[-0.02em]">
-                        CONVERSATIONS
-                    </h2>
-
-                    <span className="text-[9px] tracking-[0.16em] text-[#7f6668]">
-                        UNIT 01
-                    </span>
-                </div>
-            </header>
-
-            <div className="border-b-2 border-[#4b1b1f] bg-[#190b0d] p-3">
-                <button
-                    type="button"
+        <SidebarList
+            eyebrow="TRANSMISSIONS // LIVE"
+            title="CONVERSATIONS"
+            meta="UNIT 01"
+            toolbar={
+                <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => openModal(<CreateGroupModal />)}
-                    className="
-                        flex w-full items-center justify-center gap-2
-                        border-2 border-[#64141b]
-                        bg-[#2b0e12]
-                        px-3 py-2.5
-                        text-[10px] font-bold
-                        tracking-[0.16em]
-                        text-[#b99792]
-                        shadow-[3px_3px_0_#48090e]
-                        hover:border-[#e02632]
-                        hover:bg-[#a71924]
-                        hover:text-[#eee2d5]
-                        active:translate-x-0.75
-                        active:translate-y-0.75
-                        active:shadow-[1px_1px_0_#48090e]
-                    "
+                    icon={<Users size={17} strokeWidth={2.4} />}
+                    className="w-full"
                 >
-                    <Users size={17} strokeWidth={2.4} />
                     CREATE GROUP TRANSMISSION
-                </button>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto">
-                {conversations.length === 0 ? (
-                    <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
-                        <div
-                            className="
-                                mb-3 grid h-12 w-12 place-items-center
-                                border-2 border-[#64141b]
-                                bg-[#100708]
-                                text-[#a71924]
-                                shadow-[3px_3px_0_#48090e]
-                            "
-                        >
-                            <MessageSquare
-                                size={22}
-                                strokeWidth={2.2}
-                            />
-                        </div>
-
-                        <p className="text-xs font-bold tracking-[0.12em] text-[#9f8581]">
-                            NO TRANSMISSIONS FOUND
-                        </p>
-
-                        <p className="mt-1 text-[10px] text-[#7f6668]">
-                            THE CHANNELS REMAIN SILENT.
-                        </p>
-                    </div>
-                ) : (
-                    conversations.map((conversation) => (
-                        <ConversationListItem
-                            key={conversation.id}
-                            conversation={conversation}
-                        />
-                    ))
-                )}
-            </div>
-
-            <footer
-                className="
-                    border-t border-[#4b1b1f]
-                    bg-[#100708]
-                    px-4 py-2
-                    text-[9px]
-                    tracking-[0.16em]
-                    text-[#7f6668]
-                "
-            >
-                ACTIVE CHANNELS // LINK STABLE
-            </footer>
-        </div>
+                </Button>
+            }
+            footer="ACTIVE CHANNELS // LINK STABLE"
+        >
+            {conversations.length === 0 ? (
+                <EmptyState
+                    icon={<MessageSquare size={22} strokeWidth={2.2} />}
+                    title="NO TRANSMISSIONS FOUND"
+                    subtitle="THE CHANNELS REMAIN SILENT."
+                />
+            ) : (
+                conversations.map((conversation) => (
+                    <ConversationListItem
+                        key={conversation.id}
+                        conversation={conversation}
+                    />
+                ))
+            )}
+        </SidebarList>
     );
 }

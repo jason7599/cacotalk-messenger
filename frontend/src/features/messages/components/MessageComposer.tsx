@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useActiveConversationStore } from "../../conversations/activeConversationStore";
 import { useMessageSendStore } from "../messageSendStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
+import { IconButton } from "../../../components/ui";
 
 export default function MessageComposer() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
@@ -62,28 +63,11 @@ export default function MessageComposer() {
     }
 
     return (
-        <div
-            className="
-                shrink-0
-                border-t-2 border-[#4b1b1f]
-                bg-[#100708]
-                p-3
-            "
-        >
+        <div className="shrink-0 border-t-2 border-edge bg-sunken p-3">
             {lockedReason ? (
-                <div
-                    className="
-                        flex items-center justify-center gap-2
-                        border-2 border-[#4b1b1f]
-                        bg-[#16090b]
-                        px-4 py-4
-                        text-[#7f6668]
-                    "
-                >
+                <div className="flex items-center justify-center gap-2 border-2 border-edge bg-pit p-4 text-faint">
                     <Ban size={16} strokeWidth={2.3} />
-                    <span className="text-[10px] font-bold tracking-[0.16em]">
-                        {lockedReason}
-                    </span>
+                    <span className="text-2xs font-bold tracking-caps">{lockedReason}</span>
                 </div>
             ) : (
                 // actual input bar
@@ -102,61 +86,21 @@ export default function MessageComposer() {
                             }}
                             placeholder="WHISPER INTO THE VOID..."
                             rows={1}
-                            className="
-                                min-h-11 max-h-32
-                                min-w-0 flex-1
-                                resize-none
-                                overflow-y-auto
-                                border-2 border-[#4b1b1f]
-                                bg-[#0c0506]
-                                px-3 py-3
-                                text-sm
-                                text-[#eee2d5]
-                                outline-none
-                                placeholder:text-[#5f4548]
-                                focus:border-[#a71924]
-                            "
+                            className="field max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto p-3 text-sm"
                         />
 
-                        <button
-                            type="button"
+                        <IconButton
+                            variant="accent"
+                            size="xl"
                             onClick={handleSend}
                             disabled={!canSend}
                             aria-label="Send message"
-                            className="
-                                grid h-11 w-11 shrink-0 place-items-center
-                                border-2 border-[#64141b]
-                                bg-[#2b0e12]
-                                text-[#a71924]
-                                shadow-[3px_3px_0_#48090e]
-
-                                enabled:hover:border-[#e02632]
-                                enabled:hover:bg-[#a71924]
-                                enabled:hover:text-[#eee2d5]
-
-                                enabled:active:translate-x-0.75
-                                enabled:active:translate-y-0.75
-                                enabled:active:shadow-[1px_1px_0_#48090e]
-
-                                disabled:cursor-not-allowed
-                                disabled:border-[#321316]
-                                disabled:bg-[#16090b]
-                                disabled:text-[#4f3437]
-                                disabled:shadow-none
-                            "
                         >
                             <Send size={18} strokeWidth={2.4} />
-                        </button>
+                        </IconButton>
                     </div>
 
-                    <div
-                        className="
-                            mt-2 flex items-center justify-between
-                            text-[9px]
-                            tracking-[0.14em]
-                            text-[#5f4a4c]
-                        "
-                    >
+                    <div className="mt-2 flex items-center justify-between text-3xs tracking-label text-dim">
                         <span>ENTER // SEND</span>
                         <span>SHIFT + ENTER // NEW LINE</span>
                     </div>

@@ -9,6 +9,7 @@ import { ChevronDown } from "lucide-react";
 import { useMessageSendStore, type PendingMessage } from "../../messageSendStore";
 import PendingMessageItem from "./PendingMessageItem";
 import FailedMessageItem from "./FailedMessageItem";
+import { Spinner } from "../../../../components/ui";
 
 const EMPTY_QUEUE: PendingMessage[] = [];
 
@@ -71,7 +72,7 @@ export default function MessageList() {
             >
                 <div ref={topSentinelRef} className="flex h-9 items-center justify-center py-2">
                     {loadingOlder && (
-                        <div className="h-9 w-9 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
+                        <Spinner size="lg" className="text-faint" />
                     )}
                 </div>
 
@@ -98,7 +99,7 @@ export default function MessageList() {
                             ))}
 
                             {sendError && (
-                                <div className="text-right text-[10px] font-bold tracking-widest text-[#a71924]/80">
+                                <div className="text-right text-2xs font-bold tracking-widest text-crimson/80">
                                     {sendError.toUpperCase()}
                                 </div>
                             )}
@@ -115,18 +116,7 @@ export default function MessageList() {
                 <button
                     type="button"
                     onClick={scrollToBottom}
-                    className="
-                        absolute bottom-4 left-1/2 -translate-x-1/2
-                        flex items-center gap-2
-                        border-2 border-[#e02632]
-                        bg-[#a71924]
-                        px-4 py-2.5
-                        text-xs font-bold tracking-[0.15em]
-                        text-[#eee2d5]
-                        shadow-[4px_4px_0_#520a10]
-                        hover:bg-[#e02632]
-                        active:shadow-[1px_1px_0_#520a10]
-                    "
+                    className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 border-2 border-crimson-bright bg-crimson px-4 py-2.5 text-xs font-bold tracking-caps text-bone shadow-hard-lg shadow-shade-crimson hover:bg-crimson-bright active:shadow-hard-xs"
                 >
                     <ChevronDown size={15} strokeWidth={2.5} />
                     RETURN TO THE LIVING
@@ -139,11 +129,11 @@ export default function MessageList() {
 function UnreadDivider() {
     return (
         <div className="my-3 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#4b1b1f]" />
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#a71924]">
+            <div className="h-px flex-1 bg-edge" />
+            <span className="text-2xs font-bold tracking-loud text-crimson">
                 NEW WHISPERS
             </span>
-            <div className="h-px flex-1 bg-[#a71924]" />
+            <div className="h-px flex-1 bg-crimson" />
         </div>
     );
 };

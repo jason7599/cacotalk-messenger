@@ -3,6 +3,7 @@ import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
 import type { ChatMessage, EventMessage } from "../../messages/types";
 import { useAuthStore } from "../../auth/authStore";
+import { Avatar, cn } from "../../../components/ui";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
@@ -21,39 +22,13 @@ export default function ConversationListItem({ conversation }: ConversationListI
 
     const unreadCount = (conversation.lastMessage?.seq ?? 0) - conversation.lastReadSeq;
 
-    const rowStyle = isActive
-        ? "border-[#a71924] bg-[#2b0e12]"
-        : isLoading
-            ? "border-[#e02632] bg-[#3a1117] ring-1 ring-[#e02632]/40 animate-pulse"
-            : "border-[#4b1b1f] bg-[#190b0d] hover:bg-[#240d10]"
-    ;
+    const highlighted = isActive || isLoading;
 
-    const avatarStyle = isLoading
-        ? "border-[#e02632] text-[#e02632]"
+    const rowStyle = isLoading
+        ? "border-crimson-bright bg-crimson-deep animate-pulse"
         : isActive
-            ? "border-[#e02632] text-[#e02632]"
-            : "border-[#4b1b1f] text-[#7f6668]"
-    ;
-
-    const nameStyle = isLoading
-        ? "text-[#f3d7d9]"
-        : isActive
-            ? "text-[#eee2d5]"
-            : "text-[#cbb9b6]"
-    ;
-
-    const previewStyle = isLoading
-        ? "text-[#d08a90]"
-        : isActive
-            ? "text-[#bfa6a3]"
-            : "text-[#7f6668]"
-    ;
-
-    const timestampStyle = isLoading
-        ? "text-[#d96b75]"
-        : isActive
-            ? "text-[#9f6267]"
-            : "text-[#6f595b]"
+            ? "border-crimson bg-raised"
+            : "border-edge bg-panel hover:bg-panel-hover"
     ;
 
     let lastMessageSenderName: string | null = null;
@@ -70,56 +45,34 @@ export default function ConversationListItem({ conversation }: ConversationListI
             type="button"
             onClick={() => setActiveConversation(conversation.id)}
             aria-pressed={isActive}
-            className={`
-                group relative flex w-full items-center gap-3
-                border-b
-                px-3 py-3
-                text-left
-                transition-colors
-                ${rowStyle}
-            `}
+            className={cn("relative flex w-full items-center gap-3 border-b p-3 text-left transition-colors", rowStyle)}
         >
             {isActive && (
-                <span
-                    aria-hidden="true"
-                    className="absolute left-0 top-0 h-full w-1 bg-[#e02632]"
-                />
+                <span aria-hidden="true" className="absolute left-0 top-0 h-full w-1 bg-crimson-bright" />
             )}
 
-            <div
-                className={`
-                    grid h-11 w-11 shrink-0 place-items-center
-                    border-2
-                    bg-[#100708]
-                    shadow-[2px_2px_0_#48090e]
-                    ${avatarStyle}
-                `}
-            >
-                {conversation.type === "DIRECT" ? (
-                    <span className="text-sm font-black">
-                        {displayName.charAt(0).toUpperCase()}
-                    </span>
-                ) : (
-                    <Users size={18} strokeWidth={2.4} aria-hidden="true" />
-                )}
-            </div>
+            <Avatar
+                name={displayName}
+                icon={conversation.type === "GROUP" ? <Users size={18} strokeWidth={2.4} aria-hidden="true" /> : undefined}
+                tone={highlighted ? "active" : "muted"}
+            />
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                    <p className={`truncate text-sm font-bold ${nameStyle}`}>
+                    <p className={cn("truncate text-sm font-bold", highlighted ? "text-bone" : "text-ash")}>
                         {displayName}
                     </p>
 
                     {conversation.type === "GROUP" && (
-                        <span className="shrink-0 text-[9px] tracking-widest text-[#7f6668]">
+                        <span className="shrink-0 text-3xs tracking-label text-faint">
                             // {conversation.memberCount}
                         </span>
                     )}
                 </div>
 
-                <div className={`mt-1 flex min-w-0 items-center text-xs ${previewStyle}`}>
+                <div className={cn("mt-1 flex min-w-0 items-center text-xs", highlighted ? "text-muted" : "text-faint")}>
                     {lastMessageSenderName && (
-                        <span className="mr-1 max-w-24 shrink-0 truncate font-bold text-[#9d7779]">
+                        <span className="mr-1 max-w-24 shrink-0 truncate font-bold text-muted">
                             {lastMessageSenderName}:
                         </span>
                     )}
@@ -131,24 +84,13 @@ export default function ConversationListItem({ conversation }: ConversationListI
                 {unreadCount > 0 && (
                     <span
                         aria-label={`${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
-                        className="
-                            min-w-5
-                            border border-[#a71924]
-                            bg-[#2b0e12]
-                            px-1.5
-                            text-center
-                            text-[9px]
-                            font-black
-                            leading-4
-                            text-[#e02632]
-                            shadow-[1px_1px_0_#48090e]
-                        "
+                        className="min-w-5 border border-crimson bg-raised px-1.5 text-center text-3xs font-black leading-4 text-crimson-bright shadow-hard-xs"
                     >
                         {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                 )}
 
-                <span className={`text-[9px] tracking-[0.08em] ${timestampStyle}`}>
+                <span className={cn("text-3xs tracking-widest", highlighted ? "text-crimson" : "text-faint")}>
                     {timestamp}
                 </span>
             </div>
