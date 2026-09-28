@@ -54,6 +54,22 @@ Don't combine `caption`/`eyebrow` with another `text-*` or `tracking-*` class. W
 
 ---
 
+## Screen sizes
+
+Small laptops have far less room than a big monitor. A 1080p laptop at 150% Windows scaling
+gives the browser only **1280×720** CSS pixels (a QHD monitor at 100% gives 2560×1440).
+
+- **Test at 1280×720.** In Chrome/Edge: F12 → Ctrl+Shift+M → "Responsive" → type the size.
+  Quick alternative: zoom the browser to 150–200% (Ctrl +).
+- **`short:` variant** (defined in `index.css`): applies only on screens shorter than 900px (covers 1080p laptops at 125% and 150% scaling).
+  Use it to shrink big paddings, logos and list heights: `py-10 short:py-4`, `max-h-72 short:max-h-44`.
+- **Width breakpoints:** `2xl:` = 1536px+ wide. Example: the sidebar list is `w-96 2xl:w-110`.
+- **Modals scroll by themselves**: the shared wrapper caps their height to the screen, so a tall
+  modal gets a scrollbar instead of running off the bottom.
+- **Be suspicious of fixed sizes over ~600px** (`w-180`, `h-60`, `max-h-96`...). Check them at 1280×720.
+
+---
+
 ## Components
 
 Import everything from one place:

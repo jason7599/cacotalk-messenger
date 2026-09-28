@@ -136,7 +136,7 @@ export default function CreateGroupModal() {
 
             {error && <ErrorText className="mb-6">{error}</ErrorText>}
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="LOCATE SOULS">
                     <SearchInput
                         value={query}
@@ -167,7 +167,7 @@ export default function CreateGroupModal() {
                         Contacts who have blocked you are excluded.
                     </p>
 
-                    <div className="max-h-72 overflow-y-auto border-2 border-edge bg-void p-3">
+                    <div className="max-h-72 overflow-y-auto border-2 border-edge bg-void p-3 short:max-h-44">
                         {loading ? (
                             <div className="flex min-h-40 items-center justify-center gap-3 text-xs tracking-label text-muted">
                                 <Spinner className="text-crimson" />
@@ -235,7 +235,7 @@ export default function CreateGroupModal() {
                         </p>
                     )}
 
-                    <div className="min-h-16 border-2 border-edge bg-pit p-3">
+                    <div className="max-h-28 min-h-16 overflow-y-auto border-2 border-edge bg-pit p-3 short:max-h-20">
                         {selectedUsers.length === 0 ? (
                             <p className="flex min-h-10 items-center justify-center text-2xs tracking-label text-dim">
                                 NO SOULS HAVE BEEN BOUND.

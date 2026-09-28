@@ -49,7 +49,7 @@ export default function Sidebar() {
                 </div>
             </nav>
 
-            <section className="flex w-110 flex-col border-r-2 border-edge-strong bg-panel">
+            <section className="flex w-96 flex-col border-r-2 border-edge-strong bg-panel 2xl:w-110">
                 <div className="min-h-0 flex-1">
                     {panel === "conversations"
                         ? <ConversationList />

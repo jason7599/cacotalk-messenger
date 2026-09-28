@@ -45,7 +45,7 @@ export function ModalHeader({
     onBack,
 }: ModalHeaderProps) {
     return (
-        <header className="mb-6 border-b-2 border-edge-strong pb-5">
+        <header className="mb-6 border-b-2 border-edge-strong pb-5 short:mb-4 short:pb-3">
             <div className="flex items-start gap-4">
                 {onBack && (
                     <IconButton onClick={onBack} aria-label="Back">

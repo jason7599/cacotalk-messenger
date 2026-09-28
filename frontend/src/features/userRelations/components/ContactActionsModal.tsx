@@ -76,7 +76,7 @@ export default function ContactActionsModal({ contact }: ContactActionsModalProp
                 closeDisabled={isBusy}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="RELATION">
                     <ActionCard
                         title="SEVER CONTACT"

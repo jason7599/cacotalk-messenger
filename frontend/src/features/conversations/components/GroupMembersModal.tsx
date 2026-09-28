@@ -30,9 +30,9 @@ export default function GroupMembersModal() {
                 onClose={closeModal}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="BOUND SOULS">
-                    <div className="max-h-104 overflow-y-auto pr-1">
+                    <div className="max-h-104 overflow-y-auto pr-1 short:max-h-64">
                         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
                             {members.map((member) => 
                                 <GroupMemberRow

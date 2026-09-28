@@ -67,7 +67,7 @@ export default function ConversationHeader() {
 
     return (
         <header className="flex shrink-0 flex-col border-b-2 border-edge bg-sunken">
-            <div className="flex items-center gap-4 px-5 py-10">
+            <div className="flex items-center gap-4 px-5 py-10 short:py-4">
                 <Avatar
                     name={displayTitle}
                     icon={meta.type === "GROUP" ? <Users size={22} strokeWidth={2.3} /> : undefined}

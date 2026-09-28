@@ -63,7 +63,7 @@ export default function RemoveMemberModal({ member }: RemoveMemberModalProps) {
                 closeDisabled={removing}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="EXILE">
                     <ActionCard
                         title={

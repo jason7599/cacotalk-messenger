@@ -3,7 +3,7 @@ import { apiLogin, apiRegister } from "../features/auth/authApi";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
 import { useAuthStore } from "../features/auth/authStore";
 import { getErrorMessage } from "../shared/apiError";
-import { Button, ErrorText } from "../components/ui";
+import { Button, ErrorText, cn } from "../components/ui";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;
@@ -82,23 +82,29 @@ export default function AuthPage() {
     }
 
     return (
-        <main className="min-h-screen bg-sunken px-5 py-8">
-            <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center">
+        <main className="min-h-screen bg-sunken px-5 py-8 short:py-3">
+            <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center short:min-h-[calc(100vh-1.5rem)]">
 
-                <header className="mb-8 text-center">
+                <header className="mb-8 text-center short:mb-4">
                     <img
                         src={cacotalkLogo}
                         alt="CACOTALK"
-                        className="h-60 w-80 object-contain"
+                        className={cn(
+                            "mx-auto w-80 object-contain short:h-20 short:w-32",
+                            // The register form is tall: there the logo shrinks with the
+                            // window height (100dvh - 51rem) so everything fits, never
+                            // smaller than 5rem or bigger than 15rem.
+                            isLogin ? "h-60" : "h-[clamp(5rem,calc(100dvh-51rem),15rem)]",
+                        )}
                     />
-                    <p className="mt-3 text-xs tracking-[0.35em] text-muted">
+                    <p className="mt-3 text-xs tracking-[0.35em] text-muted short:mt-1">
                         MESSENGER FROM DOWN BELOW
                     </p>
                 </header>
 
-                <section className="w-full border-2 border-edge-strong bg-panel p-7 shadow-hard-xl shadow-void">
+                <section className="w-full border-2 border-edge-strong bg-panel p-7 shadow-hard-xl shadow-void short:p-5">
 
-                    <header className="mb-7">
+                    <header className="mb-7 short:mb-4">
                         <p className="eyebrow mb-2">AUTHENTICATION RITUAL</p>
 
                         <h2 className="text-2xl font-black tracking-tight">
@@ -109,7 +115,7 @@ export default function AuthPage() {
                     <form 
                         ref={formRef}
                         onSubmit={handleSubmit} 
-                        className="flex flex-col gap-5"
+                        className="flex flex-col gap-5 short:gap-3"
                     >
                         <Field
                             label="USERNAME"
@@ -139,7 +145,7 @@ export default function AuthPage() {
                                 />
 
                                 {/* captcha (intentionally styled like a "real" light-mode widget) */}
-                                <label className="flex cursor-pointer items-center justify-between border border-[#5f5f5f] bg-[#f5f5f5] px-3 py-2 text-black">
+                                <label className="flex cursor-pointer items-center justify-between border border-[#5f5f5f] bg-[#f5f5f5] px-3 py-2 text-black short:py-1">
                                     <div className="flex items-center gap-3">
                                         <input
                                             type="checkbox"
@@ -152,7 +158,7 @@ export default function AuthPage() {
                                     </div>
 
                                     <div className="flex flex-col items-center text-[0.55rem] leading-tight text-[#666]">
-                                        <div className="mb-1 flex h-8 w-8 items-center justify-center border border-[#aaa] bg-white text-lg">
+                                        <div className="mb-1 flex h-8 w-8 items-center justify-center border border-[#aaa] bg-white text-lg short:mb-0.5 short:h-6 short:w-6 short:text-sm">
                                             🔥
                                         </div>
                                         <span>CACOTCHA</span>
@@ -186,7 +192,7 @@ export default function AuthPage() {
                             setError(null);
                             formRef.current?.reset();
                         }}
-                        className="mt-6 w-full text-xs tracking-widest text-muted transition-colors hover:text-crimson-bright"
+                        className="mt-6 w-full text-xs tracking-widest short:mt-3 text-muted transition-colors hover:text-crimson-bright"
                     >
                         {isLogin
                             ? "NEW BLOOD? CREATE AN ACCOUNT"
@@ -207,10 +213,10 @@ type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
 
 function Field({ label, hint, type = "text", ...inputProps }: FieldProps) {
     return (
-        <label className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2 short:gap-1">
             <span className="text-xs tracking-label text-muted">{label}</span>
 
-            <input type={type} className="field w-full px-4 py-3 transition-colors" {...inputProps} />
+            <input type={type} className="field w-full px-4 py-3 transition-colors short:py-2" {...inputProps} />
 
             {hint && <span className="text-xs text-faint">{hint}</span>}
         </label>

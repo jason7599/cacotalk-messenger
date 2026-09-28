@@ -73,7 +73,20 @@
     }
 }
 
+/*
+ * Screen-size helper: `short:` applies only on short screens (laptops: e.g.
+ * 1080p at 125% scaling = 1536x864, or at 150% = 1280x720). Use it to shrink big padding,
+ * logos and list heights so everything fits. Example: "py-10 short:py-5".
+ */
+@custom-variant short (@media (max-height: 900px));
+
 @layer base {
+    html {
+        /* dark native scrollbars, tinted to match */
+        color-scheme: dark;
+        scrollbar-color: var(--color-edge-strong) transparent;
+    }
+
     body {
         background-color: var(--color-sunken);
         color: var(--color-bone);

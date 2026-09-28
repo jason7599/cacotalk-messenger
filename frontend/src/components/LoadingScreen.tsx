@@ -10,7 +10,7 @@ export default function LoadingScreen({ eyebrow, title, message }: LoadingScreen
     return (
         <main className="min-h-screen bg-sunken px-5 py-8">
             <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-lg flex-col items-center justify-center">
-                <img src={cacotalkLogo} alt="" className="mb-8 h-52 w-80 object-contain" />
+                <img src={cacotalkLogo} alt="" className="mb-8 h-52 w-80 object-contain short:mb-4 short:h-32 short:w-48" />
 
                 <section className="relative w-full border-2 border-edge-strong bg-panel p-7 shadow-hard-xl shadow-void">
                     <header className="mb-7 border-b-2 border-edge pb-5">

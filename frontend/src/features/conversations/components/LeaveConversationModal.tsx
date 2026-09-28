@@ -62,7 +62,7 @@ export default function LeaveConversationModal({ groupCreator } : LeaveConversat
                 closeDisabled={isLeaving}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="DEPARTURE">
                     <ActionCard
                         title="ABANDON CHANNEL"

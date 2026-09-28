@@ -36,7 +36,7 @@ export default function SettingsModal() {
                 closeDisabled={loggingOut}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 short:gap-4">
                 <Section index={1} title="BLACKLIST">
                     <button
                         type="button"
