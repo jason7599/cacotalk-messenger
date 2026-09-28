@@ -1,7 +1,7 @@
 import { LogOut, X } from "lucide-react";
 import { useState } from "react";
 import { useModal } from "../../../components/ModalProvider";
-import { getErrorMessage } from "../../../shared/apiClient";
+import { getErrorMessage } from "../../../shared/apiError";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import type { UserInfo } from "../../../shared/types";

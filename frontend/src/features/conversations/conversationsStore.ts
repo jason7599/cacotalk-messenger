@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { ConversationSummary } from "./types";
 import type { ChatMessage } from "../messages/types";
 import { apiGetConversationSummary } from "./conversationsApi";
-import { getErrorMessage } from "../../shared/apiClient";
+import { getErrorMessage } from "../../shared/apiError";
 import type { UserInfo } from "../../shared/types";
 import { useAuthStore } from "../auth/authStore";
 

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../components/ModalProvider";
 import type { UserInfo } from "../../../shared/types";
 import { apiGetInvitableUsers } from "../../userRelations/userRelationsApi";
-import { getErrorMessage } from "../../../shared/apiClient";
+import { getErrorMessage } from "../../../shared/apiError";
 import { apiCreateGroupConversation } from "../conversationsApi";
 import { useActiveConversationStore } from "../activeConversationStore";
 

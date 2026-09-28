@@ -4,7 +4,7 @@ import { useContactsStore } from "../contactsStore";
 import { useBlockedUsersStore } from "../blockedUsersStore";
 import { apiSearchUsers } from "../userRelationsApi";
 import { useModal } from "../../../components/ModalProvider";
-import { getErrorMessage } from "../../../shared/apiClient";
+import { getErrorMessage } from "../../../shared/apiError";
 import type { UserInfo } from "../../../shared/types";
 
 const SEARCH_QUERY_MIN_LENGTH = 3;

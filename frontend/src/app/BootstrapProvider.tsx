@@ -4,7 +4,7 @@ import { useContactsStore } from "../features/userRelations/contactsStore";
 import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStore";
 import { apiGetConversationSummaries } from "../features/conversations/conversationsApi";
 import { useConversationsStore } from "../features/conversations/conversationsStore";
-import { getErrorMessage } from "../shared/apiClient";
+import { getErrorMessage } from "../shared/apiError";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { wsClient } from "../features/realtime/wsClient";
 import { handleRealtimeEvent } from "../features/realtime/realtimeEventHandler";

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { apiGetConversationDetail, apiLeaveConversation, apiResolveDirectConversation } from "./conversationsApi";
-import { getErrorMessage } from "../../shared/apiClient";
+import { getErrorMessage } from "../../shared/apiError";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
 import type { ChatMessage } from "../messages/types";

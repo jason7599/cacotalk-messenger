@@ -4,7 +4,7 @@ import { useBlockedUsersStore } from "../blockedUsersStore";
 import { useContactsStore } from "../contactsStore";
 import { useModal } from "../../../components/ModalProvider";
 import { useState } from "react";
-import { getErrorMessage } from "../../../shared/apiClient";
+import { getErrorMessage } from "../../../shared/apiError";
 
 type ContactActionsModalProps = {
     contact: UserInfo;

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { apiSendMessage } from "./messagesApi";
-import { getErrorMessage } from "../../shared/apiClient";
+import { getErrorMessage } from "../../shared/apiError";
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
 

@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { apiLogin, apiRegister } from "../features/auth/authApi";
 import cacotalkLogo from "../assets/cacotalk-logo.png";
-import { getErrorMessage } from "../shared/apiClient";
 import { useAuthStore } from "../features/auth/authStore";
+import { getErrorMessage } from "../shared/apiError";
 
 // TODO: CHANGE ON PROD PLEASE DONT FORGET
 const USERNAME_MIN_LENGTH = 3;

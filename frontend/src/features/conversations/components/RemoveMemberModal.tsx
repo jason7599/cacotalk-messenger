@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useModal } from "../../../components/ModalProvider";
 import { apiRemoveMember } from "../conversationsApi";
 import { useActiveConversationStore } from "../activeConversationStore";
-import { getErrorMessage } from "../../../shared/apiClient";
+import { getErrorMessage } from "../../../shared/apiError";
 
 type RemoveMemberModalProps = {
     member: UserInfo;
