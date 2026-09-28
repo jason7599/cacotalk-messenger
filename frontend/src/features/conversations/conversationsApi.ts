@@ -1,4 +1,5 @@
 import api from "../../shared/apiClient";
+import type { UserInfo } from "../../shared/types";
 import type { ConversationDetail, ConversationSummary } from "./types";
 
 export async function apiGetConversationSummaries(): Promise<ConversationSummary[]> {
@@ -19,6 +20,14 @@ export async function apiResolveDirectConversation(targetId: number): Promise<st
 
 export async function apiCreateGroupConversation(initMemberIds: number[]): Promise<string> {
     return (await api.post("/conversations/group", { initMemberIds, clientId: crypto.randomUUID() })).data;
+}
+
+export async function apiGetInvitableUsers(conversationId: string): Promise<UserInfo[]> {
+    return (await api.get(`/conversations/${conversationId}/invitable`)).data;
+}
+
+export async function apiInviteMembers(conversationId: string, memberIds: number[]): Promise<void> {
+    await api.post(`/conversations/${conversationId}/members`, { memberIds });
 }
 
 export async function apiLeaveConversation(conversationId: string): Promise<void> {

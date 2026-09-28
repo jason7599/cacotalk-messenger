@@ -3,6 +3,7 @@ import { useModal } from "../../../components/ModalProvider";
 import { useActiveConversationStore } from "../activeConversationStore";
 import GroupMemberRow from "./GroupMemberItem";
 import LeaveConversationModal from "./LeaveConversationModal";
+import InviteMembersModal from "./InviteMembersModal";
 import { useAuthStore } from "../../auth/authStore";
 import { Button, ModalFrame, ModalHeader, Section } from "../../../components/ui";
 
@@ -67,6 +68,7 @@ export default function GroupMembersModal() {
                             <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => openModal(<InviteMembersModal />)}
                                 icon={<UserPlus size={14} strokeWidth={2.5} className="text-crimson" />}
                             >
                                 INVITE SOULS

@@ -55,14 +55,14 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
         if (!get().conversationsById[message.conversationId]) {
             try {
                 const summary = await apiGetConversationSummary(message.conversationId);
-                get().upsertLocal(summary); // can I just do this?
+                get().upsertLocal(summary);
             } catch (err) {
                 // Two real cases here:
                 // 1. User is no longer a member of this conversation (e.g. removed from a group between the message being sent and this fetch)
                 // Here it's correct to do nothing.
                 // 2. Server error — the conversation will be missing from the sidebar until a future refresh/bootstrap catches it up.
                 // Not ideal, but acceptable for now...
-                console.log(getErrorMessage(err));
+                console.error(getErrorMessage(err));
             }
             return;
         }

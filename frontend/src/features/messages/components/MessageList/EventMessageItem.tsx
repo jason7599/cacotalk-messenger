@@ -2,6 +2,7 @@ import { UsersRound } from "lucide-react";
 import type { EventData, EventMessage } from "../../types";
 import { formatMessageTimestamp } from "../../formatters";
 import { selectGroupCreator, useActiveConversationStore } from "../../../conversations/activeConversationStore";
+import type { UserInfo } from "../../../../shared/types";
 
 type EventMessageItemProps = {
     message: EventMessage;
@@ -58,7 +59,19 @@ function renderEvent(event: EventData) {
     }
 
     case "MEMBERS_INVITED":
-        return <></>;
+        return (
+            <>
+                <p className="font-bold tracking-label text-ash">
+                    {event.members.length === 1
+                        ? "A NEW MEMBER JOINED THE CIRCLE"
+                        : "NEW MEMBERS JOINED THE CIRCLE"}
+                </p>
+
+                <p className="mt-1 text-xs leading-relaxed text-faint">
+                    {event.members.map((member) => member.username).join(" · ")}
+                </p>
+            </>
+        );
         
     case "MEMBER_LEFT":
         return (
