@@ -17,6 +17,7 @@ export type ConversationSummary =
     | SummaryBase & { type: "GROUP"; groupCreatorId: number; }
 ;
 
+// The full DTO shape from the
 export type ConversationDetail = {
     id: string;
     type: ConversationType;
@@ -24,8 +25,8 @@ export type ConversationDetail = {
     blockedMe: boolean;
     groupCreatorId: number | null;
     isClosed: boolean;
-    lastSeq: number;
-    prevLastReadSeq: number;
+    lastSeqSnapshot: number;
+    myLastReadSeq: number;
     createdAt: string;
 };
 
@@ -42,6 +43,6 @@ export type ActiveConversation = {
     meta: ConversationMeta;
     messages: ChatMessage[];
     hasOlder: boolean;
-    lastSeq: number;
-    prevLastReadSeq: number;
+    lastSeqSnapshot: number;
+    myLastReadSeq: number;
 };

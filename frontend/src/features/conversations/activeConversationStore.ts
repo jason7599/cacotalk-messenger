@@ -90,8 +90,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     meta,
                     messages: page.messages,
                     hasOlder: page.hasOlder,
-                    lastSeq: detail.lastSeq,
-                    prevLastReadSeq: detail.prevLastReadSeq
+                    lastSeqSnapshot: detail.lastSeqSnapshot,
+                    myLastReadSeq: detail.myLastReadSeq
                 },
                 status: "READY",
                 loadingConversationId: null,

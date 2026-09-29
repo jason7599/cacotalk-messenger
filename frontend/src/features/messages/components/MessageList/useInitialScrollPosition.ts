@@ -5,10 +5,10 @@ import { useLayoutEffect, useRef } from "react";
 interface UseInitialScrollPositionOptions {
     containerRef: React.RefObject<HTMLDivElement | null>;
     messages: ChatMessage[];
-    prevLastReadSeq: number;
+    myLastReadSeq: number;
 };
 
-export function useInitialScrollPosition({ containerRef, messages, prevLastReadSeq }: UseInitialScrollPositionOptions) {
+export function useInitialScrollPosition({ containerRef, messages, myLastReadSeq }: UseInitialScrollPositionOptions) {
     const done = useRef(false);
 
     useLayoutEffect(() => {
@@ -17,8 +17,8 @@ export function useInitialScrollPosition({ containerRef, messages, prevLastReadS
         const container = containerRef.current;
         if (!container || messages.length === 0) return;
 
-        if (prevLastReadSeq !== 0) {
-            const el = container.querySelector(`[data-seq="${prevLastReadSeq}"]`);
+        if (myLastReadSeq !== 0) {
+            const el = container.querySelector(`[data-seq="${myLastReadSeq}"]`);
             if (el) {
                 el.scrollIntoView({ block: "center" });
                 done.current = true;
@@ -26,7 +26,7 @@ export function useInitialScrollPosition({ containerRef, messages, prevLastReadS
             }
 
             const oldestLoadedSeq = messages[0].seq;
-            if (prevLastReadSeq < oldestLoadedSeq) {
+            if (myLastReadSeq < oldestLoadedSeq) {
                 // unread boundary got dropped from the initial load due to load cap. 
                 // just land at the top.
                 container.scrollTop = 0;
@@ -39,5 +39,5 @@ export function useInitialScrollPosition({ containerRef, messages, prevLastReadS
         container.scrollTop = container.scrollHeight;
         done.current = true;
         return;
-    }, [containerRef, messages, prevLastReadSeq]);
+    }, [containerRef, messages, myLastReadSeq]);
 }

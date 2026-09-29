@@ -22,7 +22,8 @@ export default function MessageList() {
     const loadingOlder = useActiveConversationStore((s) => s.loadingOlder);
     const hasOlder = useActiveConversationStore((s) => s.conversation!.hasOlder);
 
-    const prevLastReadSeq = useActiveConversationStore((s) => s.conversation!.prevLastReadSeq);
+    const myLastReadSeq = useActiveConversationStore((s) => s.conversation!.myLastReadSeq);
+    const lastSeqSnapshot = useActiveConversationStore((s) => s.conversation!.lastSeqSnapshot);
 
     // Stable reference so the ?? fallback doesn't allocate a new array
     const pendingMessages = useMessageSendStore((s) => s.queues[conversationId]?.queue ?? EMPTY_QUEUE);
@@ -36,8 +37,7 @@ export default function MessageList() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const topSentinelRef = useRef<HTMLDivElement>(null);
 
-    const lastSeq = messages[messages.length - 1]?.seq;
-    const showDivider = 0 < prevLastReadSeq && prevLastReadSeq < lastSeq;
+    const showDivider = 0 < myLastReadSeq && myLastReadSeq < lastSeqSnapshot;
 
     // This is just for detecting when the user sends a message, so that we can scroll down
     const lastOutgoingClientId = pendingMessages.at(-1)?.clientId ?? null;
@@ -45,7 +45,7 @@ export default function MessageList() {
     useInitialScrollPosition({
         containerRef: scrollRef,
         messages,
-        prevLastReadSeq
+        myLastReadSeq
     });
 
     useLoadOlderMessages({
@@ -59,7 +59,7 @@ export default function MessageList() {
 
     const { isNearBottom, scrollToBottom } = useStickToBottom({
         containerRef: scrollRef,
-        lastMessageSeq: lastSeq,
+        lastMessageSeq: messages[messages.length - 1]?.seq,
         lastOutgoingClientId
     });
 
@@ -83,7 +83,7 @@ export default function MessageList() {
                                 ? <UserMessageItem message={message} />
                                 : <EventMessageItem message={message} />
                             }
-                            {showDivider && message.seq === prevLastReadSeq && <UnreadDivider />}
+                            {showDivider && message.seq === myLastReadSeq && <UnreadDivider />}
                         </div>
                     ))}
 
