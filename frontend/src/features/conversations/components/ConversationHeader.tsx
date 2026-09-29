@@ -82,16 +82,19 @@ export default function ConversationHeader() {
                     <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-3xs tracking-caps">
                         {meta.type === "GROUP" ? (
                             <>
-                                <button
-                                    type="button"
-                                    onClick={() => openModal(<GroupMembersModal/>)}
-                                    className="flex items-center gap-1 text-crimson transition-colors hover:text-crimson-bright hover:underline hover:decoration-dotted hover:underline-offset-3"
-                                >
-                                    <Users size={11} strokeWidth={2.3} />
-                                    GROUP // {otherMembers.length + 1} SOULS
-                                </button>
-
-                                <Slash />
+                                {!isClosed && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => openModal(<GroupMembersModal/>)}
+                                            className="flex items-center gap-1 text-crimson transition-colors hover:text-crimson-bright hover:underline hover:decoration-dotted hover:underline-offset-3"
+                                        >
+                                            <Users size={11} strokeWidth={2.3} />
+                                            GROUP // {otherMembers.length + 1} SOULS
+                                        </button>
+                                        <Slash />
+                                    </>
+                                )}
 
                                 <span className="min-w-0 text-muted">
                                     CREATED BY:{" "}

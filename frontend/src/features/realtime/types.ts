@@ -12,4 +12,5 @@ export type RealtimeEvent =
         subject: UserInfo;
         previewPatch: UserInfo[];
         newMemberCount: number; }
+    | { type: "GROUP_CLOSED"; conversationId: string; }
 ;

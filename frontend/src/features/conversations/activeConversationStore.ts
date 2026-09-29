@@ -27,6 +27,7 @@ export type ActiveConversationState = {
     leaveConversation: () => Promise<void>;
     onMembersAdded: (newMembers: UserInfo[]) => void;
     onMemberRemoved: (memberId: number) => void; 
+    onGroupClosed: () => void;
 };
 
 export const selectGroupCreator = (state: ActiveConversationState) => {
@@ -240,6 +241,16 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
+    const onGroupClosed = () => {
+        set((state) => {
+            // this will never happen but we need the linter happy
+            if (state.conversation?.meta.type !== "GROUP") {
+                return state;
+            }
+            state.conversation.meta.isClosed = true;
+        });
+    };
+
     return {
         status: "IDLE",
         error: null,
@@ -255,6 +266,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         upsertMessage,
         leaveConversation,
         onMembersAdded,
-        onMemberRemoved
+        onMemberRemoved,
+        onGroupClosed
     };
 }));
