@@ -193,13 +193,13 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     """, nativeQuery = true)
     List<UserResponse> getAllMembersExcept(UUID conversationId, long userId);
 
-    @Modifying
     @Query(value = """
         UPDATE conversation_members
         SET last_read_seq = GREATEST(last_read_seq, :seq) -- idempotent
         WHERE conversation_id = :conversationId AND user_id = :userId
+        RETURNING last_read_seq
     """, nativeQuery = true)
-    void updateLastReadSeq(UUID conversationId, long userId, long seq);
+    Optional<Long> updateLastReadSeq(UUID conversationId, long userId, long seq);
 
     // Membership check is included
     // On DIRECT: check no block status exists

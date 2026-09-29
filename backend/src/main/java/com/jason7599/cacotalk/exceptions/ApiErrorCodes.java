@@ -24,7 +24,7 @@ public enum ApiErrorCodes {
 
     // Conversation
     CONVERSATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Conversation not found"),
-    NOT_A_MEMBER(HttpStatus.FORBIDDEN, "Not a member of this conversation"),
+    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "Not a member of this conversation"),
     NO_SELF_DIRECT_CONVERSATION(HttpStatus.BAD_REQUEST, "Cannot have a direct conversation with self"),
     GROUP_TOO_SMALL(HttpStatus.BAD_REQUEST, ConversationRules.GROUP_TOO_SMALL_MESSAGE),
     GROUP_TOO_BIG(HttpStatus.BAD_REQUEST, ConversationRules.GROUP_TOO_BIG_MESSAGE),
@@ -36,7 +36,7 @@ public enum ApiErrorCodes {
 
     // Message
     // This includes both clientId collision/probe, and block status/closed
-    CANNOT_SEND_MESSAGE(HttpStatus.CONFLICT, "Cannot send message"),
+    CANNOT_SEND_MESSAGE(HttpStatus.CONFLICT, "Cannot send a message in this conversation"),
 
     ;
 

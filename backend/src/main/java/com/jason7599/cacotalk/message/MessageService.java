@@ -112,7 +112,7 @@ public class MessageService {
             // clientId collision, but the request not matching the existing message.
             // Either it's an actual, one in a GAZILLION uuid collision, or
             // it means a malicious actor is probing for existing clientIds.
-            // Either way, a 409 is raised so no big damage will be done
+            // Either way, an error is thrown so no big damage will be done
             if (!existing.getSenderId().equals(userId) || !existing.getId().conversationId().equals(conversationId)
             || !existing.getContent().equals(content)) {
                 log.warn("clientId collision: user {} submitted clientId {} already owned by sender {} in conversation {}",
@@ -144,6 +144,15 @@ public class MessageService {
                 null,
                 content,
                 clientId
+        );
+
+        // Explicit ack here.
+        // This is done so that the user's own message never appears as unread.
+        // This also triggers a MARK_AS_READ event to the sender's other sessions.
+        conversationService.markAsRead(
+                conversationId,
+                userId,
+                inserted.getId().seq()
         );
 
         MessageResponse message = new MessageResponse(

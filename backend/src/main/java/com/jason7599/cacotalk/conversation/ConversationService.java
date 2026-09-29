@@ -199,12 +199,6 @@ public class ConversationService {
     }
 
     // Throws if room doesn't exist or is not a GROUP conversation
-    /*
-    I did consider putting this in MembershipLookupService. Decided against it after a while
-    MembershipLookupService, at least as of now, concerns the conversation_members table queries.
-    This instead is a query on the conversations table itself.
-    So yeah, it lives here.
-     */
     private GroupConversationInfo getGroupConversationInfo(UUID conversationId) {
         return conversationRepository.getGroupConversationInfo(conversationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCodes.CONVERSATION_NOT_FOUND));
@@ -394,15 +388,25 @@ public class ConversationService {
 
     @Transactional
     public void markAsRead(UUID conversationId, long userId, long seq) {
-        // Torn on whether to do a membership check here.
-        // It fits the rest of the API semantically, all other operations are
-        // guarded with the membership check.
-        // But it is also true that in this specific case, the stakes are basically non-existent.
-        // No row gets modified - nothing corrupts, nothing leaks data at all.
-        // Alright. Skipping it for now.
+        // Returns Optional.empty only if the (conversationId, userId) row is not found in the conversation_members table.
+        // So this doubles as a membership check, which is kinda AWESOME. How lucky.
+        // Though, one caveat would be that this will throw even when the conversationId or userId itself is not found.
+        // userId is pulled from AuthenticationPrincipal, so I think it's protected enough,
+        // but conversationId might be bullshit.
+        // Eh, either way, MEMBERSHIP_NOT_FOUND seems apt
+        long lastReadSeq = conversationRepository.updateLastReadSeq(conversationId, userId, seq)
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.MEMBERSHIP_NOT_FOUND));
 
-        // This operation no-ops anyway when either the membership is not found,
-        // or a stale request; i.e., given seq is equal or smaller than the persisted last_read_seq.
-        conversationRepository.updateLastReadSeq(conversationId, userId, seq);
+        // Since the repo method returns the existing last_read_seq if the given seq was smaller,
+        // if the returned seq matches the requested seq, that means an actual update happened.
+        if (lastReadSeq == seq) {
+            realtimeEventPublisher.sendToUser(
+                    userId,
+                    new RealtimeEvent.MarkedAsRead(
+                            conversationId,
+                            lastReadSeq
+                    )
+            );
+        }
     }
 }

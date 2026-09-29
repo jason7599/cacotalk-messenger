@@ -17,7 +17,7 @@ public class MembershipLookupService {
 
     public ConversationMembership requireMembership(UUID conversationId, long userId) {
         return conversationRepository.getMembership(conversationId, userId)
-                .orElseThrow(() -> new ApiException(ApiErrorCodes.NOT_A_MEMBER));
+                .orElseThrow(() -> new ApiException(ApiErrorCodes.MEMBERSHIP_NOT_FOUND));
     }
 
     public List<UserResponse> getAllMembersExcept(UUID conversationId, long userId) {
