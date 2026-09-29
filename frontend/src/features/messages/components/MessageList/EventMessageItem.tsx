@@ -94,6 +94,10 @@ function renderEvent(event: EventData) {
 
 
     case "GROUP_CLOSED":
-        return <></>;
+        return (
+            <p className="font-extrabold tracking-label text-crimson">
+                THE CIRCLE WAS CLOSED
+            </p>
+        );
     }
 }

@@ -37,3 +37,7 @@ export async function apiLeaveConversation(conversationId: string): Promise<void
 export async function apiRemoveMember(conversationId: string, targetId: number): Promise<void> {
     await api.delete(`/conversations/${conversationId}/members/${targetId}`);
 }
+
+export async function apiCloseConversation(conversationId: string): Promise<void> {
+    await api.patch(`/conversations/${conversationId}/close`);
+}

@@ -6,6 +6,7 @@ import LeaveConversationModal from "./LeaveConversationModal";
 import InviteMembersModal from "./InviteMembersModal";
 import { useAuthStore } from "../../auth/authStore";
 import { Button, ModalFrame, ModalHeader, Section } from "../../../components/ui";
+import CloseGroupModal from "./CloseGroupModal";
 
 export default function GroupMembersModal() {
     const me = useAuthStore((s) => s.user!);
@@ -76,6 +77,7 @@ export default function GroupMembersModal() {
 
                             <Button
                                 size="sm"
+                                onClick={() => openModal(<CloseGroupModal />)}
                                 icon={<LockKeyhole size={14} strokeWidth={2.6} />}
                             >
                                 CLOSE CHANNEL

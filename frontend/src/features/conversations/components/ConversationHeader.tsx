@@ -19,6 +19,7 @@ export default function ConversationHeader() {
     const { otherMembers, meta } = conversation;
 
     const createdByMe = meta.type === "GROUP" && meta.groupCreator.userId === me.userId;
+    const isClosed = meta.type === "GROUP" && meta.isClosed;
 
     const subjectUser = meta.type === "DIRECT"
         ? otherMembers[0]!
@@ -40,7 +41,7 @@ export default function ConversationHeader() {
     // Group: I'm not the creator, and the creator is either not in my contacts or is blocked
     const showWarning =
         (meta.type === "DIRECT" && (!meta.blockedMe && !isSubjectUserInContacts && !isSubjectUserBlocked))
-        || (meta.type === "GROUP" && !createdByMe && (!isSubjectUserInContacts || isSubjectUserBlocked))
+        || (meta.type === "GROUP" && !createdByMe &&!isClosed && (!isSubjectUserInContacts || isSubjectUserBlocked))
     ;
 
     function getGroupDisplayTitle() {
@@ -138,7 +139,7 @@ export default function ConversationHeader() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-5">
-                    {meta.type === "GROUP" && (
+                    {meta.type === "GROUP" && !isClosed && (
                         <IconButton
                             size="xl"
                             aria-label="View members"
