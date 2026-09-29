@@ -1,4 +1,4 @@
-import { Ban, Lock, X, Users } from "lucide-react";
+import { Ban, Lock, X, Users, UserCog } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
@@ -7,6 +7,7 @@ import { useModal } from "../../../components/ModalProvider";
 import GroupMembersModal from "./GroupMembersModal";
 import { useAuthStore } from "../../auth/authStore";
 import { Avatar, IconButton } from "../../../components/ui";
+import ContactActionsModal from "../../userRelations/components/ContactActionsModal";
 
 export default function ConversationHeader() {
     const me = useAuthStore((s) => s.user!);
@@ -144,6 +145,17 @@ export default function ConversationHeader() {
                             onClick={() => openModal(<GroupMembersModal/>)}
                         >
                             <Users size={18} strokeWidth={2.5} />
+                        </IconButton>
+                    )}
+
+                    {meta.type === "DIRECT" && isSubjectUserInContacts && (
+                        <IconButton
+                            size="xl"
+                            aria-label={`Contact actions for ${displayTitle}`}
+                            title="Contact actions"
+                            onClick={() => openModal(<ContactActionsModal contact={subjectUser}/>)}
+                        >
+                            <UserCog size={18} strokeWidth={2.5} />
                         </IconButton>
                     )}
 
