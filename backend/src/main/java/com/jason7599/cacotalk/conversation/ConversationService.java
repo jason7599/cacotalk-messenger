@@ -369,5 +369,10 @@ public class ConversationService {
                 conversationId,
                 new EventMessage.GroupClosed()
         );
+
+        realtimeEventPublisher.broadcast(
+                conversationId,
+                new RealtimeEvent.GroupClosed(conversationId)
+        );
     }
 }

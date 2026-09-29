@@ -17,6 +17,7 @@ public sealed interface RealtimeEvent {
         REMOVED_FROM_GROUP,
         MEMBER_REMOVED,
         MEMBERS_ADDED,
+        GROUP_CLOSED,
     }
 
     Type type();
@@ -80,5 +81,9 @@ public sealed interface RealtimeEvent {
      */
     record MembersAdded(UUID conversationId, List<UserResponse> newMembers) implements RealtimeEvent {
         @Override public Type type() { return Type.MEMBERS_ADDED; }
+    }
+
+    record GroupClosed(UUID conversationId) implements RealtimeEvent {
+        @Override public Type type() { return Type.GROUP_CLOSED; }
     }
 }
