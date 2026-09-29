@@ -391,4 +391,18 @@ public class ConversationService {
                 new RealtimeEvent.GroupClosed(conversationId)
         );
     }
+
+    @Transactional
+    public void markAsRead(UUID conversationId, long userId, long seq) {
+        // Torn on whether to do a membership check here.
+        // It fits the rest of the API semantically, all other operations are
+        // guarded with the membership check.
+        // But it is also true that in this specific case, the stakes are basically non-existent.
+        // No row gets modified - nothing corrupts, nothing leaks data at all.
+        // Alright. Skipping it for now.
+
+        // This operation no-ops anyway when either the membership is not found,
+        // or a stale request; i.e., given seq is equal or smaller than the persisted last_read_seq.
+        conversationRepository.updateLastReadSeq(conversationId, userId, seq);
+    }
 }

@@ -1,10 +1,7 @@
 package com.jason7599.cacotalk.conversation;
 
 import com.jason7599.cacotalk.auth.AuthUser;
-import com.jason7599.cacotalk.conversation.dto.ConversationDetail;
-import com.jason7599.cacotalk.conversation.dto.ConversationSummary;
-import com.jason7599.cacotalk.conversation.dto.CreateGroupConversationRequest;
-import com.jason7599.cacotalk.conversation.dto.InviteMembersRequest;
+import com.jason7599.cacotalk.conversation.dto.*;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.userrelation.UserRelationService;
 import jakarta.validation.Valid;
@@ -119,5 +116,15 @@ public class ConversationController {
             @PathVariable UUID conversationId
     ) {
         conversationService.closeConversation(conversationId, authUser.userId());
+    }
+
+    @PatchMapping("/{conversationId}/read")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markAsRead(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId,
+            @RequestBody @Valid MarkAsReadRequest request
+    ) {
+        conversationService.markAsRead(conversationId, authUser.userId(), request.seq());
     }
 }
