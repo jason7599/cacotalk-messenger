@@ -21,6 +21,7 @@ export type ApiErrorCode =
     | "CREATOR_CANNOT_LEAVE"
     | "NOT_GROUP_CREATOR"
     | "CANNOT_REMOVE_SELF"
+    | "GROUP_CLOSED"
 
     | "CANNOT_SEND_MESSAGE"
 ;
