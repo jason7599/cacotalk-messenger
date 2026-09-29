@@ -96,7 +96,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             blocked_me IS NOT NULL AS blockedMe,
             c.group_creator_id,
             c.is_closed,
-            c.last_seq,
+            c.last_seq AS lastSeqSnapshot,
             c.created_at
         FROM (
             SELECT

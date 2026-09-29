@@ -18,8 +18,8 @@ public record ConversationDetail(
         Long groupCreatorId, // GROUP only
         boolean isClosed, // GROUP only, defaults to false for DIRECT
 
-        long lastSeq,
-        long prevLastReadSeq,
+        long lastSeqSnapshot,
+        long myLastReadSeq,
 
         Instant createdAt
 ) {
@@ -31,7 +31,7 @@ public record ConversationDetail(
         boolean getBlockedMe();
         Long getGroupCreatorId();
         boolean getIsClosed();
-        long getLastSeq();
+        long getLastSeqSnapshot();
         Instant getCreatedAt();
     }
 }

@@ -92,7 +92,7 @@ public class ConversationService {
                 p.getBlockedMe(),
                 p.getGroupCreatorId(),
                 p.getIsClosed(),
-                p.getLastSeq(),
+                p.getLastSeqSnapshot(),
                 lastReadSeq,
                 p.getCreatedAt()
         );
