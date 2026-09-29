@@ -247,12 +247,14 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     int removeMember(UUID conversationId, long userId);
 
     @Query(value = """
-        SELECT group_creator_id
+        SELECT
+            group_creator_id AS creatorId,
+            is_closed
         FROM conversations
         WHERE id = :conversationId
             AND type = 'GROUP' -- this makes the result Optional.empty() in case the given conversationId exists but is not a group convo
     """, nativeQuery = true)
-    Optional<Long> getGroupCreatorId(UUID conversationId);
+    Optional<GroupConversationInfo> getGroupConversationInfo(UUID conversationId);
 
     // See docs/010-concurrency-control.md
     // Since this is hashed, there is possibility that unrelated requests end up colliding

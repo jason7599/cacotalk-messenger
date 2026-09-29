@@ -32,6 +32,7 @@ public enum ApiErrorCodes {
     CREATOR_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "Creator cannot leave the group"),
     NOT_GROUP_CREATOR(HttpStatus.FORBIDDEN, "Not the creator of this group"),
     CANNOT_REMOVE_SELF(HttpStatus.BAD_REQUEST, "Cannot remove self"),
+    GROUP_CLOSED(HttpStatus.CONFLICT, "Group closed"),
 
     // Message
     // This includes both clientId collision/probe, and block status/closed

@@ -203,10 +203,10 @@ public class ConversationService {
     I did consider putting this in MembershipLookupService. Decided against it after a while
     MembershipLookupService, at least as of now, concerns the conversation_members table queries.
     This instead is a query on the conversations table itself.
-    So yeah, it lives here for now.
+    So yeah, it lives here.
      */
-    private long getGroupCreatorId(UUID conversationId) {
-        return conversationRepository.getGroupCreatorId(conversationId)
+    private GroupConversationInfo getGroupConversationInfo(UUID conversationId) {
+        return conversationRepository.getGroupConversationInfo(conversationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCodes.CONVERSATION_NOT_FOUND));
     }
 
@@ -247,10 +247,13 @@ public class ConversationService {
         // Can even argue this is semantically more correct - trying to leave a conversation that a user is not a member of.
         membershipLookupService.requireMembership(conversationId, userId);
 
-        // Either convo itself doesn't exist, or is not a GROUP convo.
-        long creatorId = getGroupCreatorId(conversationId);
+        GroupConversationInfo info = getGroupConversationInfo(conversationId);
 
-        if (userId == creatorId) {
+        if (info.isClosed()) {
+            throw new ApiException(ApiErrorCodes.GROUP_CLOSED);
+        }
+
+        if (userId == info.creatorId()) {
             throw new ApiException(ApiErrorCodes.CREATOR_CANNOT_LEAVE);
         }
 
@@ -278,9 +281,13 @@ public class ConversationService {
 
     @Transactional
     public void removeMember(UUID conversationId, long userId, long targetId) {
-        long creatorId = getGroupCreatorId(conversationId);
+        GroupConversationInfo info = getGroupConversationInfo(conversationId);
 
-        if (userId != creatorId) {
+        if (info.isClosed()) {
+            throw new ApiException(ApiErrorCodes.GROUP_CLOSED);
+        }
+
+        if (userId != info.creatorId()) {
             throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
         }
 
@@ -307,9 +314,14 @@ public class ConversationService {
 
     @Transactional
     public void inviteMembers(UUID conversationId, long userId, List<Long> targetIds) {
-        long creatorId = getGroupCreatorId(conversationId);
 
-        if (userId != creatorId) {
+        GroupConversationInfo info = getGroupConversationInfo(conversationId);
+
+        if (info.isClosed()) {
+            throw new ApiException(ApiErrorCodes.GROUP_CLOSED);
+        }
+
+        if (userId != info.creatorId()) {
             throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
         }
 
@@ -355,10 +367,14 @@ public class ConversationService {
 
     @Transactional
     public void closeConversation(UUID conversationId, long userId) {
-        long creatorId = getGroupCreatorId(conversationId);
+        GroupConversationInfo info = getGroupConversationInfo(conversationId);
 
-        if (userId != creatorId) {
+        if (userId != info.creatorId()) {
             throw new ApiException(ApiErrorCodes.NOT_GROUP_CREATOR);
+        }
+
+        if (info.isClosed()) {
+            return;
         }
 
         if (conversationRepository.closeConversation(conversationId) == 0) {
