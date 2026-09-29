@@ -5,6 +5,7 @@ import { apiGetConversationSummary } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiError";
 import type { UserInfo } from "../../shared/types";
 import { useAuthStore } from "../auth/authStore";
+import { SUMMARY_MEMBER_PREVIEW_COUNT } from "../../shared/constants";
 
 type ConversationsState = {
     conversationsById: Record<string, ConversationSummary>;
@@ -14,7 +15,8 @@ type ConversationsState = {
     upsertLocal: (conversation: ConversationSummary) => void;
     removeLocal: (conversationId: string) => void;
     onNewMessage: (message: ChatMessage) => Promise<void>;
-    patchMembers: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => void;
+    onMembersAdded: (conversationId: string, newMembers: UserInfo[]) => void;
+    onMemberRemoved: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => void;
     reset: () => void;
 };
 
@@ -66,7 +68,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
             }
             return;
         }
-        
+
         set((state) => {
             const current = state.conversationsById[message.conversationId]!;
 
@@ -87,12 +89,43 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
         })
     },
 
-    patchMembers: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => {
+    onMembersAdded: (conversationId: string, newMembers: UserInfo[]) => {
+        set((state) => {
+            const current = state.conversationsById[conversationId];
+
+            // Conversation not yet in local store, this would mean the authenticated user
+            // is one of the newly invited members. Here no action is necessary
+            // since MEMBERS_ADDED events are always accompanied by NEW_MESSAGE, carrying EventMessage.MEMBERS_INVITED,
+            // which will be resolved via handleNewMessage -> useConversationStore#onNewMessage.
+            // The same flow as EventMessage.GROUP_CREATED.
+            if (!current) {
+                return state;
+            } 
+
+            const newPreview = [...current.membersPreview, ...newMembers]
+                .sort((a, b) => a.username.localeCompare(b.username))
+                .slice(0, SUMMARY_MEMBER_PREVIEW_COUNT)
+            ;
+
+            return {
+                conversationsById: {
+                    ...state.conversationsById,
+                    [conversationId]: {
+                        ...current,
+                        membersPreview: newPreview,
+                        memberCount: current.memberCount + newMembers.length
+                    }
+                }
+            };
+        });
+    },
+
+    onMemberRemoved: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => {
         set((state) => {
             const current = state.conversationsById[conversationId];
             if (!current) {
                 // no-op, but this shouldn't happen
-                console.warn(`patchMembers called on absent conversation ${conversationId}`);
+                console.warn(`onMemberRemoved called on absent conversation ${conversationId}`);
                 return state;
             }
 

@@ -3,9 +3,10 @@ import type { ChatMessage } from "../messages/types";
 
 export type RealtimeEvent = 
     | { type: "NEW_MESSAGE"; message: ChatMessage; clientId?: string; }
-    | { type: "CONTACT_CHANGED"; subject: UserInfo; added: boolean }
-    | { type: "BLOCK_CHANGED"; subject: UserInfo; added: boolean }
-    | { type: "REMOVED_FROM_GROUP"; conversationId: string }
+    | { type: "CONTACT_CHANGED"; subject: UserInfo; added: boolean; }
+    | { type: "BLOCK_CHANGED"; subject: UserInfo; added: boolean; }
+    | { type: "REMOVED_FROM_GROUP"; conversationId: string; }
+    | { type: "MEMBERS_ADDED"; conversationId: string; newMembers: UserInfo[]; }
     | { type: "MEMBER_REMOVED";
         conversationId: string;
         subject: UserInfo;

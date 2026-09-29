@@ -7,6 +7,7 @@ import type { ChatMessage } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 import { useConversationsStore } from "./conversationsStore";
 import { useAuthStore } from "../auth/authStore";
+import type { UserInfo } from "../../shared/types";
 
 export type ActiveConversationState = {
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
@@ -24,6 +25,7 @@ export type ActiveConversationState = {
     loadOlderMessages: () => Promise<void>;
     upsertMessage: (message: ChatMessage) => void;
     leaveConversation: () => Promise<void>;
+    onMembersAdded: (newMembers: UserInfo[]) => void;
     onMemberRemoved: (memberId: number) => void; 
 };
 
@@ -222,6 +224,14 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         useConversationsStore.getState().removeLocal(conversationId);
     };
 
+    const onMembersAdded = (newMembers: UserInfo[]) => {
+        set((state) => {
+            state.conversation!.otherMembers = state.conversation!.otherMembers
+                .concat(newMembers)
+                .sort((a, b) => a.username.localeCompare(b.username));
+        });
+    };
+
     const onMemberRemoved = (memberId: number) => {
         set((state) => {
             state.conversation!.otherMembers = state.conversation!.otherMembers.filter(
@@ -244,6 +254,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         loadOlderMessages,
         upsertMessage,
         leaveConversation,
+        onMembersAdded,
         onMemberRemoved
     };
 }));

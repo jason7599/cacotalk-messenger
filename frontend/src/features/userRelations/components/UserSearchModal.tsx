@@ -7,9 +7,8 @@ import { useModal } from "../../../components/ModalProvider";
 import { getErrorMessage } from "../../../shared/apiError";
 import type { UserInfo } from "../../../shared/types";
 import { Avatar, Button, EmptyState, ErrorText, ModalFrame, ModalHeader, SearchInput, Spinner } from "../../../components/ui";
+import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "../../../shared/constants";
 
-const SEARCH_QUERY_MIN_LENGTH = 3;
-const SEARCH_QUERY_MAX_LENGTH = 32;
 const SEARCH_DEBOUNCE_MS = 350;
 
 export default function UserSearchModal() {
@@ -36,7 +35,7 @@ export default function UserSearchModal() {
         // invalidate any previous request
         const searchId = ++searchIdRef.current;
 
-        if (trimmed.length < SEARCH_QUERY_MIN_LENGTH) {
+        if (trimmed.length < USERNAME_MIN_LENGTH) {
             setResults([]);
             setError(null);
             setIsSearching(false);
@@ -44,10 +43,10 @@ export default function UserSearchModal() {
             return;
         }
 
-        if (trimmed.length > SEARCH_QUERY_MAX_LENGTH) {
+        if (trimmed.length > USERNAME_MAX_LENGTH) {
             setResults([]);
             setError(
-                `USERNAME MUST BE ${SEARCH_QUERY_MIN_LENGTH}-${SEARCH_QUERY_MAX_LENGTH} CHARACTERS.`
+                `USERNAME MUST BE ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} CHARACTERS.`
             );
             setIsSearching(false);
             setHasSearched(false);
@@ -107,7 +106,7 @@ export default function UserSearchModal() {
             <SearchInput
                 value={query}
                 onChange={setQuery}
-                maxLength={SEARCH_QUERY_MAX_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
                 autoFocus
                 placeholder="USERNAME..."
                 trailing={isSearching && <Spinner className="text-crimson-bright" />}
@@ -120,7 +119,7 @@ export default function UserSearchModal() {
                 {results.length === 0 && !isSearching ? (
                     <EmptyState
                         icon={<Search size={22} strokeWidth={2.2} />}
-                        title={hasSearched ? "NO SOULS LOCATED." : `ENTER AT LEAST ${SEARCH_QUERY_MIN_LENGTH} CHARACTERS.`}
+                        title={hasSearched ? "NO SOULS LOCATED." : `ENTER AT LEAST ${USERNAME_MIN_LENGTH} CHARACTERS.`}
                     />
                 ) : (
                     results.map((user) => {

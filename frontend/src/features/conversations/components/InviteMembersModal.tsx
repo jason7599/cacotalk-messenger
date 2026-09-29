@@ -5,7 +5,7 @@ import { ApiError, getErrorMessage } from "../../../shared/apiError";
 import { apiGetInvitableUsers, apiInviteMembers } from "../conversationsApi";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { Button, ErrorText, ModalFrame, ModalHeader } from "../../../components/ui";
-import { MAX_GROUP_MEMBERS } from "../constants";
+import { MAX_GROUP_MEMBERS } from "../../../shared/constants";
 import { useMemberSelection } from "../useMemberSelection";
 import MemberPicker from "./MemberPicker";
 import GroupMembersModal from "./GroupMembersModal";

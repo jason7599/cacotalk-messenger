@@ -14,6 +14,7 @@ export function handleRealtimeEvent(event: RealtimeEvent) {
         case "CONTACT_CHANGED": return handleContactChanged(event.subject, event.added);
         case "BLOCK_CHANGED": return handleBlockChanged(event.subject, event.added);
         case "REMOVED_FROM_GROUP": return handleRemovedFromGroup(event.conversationId);
+        case "MEMBERS_ADDED": return handleMembersAdded(event.conversationId, event.newMembers);
         case "MEMBER_REMOVED": return handleMemberRemoved(event);
     }
 }
@@ -65,10 +66,17 @@ function handleRemovedFromGroup(conversationId: string) {
     }
 }
 
+function handleMembersAdded(conversationId: string, newMembers: UserInfo[]) {
+    useConversationsStore.getState().onMembersAdded(conversationId, newMembers)
+    if (useActiveConversationStore.getState().conversation?.id === conversationId) {
+        useActiveConversationStore.getState().onMembersAdded(newMembers);
+    }
+}
+
 function handleMemberRemoved(event: Extract<RealtimeEvent, { type: "MEMBER_REMOVED" }>) {
     const { conversationId, subject, previewPatch, newMemberCount } = event;
 
-    useConversationsStore.getState().patchMembers(conversationId, previewPatch, newMemberCount);
+    useConversationsStore.getState().onMemberRemoved(conversationId, previewPatch, newMemberCount);
     if (useActiveConversationStore.getState().conversation?.id === conversationId) {
         useActiveConversationStore.getState().onMemberRemoved(subject.userId);
     }

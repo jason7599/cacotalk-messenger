@@ -4,14 +4,7 @@ import cacotalkLogo from "../assets/cacotalk-logo.png";
 import { useAuthStore } from "../features/auth/authStore";
 import { getErrorMessage } from "../shared/apiError";
 import { Button, ErrorText, cn } from "../components/ui";
-
-// TODO: CHANGE ON PROD PLEASE DONT FORGET
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 32;
-const PASSWORD_MIN_LENGTH = 4;
-const PASSWORD_MAX_LENGTH = 32;
-
-const USERNAME_PATTERN = /^(?=.*[a-z])[a-z0-9]+$/; // separated length to dedupe further
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_PATTERN } from "../shared/constants";
 
 export default function AuthPage() {
     const refreshUser = useAuthStore((s) => s.refreshUser);

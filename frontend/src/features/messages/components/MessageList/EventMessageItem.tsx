@@ -2,7 +2,6 @@ import { UsersRound } from "lucide-react";
 import type { EventData, EventMessage } from "../../types";
 import { formatMessageTimestamp } from "../../formatters";
 import { selectGroupCreator, useActiveConversationStore } from "../../../conversations/activeConversationStore";
-import type { UserInfo } from "../../../../shared/types";
 
 type EventMessageItemProps = {
     message: EventMessage;
