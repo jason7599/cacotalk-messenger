@@ -328,22 +328,29 @@ public class ConversationService {
         // Since every membership insertion (outside the initial group creation) happens here, this should be safe.
         conversationRepository.lockGroupInvite(conversationId);
 
-        if (membershipLookupService.countMembers(conversationId) + targetIds.size() > ConversationRules.GROUP_MAXIMUM_MEMBER_COUNT) {
+        List<UserResponse> targets = userService.findAllById(targetIds);
+
+        if (membershipLookupService.countMembers(conversationId) + targets.size() > ConversationRules.GROUP_MAXIMUM_MEMBER_COUNT) {
             throw new ApiException(ApiErrorCodes.GROUP_TOO_BIG);
         }
 
         conversationRepository.insertMembers(conversationId, targetIds.stream().mapToLong(Long::longValue).toArray());
 
-        List<UserResponse> invited = userService.findAllById(targetIds);
-
         eventMessageService.sendEventMessage(
                 conversationId,
-                new EventMessage.MembersInvited(invited)
+                new EventMessage.MembersInvited(targets)
         );
 
-        // Here a separate AddedToGroup event isn't necessary, as we broadcast the event message after the insertion.
-
-        // An extra count check here would be redundant
+        // Firing this event after the member insertion does mean that
+        // the FE handler has to distinguish whether the authenticated user was already in this group or not.
+        // However, I think that's better than optimistically firing events before we have confirmation of db operations.
+        realtimeEventPublisher.broadcast(
+                conversationId,
+                new RealtimeEvent.MembersAdded(
+                        conversationId,
+                        targets
+                )
+        );
     }
 
     @Transactional

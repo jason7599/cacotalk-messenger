@@ -70,4 +70,15 @@ public sealed interface RealtimeEvent {
     ) implements RealtimeEvent {
         @Override public Type type() { return Type.MEMBER_REMOVED; }
     }
+
+    /*
+    Yes, technically, this event can be replaced with EventMessage.MembersInvited.
+    As in, the FE handler reads that event message which already holds the data of who was invited.
+    But that would require the FE handler to reach into the event message fields, which, there's nothing inherently wrong with,
+    but I made the conscious decision to keep the FE handler dumb.
+    Separating domains. EventMessage is just a persisted event type message, not a cue for action for the FE.
+     */
+    record MembersAdded(UUID conversationId, List<UserResponse> newMembers) implements RealtimeEvent {
+        @Override public Type type() { return Type.MEMBERS_ADDED; }
+    }
 }
