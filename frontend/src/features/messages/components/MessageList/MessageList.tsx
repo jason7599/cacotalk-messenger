@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useActiveConversationStore } from "../../../conversations/activeConversationStore";
 import UserMessageItem from "./UserMessageItem";
 import EventMessageItem from "./EventMessageItem";
@@ -10,8 +10,28 @@ import { useMessageSendStore, type PendingMessage } from "../../messageSendStore
 import PendingMessageItem from "./PendingMessageItem";
 import FailedMessageItem from "./FailedMessageItem";
 import { Spinner } from "../../../../components/ui";
+import type { ChatMessage } from "../../types";
 
 const EMPTY_QUEUE: PendingMessage[] = [];
+
+const MessageRow = memo(function MessageRow({
+    message,
+    showUnreadDivider
+} : {
+    message: ChatMessage;
+    showUnreadDivider: boolean;
+}) {
+    return (
+        <div data-seq={message.seq}>
+            {message.type === "USER"
+                ? <UserMessageItem message={message} />
+                : <EventMessageItem message={message} />
+            }
+            {showUnreadDivider && <UnreadDivider />}
+        </div>
+    );
+});
+
 
 export default function MessageList() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
@@ -78,13 +98,11 @@ export default function MessageList() {
 
                 <div className="flex flex-col gap-3">
                     {messages.map((message) => (
-                        <div key={message.seq} data-seq={message.seq}>
-                            {message.type === "USER"
-                                ? <UserMessageItem message={message} />
-                                : <EventMessageItem message={message} />
-                            }
-                            {showDivider && message.seq === myLastReadSeq && <UnreadDivider />}
-                        </div>
+                        <MessageRow
+                            key={message.seq}
+                            message={message}
+                            showUnreadDivider={showDivider && message.seq === myLastReadSeq}
+                        />
                     ))}
 
                     {failedMessages.length > 0 && (
