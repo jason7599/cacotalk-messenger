@@ -39,7 +39,7 @@ export default function MessageList() {
     const messages = useActiveConversationStore((s) => s.conversation!.messages);
 
     const loadOlderMessages = useActiveConversationStore((s) => s.loadOlderMessages);
-    const loadingOlder = useActiveConversationStore((s) => s.loadingOlder);
+    const loadingOlder = useActiveConversationStore((s) => s.conversation!.loadingOlder);
     const hasOlder = useActiveConversationStore((s) => s.conversation!.hasOlder);
 
     const myLastReadSeq = useActiveConversationStore((s) => s.conversation!.myLastReadSeq);

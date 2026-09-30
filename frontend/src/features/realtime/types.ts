@@ -13,4 +13,5 @@ export type RealtimeEvent =
         previewPatch: UserInfo[];
         newMemberCount: number; }
     | { type: "GROUP_CLOSED"; conversationId: string; }
+    | { type: "MARKED_AS_READ"; conversationId: string; seq: number; }
 ;

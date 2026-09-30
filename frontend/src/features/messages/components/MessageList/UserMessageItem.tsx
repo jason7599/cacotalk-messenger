@@ -12,8 +12,6 @@ export default function UserMessageItem({ message }: UserMessageItemProps) {
     const myId = useAuthStore((s) => s.user!.userId);
     const isMine = message.senderId === myId;
 
-    console.log(message.seq);
-
     return (
         <div className={cn("flex w-full", isMine ? "justify-end" : "justify-start")}>
             <div className="max-w-[70%]">

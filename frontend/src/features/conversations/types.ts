@@ -39,10 +39,13 @@ export type ConversationMeta =
 
 export type ActiveConversation = {
     id: string;
-    otherMembers: UserInfo[];
+    otherMembers: UserInfo[]; // excludes user
     meta: ConversationMeta;
     messages: ChatMessage[];
+    lastSeqSnapshot: number; // the last message seq at the time of DB fetch. this is used to discern whether to show the unread divider
+    myLastReadSeq: number; // where the user left off, also for the divider logic
     hasOlder: boolean;
-    lastSeqSnapshot: number;
-    myLastReadSeq: number;
+    loadingOlder: boolean;
+    loadOlderError: string | null;
+    ackedSeq: number; // highest seq confirmed acked (marked as read)
 };

@@ -17,6 +17,7 @@ type ConversationsState = {
     onNewMessage: (message: ChatMessage) => Promise<void>;
     onMembersAdded: (conversationId: string, newMembers: UserInfo[]) => void;
     onMemberRemoved: (conversationId: string, previewPatch: UserInfo[], newMemberCount: number) => void;
+    updateLastReadSeq: (conversationId: string, lastReadSeq: number) => void;
     reset: () => void;
 };
 
@@ -146,6 +147,34 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
                 }
             }
         })
+    },
+
+    updateLastReadSeq: (conversationId: string, lastReadSeq: number) => {
+        set((state) => {
+            const current = state.conversationsById[conversationId];
+            if (!current) {
+                // no-op, but this shouldn't happen.
+                // TODO: maybe I could/should introduce a self heal logic whenever this happens.
+                // I do doubt this would happen at all, much less frequently, as long as I do the
+                // WS reconciliation logic robustly, but ig something to thnk about later.
+                console.warn(`onMemberRemoved called on absent conversation ${conversationId}`);
+                return state;
+            }
+
+            if (lastReadSeq <= current.lastReadSeq) {
+                return state;
+            }
+
+            return {
+                conversationsById: {
+                    ...state.conversationsById,
+                    [conversationId]: {
+                        ...current,
+                        lastReadSeq
+                    }
+                }
+            };
+        });
     },
 
     reset: () => {

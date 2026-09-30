@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiGetConversationDetail, apiLeaveConversation, apiResolveDirectConversation } from "./conversationsApi";
+import { apiGetConversationDetail, apiLeaveConversation, apiMarkAsRead, apiResolveDirectConversation } from "./conversationsApi";
 import { getErrorMessage } from "../../shared/apiError";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
@@ -9,15 +9,14 @@ import { useConversationsStore } from "./conversationsStore";
 import { useAuthStore } from "../auth/authStore";
 import type { UserInfo } from "../../shared/types";
 
+const READ_ACK_DEBOUNCE_MS = 1500;
+
 export type ActiveConversationState = {
     status: "IDLE" | "LOADING" | "READY" | "ERROR";
     error: string | null;
 
     conversation: ActiveConversation | null;
     loadingConversationId: string | null;
-
-    loadingOlder: boolean;
-    loadOlderError: string | null;
 
     setActiveConversation: (conversationId: string) => Promise<void>;
     clearActiveConversation: () => void;
@@ -28,6 +27,7 @@ export type ActiveConversationState = {
     onMembersAdded: (newMembers: UserInfo[]) => void;
     onMemberRemoved: (memberId: number) => void; 
     onGroupClosed: () => void;
+    onAckConfirmed: (seq: number) => void; 
 };
 
 export const selectGroupCreator = (state: ActiveConversationState) => {
@@ -39,9 +39,90 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
     // internal only stale guard
     let requestId = 0;
 
+    // debounced ack flush logic.
+    // upon new message arrival, wait a bit for the potential next message, if it doesn't come, flush. 
+    let flushTimer: ReturnType<typeof setTimeout> | null = null;
+    let flushingConversationId: string | null = null; // which conversation the timer belongs to
+
+    // cancel whatever's pending if any
+    const clearFlushTimer = () => {
+        if (flushTimer) {
+            clearTimeout(flushTimer);
+            flushTimer = null;
+        }
+        flushingConversationId = null;
+    };
+
+    // the actual api call, run once the debounce window expires
+    const doFlush = (conversationId: string) => {
+        const current = get().conversation;
+        if (!current || current.id !== conversationId || current.messages.length === 0) {
+            return;
+        }
+
+        const targetSeq = current.messages[current.messages.length - 1].seq;
+        if (targetSeq <= current.ackedSeq) {
+            return; // nothing new to ack
+        }
+
+        // Optimistic UI update.
+        // Bump locally now, instead of waiting for the API or WS response
+        set((state) => {
+            if (state.conversation?.id === conversationId) {
+                state.conversation.ackedSeq = Math.max(state.conversation.ackedSeq, targetSeq);
+            }
+        });
+
+        // No await, and no rollback.
+        // A failed/lost ack is low stakes and will self-correct on next flush or reopen
+        apiMarkAsRead(conversationId, targetSeq).catch((err) => {
+            console.warn(`markAsRead failed for ${conversationId}:`, getErrorMessage(err));
+        });
+    };
+
+    // called every time a new message arrives
+    // start the timer if 
+    const scheduleAckFlush = (conversationId: string) => {
+        // timer already pending, cancel it and restart the delay
+        if (flushTimer && flushingConversationId === conversationId) {
+            clearTimeout(flushTimer); 
+        } else {
+            // timer for a differnt conversation?
+            // shouldn't happen
+            clearFlushTimer(); 
+        }
+
+        flushingConversationId = conversationId;
+        flushTimer = setTimeout(() => {
+            flushTimer = null;
+            flushingConversationId = null;
+            doFlush(conversationId);
+        }, READ_ACK_DEBOUNCE_MS);
+    };
+
+    const flushAckNow = (conversationId: string) => {
+        clearFlushTimer();
+        doFlush(conversationId);
+    };
+
+
+    // ------------------ Actual store methods ------------------ \\
+
+    const onAckConfirmed = (seq: number) => {
+        set((state) => {
+            if (!state.conversation) return;
+            state.conversation.ackedSeq = Math.max(state.conversation.ackedSeq, seq);
+        });
+    };
+
     const setActiveConversation = async (conversationId: string) => {
         if (get().conversation?.id === conversationId && get().status !== "ERROR") {
             return;
+        }
+
+        const prev = get().conversation;
+        if (prev) {
+            flushAckNow(prev.id);
         }
 
         const myRequestId = ++requestId;
@@ -51,8 +132,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             status: "LOADING",
             error: null,
             loadingConversationId: conversationId,
-            loadingOlder: false,
-            loadOlderError: null
         });
 
         try {
@@ -91,11 +170,18 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     messages: page.messages,
                     hasOlder: page.hasOlder,
                     lastSeqSnapshot: detail.lastSeqSnapshot,
-                    myLastReadSeq: detail.myLastReadSeq
+                    myLastReadSeq: detail.myLastReadSeq,
+                    loadingOlder: false,
+                    loadOlderError: null,
+                    ackedSeq: detail.myLastReadSeq
                 },
                 status: "READY",
                 loadingConversationId: null,
             });
+
+            if (detail.myLastReadSeq < detail.lastSeqSnapshot) {
+                flushAckNow(conversationId);
+            }
         } catch (err) {
             if (requestId !== myRequestId) return;
 
@@ -108,19 +194,21 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
     };
 
     const clearActiveConversation = () => {
+        const current = get().conversation;
+        if (current) {
+            flushAckNow(current.id);
+        }
+
         requestId++; // invalidate anything in flight
         set({
             status: "IDLE",
             error: null,
             conversation: null,
             loadingConversationId: null,
-            loadingOlder: false,
         });
     };
 
     const openDirectConversation = async (targetId: number) => {
-        get().clearActiveConversation();
-
         const myRequestId = ++requestId;
 
         // TODO? do a local search in the conversationsStore list first?
@@ -149,16 +237,16 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
     const loadOlderMessages = async () => {
         const s = get();
 
-        if (s.loadingOlder || !s.conversation || !s.conversation.hasOlder || s.conversation.messages.length === 0) {
+        if (!s.conversation || s.conversation.loadingOlder || !s.conversation.hasOlder || s.conversation.messages.length === 0) {
             return;
         }
 
         const myRequestId = ++requestId;
         const cursor = s.conversation.messages[0].seq;
 
-        set({
-            loadingOlder: true,
-            loadOlderError: null
+        set((state) => {
+            state.conversation!.loadingOlder = true;
+            state.conversation!.loadOlderError = null;
         });
 
         try {
@@ -182,12 +270,13 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         } catch (err) {
             if (requestId !== myRequestId) return;
 
-            set({
-                status: "ERROR",
-                loadOlderError: getErrorMessage(err)
+            set((state) => {
+                state.conversation!.loadOlderError = getErrorMessage(err);
             });
         } finally {
-            set({ loadingOlder: false });
+            set((state) => {
+                state.conversation!.loadingOlder = false;
+            });
         }
     };
 
@@ -213,6 +302,11 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             const insertAfter = messages.findLastIndex((m) => m.seq < message.seq);
             messages.splice(insertAfter + 1, 0, message);
         });
+
+        const current = get().conversation;
+        if (current?.id === message.conversationId) {
+            scheduleAckFlush(current.id);
+        }
     };
 
     const leaveConversation = async () => {
@@ -256,8 +350,6 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         error: null,
         conversation: null,
         loadingConversationId: null,
-        loadingOlder: false,
-        loadOlderError: null,
 
         setActiveConversation,
         clearActiveConversation,
@@ -267,6 +359,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         leaveConversation,
         onMembersAdded,
         onMemberRemoved,
-        onGroupClosed
+        onGroupClosed,
+        onAckConfirmed
     };
 }));

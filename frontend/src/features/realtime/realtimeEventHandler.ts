@@ -17,6 +17,7 @@ export function handleRealtimeEvent(event: RealtimeEvent) {
         case "MEMBERS_ADDED": return handleMembersAdded(event.conversationId, event.newMembers);
         case "MEMBER_REMOVED": return handleMemberRemoved(event);
         case "GROUP_CLOSED": return handleGroupClosed(event.conversationId);
+        case "MARKED_AS_READ": return handleMarkedAsRead(event.conversationId, event.seq);
     }
 }
 
@@ -35,6 +36,11 @@ function handleNewMessage(message: ChatMessage, clientId?: string) {
         // So, no fancy tricks here.
         // The below upserts are idempotent, so it won't hurt anyway.
         useMessageSendStore.getState().resolveByClientId(message.conversationId, clientId);
+
+        // Interestingly, this technically isn't an "optimistic" UI update.
+        // The backend updates the user's last_read_seq automatically upon message insertion,
+        // so here we can be sure this happened without waiting for the WS MARKED_AS_READ event.
+        useConversationsStore.getState().updateLastReadSeq(message.conversationId, message.seq);
     }
 
     useConversationsStore.getState().onNewMessage(message);
@@ -86,5 +92,12 @@ function handleMemberRemoved(event: Extract<RealtimeEvent, { type: "MEMBER_REMOV
 function handleGroupClosed(conversationId: string) {
     if (useActiveConversationStore.getState().conversation?.id === conversationId) {
         useActiveConversationStore.getState().onGroupClosed();
+    }
+}
+
+function handleMarkedAsRead(conversationId: string, seq: number) {
+    useConversationsStore.getState().updateLastReadSeq(conversationId, seq);
+    if (useActiveConversationStore.getState().conversation?.id === conversationId) {
+        useActiveConversationStore.getState().onAckConfirmed(seq);
     }
 }

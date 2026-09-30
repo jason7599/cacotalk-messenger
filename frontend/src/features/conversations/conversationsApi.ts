@@ -41,3 +41,7 @@ export async function apiRemoveMember(conversationId: string, targetId: number):
 export async function apiCloseConversation(conversationId: string): Promise<void> {
     await api.patch(`/conversations/${conversationId}/close`);
 }
+
+export async function apiMarkAsRead(conversationId: string, seq: number): Promise<void> {
+    await api.patch(`/conversations/${conversationId}/read`, { seq });
+}
