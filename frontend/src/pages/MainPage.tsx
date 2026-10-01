@@ -1,4 +1,4 @@
-import { useBootstrap } from "../app/BootstrapProvider";
+import { useBootstrap } from "../shared/BootstrapProvider";
 import LoadingScreen from "../components/LoadingScreen";
 import SidebarPanel from "../components/SidebarPanel";
 import ConversationPanel from "../features/conversations/components/ConversationPanel";

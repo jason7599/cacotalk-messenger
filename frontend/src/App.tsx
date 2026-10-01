@@ -1,9 +1,9 @@
-import AuthPage from "../pages/AuthPage";
-import LoadingScreen from "../components/LoadingScreen";
-import MainPage from "../pages/MainPage";
-import { BootstrapProvider } from "./BootstrapProvider";
-import { useAuthStore } from "../features/auth/authStore";
 import { useEffect } from "react";
+import { useAuthStore } from "./features/auth/authStore";
+import LoadingScreen from "./components/LoadingScreen";
+import AuthPage from "./pages/AuthPage";
+import { BootstrapProvider } from "./shared/BootstrapProvider";
+import MainPage from "./pages/MainPage";
 
 export default function App() {
 	const user = useAuthStore((s) => s.user);
@@ -26,5 +26,5 @@ export default function App() {
 		<BootstrapProvider>
 			<MainPage />
 		</BootstrapProvider>
-	)
+	);
 };

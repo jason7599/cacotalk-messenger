@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { apiGetBlockedUsers, apiGetContacts } from "../features/userRelations/userRelationsApi";
 import { useContactsStore } from "../features/userRelations/contactsStore";
 import { useBlockedUsersStore } from "../features/userRelations/blockedUsersStore";
-import { apiGetConversationSummaries } from "../features/conversations/conversationsApi";
 import { useConversationsStore } from "../features/conversations/conversationsStore";
-import { getErrorMessage } from "../shared/apiError";
+import { getErrorMessage } from "./apiError";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { wsClient } from "../features/realtime/wsClient";
-import { handleRealtimeEvent } from "../features/realtime/realtimeEventHandler";
 import { useMessageSendStore } from "../features/messages/messageSendStore";
+import { apiGetBlockedUsers, apiGetContacts } from "../features/userRelations/userRelationsApi";
+import { apiGetConversationSummaries } from "../features/conversations/conversationsApi";
+import { handleRealtimeEvent } from "../features/realtime/realtimeEventHandler";
 
 type BootstrapStatus = "LOADING" | "READY" | "ERROR";
 
@@ -26,37 +26,65 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
 
     // on MainPage render
     useEffect(() => {
-        async function bootstrap() {
+        let disposed = false;
+        let isSyncing = false;
+
+        async function sync() {
+            // prevent multiple simultaneous bootstrap/resync flows
+            if (isSyncing || disposed) {
+                return;
+            }
+
+            isSyncing = true;
+            setStatus("LOADING");
+            setError(null);
+
             try {
-                // Connect websocket first before http bootstrap, as to not lose any events
+                // connect Ws first, so events arriving before the api responses are buffered
                 await wsClient.connect();
 
                 const [
                     contacts,
                     blockedUsers,
-                    conversations,
+                    conversations
                 ] = await Promise.all([
                     apiGetContacts(),
                     apiGetBlockedUsers(),
                     apiGetConversationSummaries()
                 ]);
+
+                if (disposed) return;
                 
                 useContactsStore.getState().setContacts(contacts);
                 useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
                 useConversationsStore.getState().setConversations(conversations);
 
+                // flush buffered ws events and switch to live mode
                 wsClient.goLive(handleRealtimeEvent);
 
                 setStatus("READY");
             } catch (err) {
+                if (disposed) return;
+
                 setStatus("ERROR");
                 setError(getErrorMessage(err));
+            } finally {
+                isSyncing = false;
             }
         }
 
-        bootstrap();
+        wsClient.setDisconnectHandler(() => {
+            sync();
+        });
+
+        // init bootstrap
+        sync();
 
         return () => {
+            disposed = true;
+
+            // remove callback first so teardown doesn't cause another sync
+            wsClient.setDisconnectHandler(null);
             wsClient.disconnect();
             
             useContactsStore.getState().reset();
