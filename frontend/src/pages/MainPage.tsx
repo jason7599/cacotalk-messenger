@@ -2,23 +2,25 @@ import { useBootstrap } from "../shared/BootstrapProvider";
 import LoadingScreen from "../components/LoadingScreen";
 import SidebarPanel from "../components/SidebarPanel";
 import ConversationPanel from "../features/conversations/components/ConversationPanel";
+import ErrorScreen from "../components/ErrorScreen";
+import ConnectionBanner from "../components/ConnectionBanner";
 
 export default function MainPage() {
-    const { status } = useBootstrap();
+    const { bootstrapStatus } = useBootstrap();
 
-    if (status === "LOADING") {
+    if (bootstrapStatus === "LOADING") {
         return <LoadingScreen title="SUMMONING YOUR CHAOS"/>
     }
 
-    // TODO: idk?
-    if (status === "ERROR") {
-        return <div>WTF?</div>
+    if (bootstrapStatus === "ERROR") {
+        return <ErrorScreen title="THE PIT HAS GONE COLD" />;
     }
 
     return (
         <div className="flex h-screen w-screen overflow-hidden">
             <SidebarPanel />
             <ConversationPanel />
+            <ConnectionBanner />
         </div>
     )
 }

@@ -31,11 +31,9 @@ export const useAuthStore = create<AuthState>((set) => ({
                 set({ user: null });
                 return;
             }
-
-            set({
-                user: null,
-                error: getErrorMessage(err)
-            });
+            
+            // anything else means a server side error
+            set({ user: null, error: getErrorMessage(err) });
         } finally {
             set({ loadingUser: false });
         }
