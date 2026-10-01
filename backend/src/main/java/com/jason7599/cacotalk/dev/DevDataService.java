@@ -1,6 +1,7 @@
 package com.jason7599.cacotalk.dev;
 
 import com.jason7599.cacotalk.conversation.ConversationRepository;
+import com.jason7599.cacotalk.message.MessageEncryptionService;
 import com.jason7599.cacotalk.message.MessageRepository;
 import com.jason7599.cacotalk.message.MessageType;
 import com.jason7599.cacotalk.user.UserEntity;
@@ -36,6 +37,7 @@ public class DevDataService {
     private final UserRelationRepository userRelationRepository;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
+    private final MessageEncryptionService messageEncryptionService;
 
     private final JdbcTemplate jdbcTemplate;
     private final RedisConnectionFactory redisConnectionFactory;
@@ -140,7 +142,7 @@ public class DevDataService {
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
                     MessageType.USER.name(),
                     null,
-                    message,
+                    messageEncryptionService.encrypt(message),
                     UUID.randomUUID()
             );
         }

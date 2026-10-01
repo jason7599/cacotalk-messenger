@@ -33,6 +33,7 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
 
+    private final MessageEncryptionService messageEncryptionService;
     private final ConversationService conversationService;
     private final MembershipLookupService membershipLookupService;
 
@@ -49,7 +50,9 @@ public class MessageService {
                 p.getSenderName(),
                 p.getType(),
                 eventMessageService.decode(p.getEvent()),
-                p.getContent(),
+                p.getContent() != null
+                        ? messageEncryptionService.decrypt(p.getContent())
+                        : null,
                 p.getCreatedAt()
         );
     }
@@ -113,8 +116,7 @@ public class MessageService {
             // Either it's an actual, one in a GAZILLION uuid collision, or
             // it means a malicious actor is probing for existing clientIds.
             // Either way, an error is thrown so no big damage will be done
-            if (!existing.getSenderId().equals(userId) || !existing.getId().conversationId().equals(conversationId)
-            || !existing.getContent().equals(content)) {
+            if (!existing.getSenderId().equals(userId) || !existing.getId().conversationId().equals(conversationId)) {
                 log.warn("clientId collision: user {} submitted clientId {} already owned by sender {} in conversation {}",
                         userId, clientId, existing.getSenderId(), existing.getId().conversationId());
 
@@ -129,7 +131,7 @@ public class MessageService {
                     username,
                     MessageType.USER,
                     null,
-                    existing.getContent(),
+                    messageEncryptionService.decrypt(existing.getContent()),
                     existing.getCreatedAt()
             );
         }
@@ -142,7 +144,7 @@ public class MessageService {
                 userId,
                 MessageType.USER.name(),
                 null,
-                content,
+                messageEncryptionService.encrypt(content),
                 clientId
         );
 

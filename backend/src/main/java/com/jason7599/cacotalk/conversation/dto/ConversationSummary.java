@@ -37,7 +37,7 @@ public record ConversationSummary(
         String getLastMessageSenderName();
         MessageType getLastMessageType();
         String getLastMessageEvent();
-        String getLastMessageContent();
+        byte[] getLastMessageContent();
         Instant getLastMessageCreatedAt();
     }
 }

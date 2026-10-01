@@ -23,7 +23,7 @@ public record MessageResponse(
         String getSenderName();
         MessageType getType();
         String getEvent(); // raw json string
-        String getContent();
+        byte[] getContent();
         Instant getCreatedAt();
     }
 }

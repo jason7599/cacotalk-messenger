@@ -69,7 +69,7 @@ public class AuthController {
     ) {
         ResponseCookie cookie = ResponseCookie.from("session", token)
                 .httpOnly(true)
-                .secure(cookieSecure) // TODO: hardcode this to true on prod if I want
+                .secure(cookieSecure) // TODO: hardcode this to true on prod
                 .sameSite("Lax")
                 .path("/")
                 .build();

@@ -30,7 +30,7 @@ public class MessageEntity {
     @Column(columnDefinition = "jsonb")
     private EventMessage event;
 
-    private String content;
+    private byte[] content;
 
     @Column(insertable = false)
     private Instant createdAt;

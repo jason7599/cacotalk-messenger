@@ -98,7 +98,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             Long senderId,
             String messageType,
             String eventData,
-            String content,
+            byte[] content,
             UUID clientId
     );
 

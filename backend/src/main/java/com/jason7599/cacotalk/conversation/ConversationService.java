@@ -6,6 +6,7 @@ import com.jason7599.cacotalk.exceptions.ApiErrorCodes;
 import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.EventMessageService;
+import com.jason7599.cacotalk.message.MessageEncryptionService;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
@@ -35,6 +36,7 @@ public class ConversationService {
     private final UserService userService;
     private final EventMessageService eventMessageService;
     private final RealtimeEventPublisher realtimeEventPublisher;
+    private final MessageEncryptionService messageEncryptionService;
 
     private final ObjectMapper objectMapper;
 
@@ -56,7 +58,7 @@ public class ConversationService {
                         p.getLastMessageSenderName(),
                         p.getLastMessageType(),
                         eventMessageService.decode(p.getLastMessageEvent()),
-                        p.getLastMessageContent(),
+                        messageEncryptionService.decrypt(p.getLastMessageContent()),
                         p.getLastMessageCreatedAt()
                 ) : null
         );
