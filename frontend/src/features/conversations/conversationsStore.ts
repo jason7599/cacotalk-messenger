@@ -157,7 +157,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
                 // TODO: maybe I could/should introduce a self heal logic whenever this happens.
                 // I do doubt this would happen at all, much less frequently, as long as I do the
                 // WS reconciliation logic robustly, but ig something to thnk about later.
-                console.warn(`onMemberRemoved called on absent conversation ${conversationId}`);
+                console.warn(`updateLastReadSeq called on absent conversation ${conversationId}`);
                 return state;
             }
 

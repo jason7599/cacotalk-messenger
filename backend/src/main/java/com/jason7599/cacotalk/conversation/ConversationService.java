@@ -58,7 +58,9 @@ public class ConversationService {
                         p.getLastMessageSenderName(),
                         p.getLastMessageType(),
                         eventMessageService.decode(p.getLastMessageEvent()),
-                        messageEncryptionService.decrypt(p.getLastMessageContent()),
+                        p.getLastMessageContent() != null
+                                ? messageEncryptionService.decrypt(p.getLastMessageContent())
+                                : null,
                         p.getLastMessageCreatedAt()
                 ) : null
         );
