@@ -7,7 +7,7 @@ import type { UserInfo } from "../../shared/types";
 // decided to let the component itself check for the relations. 
 // Didn't modify the backend api shape (yet), so it still does return the relation field
 export async function apiSearchUsers(query: string): Promise<UserInfo[]> {
-    return (await api.get(`/users/search?query=${query}`)).data;
+    return (await api.get("/users/search", { params: { query }})).data;
 }
 
 export async function apiGetContacts(): Promise<UserInfo[]> {
