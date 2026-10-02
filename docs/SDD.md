@@ -42,17 +42,20 @@ The initial goal is to build a small, simple yet reliable and maintainable messa
 
 #### Messages
 - Users can send a text message.
-- Other participants receive new messages in real time.
+- Other participants receive new messages in real time, over a WebSocket (STOMP) connection.
 - Older messages can be loaded incrementally.
+- Each user tracks their own read position per conversation (`last_read_seq`), used to drive an unread-messages divider and unread badges. This is a personal read-tracking mechanism, not read receipts - other participants cannot see whether or when a given user read a message.
+- Message content is encrypted at rest (AES/CTR, random IV per message). See `devlog/015-message-encryption.md` for the threat model and the deliberate choice of CTR over GCM.
 
 ### Possible Later Features
 
 - Muting conversations
-- Read receipts
+- Read receipts (i.e., letting other participants see that you've read a message — distinct from the personal read-tracking above, which already exists)
 - Presence / online status
 - File attachments
 - User avatars
 - Email auth
+- Horizontal scaling of the realtime layer (the current WebSocket broker is in-memory and single-instance, see `docs/api/realtime.md`)
 
 ## 3. High-Level Architecture
 
@@ -119,13 +122,11 @@ User chooses to block another user\
 → frontend updates the relevant UI state
 
 ### Opening a Direct Conversation
-User selects another user or an existing direct conversation\
-→ frontend requests the conversation and recent messages\
-→ backend validates that neither user has blocked the other\
-→ backend retrieves the conversation and recent messages\
+User selects another user, or an existing direct conversation from their list\
+→ if opened via another user (not an existing conversation), frontend first resolves/creates the direct conversation ID for that user pair (idempotent — creating is a side effect of first resolving, not deferred to the first message)\
+→ frontend requests the conversation detail and recent messages by that ID\
+→ backend retrieves the conversation and recent messages (block status is reported in the detail response, not independently re-validated here)\
 → frontend displays the conversation
-
-If no direct conversation exists yet, one may be created when the user sends the first message.
 
 ### Creating a Group Conversation
 User requests to create a group conversation\
@@ -141,9 +142,10 @@ User requests to create a group conversation\
 Group creator chooses to invite or remove a member\
 → frontend sends the membership update request\
 → backend verifies that the requester is the group creator\
-→ backend validates the target user\
-→ backend updates the group membership\
-→ connected participants receive the updated group state
+→ backend validates the target user(s) (invitable, or not already a member for invites; not the creator themself, for removal)\
+→ backend updates the group membership, persisting a corresponding event message (`MEMBERS_INVITED` / `MEMBER_REMOVED`) into the conversation's history\
+→ connected participants receive the updated group state over two channels: the event message (as a `NEW_MESSAGE` realtime event, for chat history) and a dedicated structural realtime event (`MEMBERS_ADDED` / `MEMBER_REMOVED`) that the frontend actually reacts to for updating its membership/sidebar state — see `docs/api/realtime.md`\
+→ a removed (or self-leaving) member additionally receives a `REMOVED_FROM_GROUP` event on their own other sessions, so every open tab/device drops the conversation
 
 ### Leaving a Group Conversation
 Group member chooses to leave\
@@ -162,11 +164,20 @@ Group creator chooses to close the conversation\
 
 ### Sending a Message
 User sends a message\
-→ frontend sends the message to the backend\
+→ frontend generates a client-side idempotency key (`clientId`) and sends it along with the message\
 → backend validates membership and conversation state\
-→ backend stores the message\
-→ backend broadcasts the message to connected participants\
-→ clients update their UI
+→ backend encrypts and stores the message, atomically allocating its sequence number\
+→ backend marks the message as read for the sender (so it never appears unread in the sender's other sessions)\
+→ backend broadcasts a `NEW_MESSAGE` realtime event (carrying `clientId`) to connected participants\
+→ clients update their UI, reconciling any optimistic/pending local copy of the message by `clientId`
+
+Retrying the same `clientId` is safe and returns the original message rather than creating a duplicate.
+
+### Marking Messages as Read
+Frontend tracks the highest message sequence the user has seen in an open conversation (debounced locally)\
+→ frontend sends the read position to the backend\
+→ backend advances the user's stored read position, taking the greater of the stored and requested value (idempotent)\
+→ if the position actually advanced, backend sends a `MARKED_AS_READ` realtime event to the user's own other sessions, so other open tabs/devices move their unread state too
 
 ### Loading Older Messages
 User scrolls toward the beginning of the loaded message history\
@@ -180,8 +191,12 @@ User scrolls toward the beginning of the loaded message history\
 | Area | Current Decision |
 |---|---|
 | Backend | Spring Boot |
-| Frontend | React |
+| Frontend | React + TypeScript, Zustand for state |
 | Database | PostgreSQL |
-| Real-time communication | STOMP over WebSocket |
-| Authentication | Sessions using Redis |
+| Real-time communication | STOMP over WebSocket, in-memory single-instance broker (see `docs/api/realtime.md`) |
+| Authentication | Opaque random session tokens, hashed (SHA-256) and stored in Redis with a sliding TTL; `HttpOnly` + `SameSite=Lax` + `Secure` (outside dev) cookie |
+| Concurrency control | Mix of pessimistic locking (Postgres advisory locks, e.g. group-size invariant on invite) and relying on the database's own constraints/row locking for simpler cases; optimistic concurrency (version columns) was considered and deliberately not used — see `devlog/010-concurrency_control.md` |
+| Message content at rest | Encrypted (AES/CTR, random IV per message) — see `devlog/015-message-encryption.md` |
+| Error handling | Structured `ApiErrorCodes` enum + `{ code, message }` JSON body for all API errors, rather than branching on bare HTTP status; see any `docs/api/*.md` file's "Error Response Shape" section |
+| Cross-origin / CSRF | Single allowed frontend origin via CORS; CSRF mitigated structurally (`SameSite=Lax` cookie + no state-changing `GET` endpoints) rather than with CSRF tokens — see `devlog/016-web-security.md` |
 | Deployment | Docker Compose |

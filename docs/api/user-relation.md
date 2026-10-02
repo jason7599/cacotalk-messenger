@@ -10,9 +10,11 @@
 }
 ```
 
-## Global Error Codes
+## Errors
 
-#### `401 Unauthorized`
+See [API Errors](./errors.md) for the response shape and the full `ApiErrorCodes` table.
+
+#### `401 Unauthorized` — `UNAUTHORIZED`
 
 The request does not contain a valid authenticated session.
 
@@ -102,17 +104,21 @@ POST /users/me/contacts/{targetId}
 
 The user was successfully added as a contact, or already existed.
 
-#### `400 Bad Request`
+A `CONTACT_CHANGED` realtime event (`added: true`) is sent to the authenticated user's own other sessions on an actual insert (not on the already-existed no-op). See [realtime docs](./realtime.md#contact_changed).
+
+#### `400 Bad Request` — `CANNOT_CONTACT_SELF`
 
 User tried to add self as a contact.
 
-#### `404 Not Found`
-
-The target user does not exist.
-
-#### `403 Forbidden`
+#### `403 Forbidden` — `CANNOT_CONTACT_BLOCKED_USER`
 
 The authenticated user has blocked the target user.
+
+> Note: this does not check the reverse direction. If the target has blocked the authenticated user (but not vice versa), this still succeeds — see the TOCTOU note in `devlog/010-concurrency_control.md` for a related edge case on this same code path.
+
+#### `404 Not Found` — `USER_NOT_FOUND`
+
+The target user does not exist.
 
 
 ## Remove Contact
@@ -132,6 +138,8 @@ DELETE /users/me/contacts/{targetId}
 The contact was removed successfully.
 
 Same behavior when the relationship does not exist, making it idempotent.
+
+A `CONTACT_CHANGED` realtime event (`added: false`) is sent to the authenticated user's own other sessions on an actual removal (not on the idempotent no-op).
 
 
 ## Get Blocked Users
@@ -183,11 +191,13 @@ POST /users/me/blocks/{targetId}
 
 The user was successfully blocked, or was already blocked.
 
-#### `400 Bad Request`
+If the target was also an existing contact, the contact relationship is removed first (own `CONTACT_CHANGED` realtime event, `added: false`), then the block is added (own `BLOCK_CHANGED` realtime event, `added: true`, only on an actual insert). Both are self-sync events only — the target is never notified either way.
+
+#### `400 Bad Request` — `CANNOT_BLOCK_SELF`
 
 User tried to block self.
 
-#### `404 Not Found`
+#### `404 Not Found` — `USER_NOT_FOUND`
 
 The target user does not exist.
 
@@ -206,14 +216,16 @@ DELETE /users/me/blocks/{targetId}
 
 #### `204 No Content`
 
-The block was removed successfully, or block didn't exist
+The block was removed successfully, or block didn't exist.
+
+A `BLOCK_CHANGED` realtime event (`added: false`) is sent to the authenticated user's own other sessions on an actual removal.
 
 
 ## Get Invitable Users
 
-Returns the user's contacts, excluding any who have blocked the requester. 
+Returns the user's contacts, excluding any who have blocked the requester.
 
-Used by the group conversation creation flow to populate the invitable-members list.
+Used by the group conversation creation flow to populate the invitable-members list. This is the conversation-agnostic form; see also [the conversation-scoped variant](./conversation.md#get-invitable-users) used when inviting into an *existing* group, which additionally excludes current members.
 
 ### Request
 ```

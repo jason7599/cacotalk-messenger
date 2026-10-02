@@ -1,4 +1,15 @@
-# Auth Api
+# Auth API
+
+## Errors
+
+See [API Errors](./errors.md) for the response shape and the full `ApiErrorCodes` table.
+
+## Session Cookie
+
+Both Register and Login set a `session` cookie: `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure`.
+
+The session itself is a random 32-byte token, stored server-side in Redis as a SHA-256 hash -> userId mapping with a sliding TTL (`app.auth.session.ttl`, currently 7 days, renewed on every authenticated request). 
+
 
 ## Register
 
@@ -13,16 +24,18 @@ Creates a new user account and authenticates the newly registered user.
   "password": "secret"
 }
 ```
+- `username`: 3–32 characters, lowercase letters and digits only, at least one letter.
+- `password`: 6–32 characters (whitespace allowed; username is trimmed, password is not).
 
 ### Response
 ```
 Set-Cookie: session=<session-token>
 ```
-`201 Created`
+`201 Created` (empty body)
 
 ### Error Responses
-- `400 Bad Request` — invalid username or password
-- `409 Conflict` — username already exists
+- `400 Bad Request` — `VALIDATION_ERROR` — invalid username or password per the rules above
+- `409 Conflict` — `USERNAME_TAKEN` — username already exists
 
 
 ## Login
@@ -43,10 +56,10 @@ Authenticates an existing user.
 ```
 Set-Cookie: session=<session-token>
 ```
-`200 OK`
+`204 No Content` (empty body)
 
 ### Error Responses
-- `401 Unauthorized` — invalid username or password
+- `401 Unauthorized` — `BAD_CREDENTIALS` — username not found, or password doesn't match. The response does not distinguish which (avoids leaking which usernames exist).
 
 
 ## Logout
@@ -88,4 +101,4 @@ None
 
 ### Error Responses
 
-- `401 Unauthorized` — no valid session exists
+- `401 Unauthorized` — `UNAUTHORIZED` — no valid session exists

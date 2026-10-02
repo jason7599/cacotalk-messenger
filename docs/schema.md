@@ -65,5 +65,8 @@ Constraints / Invariants:
 Constraints / Invariants:
 - `(conversation_id, seq)` uniquely identifies a message.
 - `seq` > 0, meaning the first message has a `seq` value of 1.
-- EVENT messages are created by the system as part of conversation state changes
-- `event` contains event-specific metadata and is expected to be stored as JSONB.
+- EVENT messages are created by the system as part of conversation state changes.
+- `event` contains event-specific metadata and is stored as JSONB.
+- `content` is stored as `BYTEA`, not plaintext. It holds a 16-byte random IV followed by AES/CTR ciphertext (see `devlog/015-message-encryption.md`). The column keeps the name `content` rather than something like `encrypted_content` — the `BYTEA` type already signals that it isn't raw text, and the type itself was deliberately chosen (over a Base64-encoded `TEXT` column) to make it a compile error to pass a plain `String` where ciphertext bytes are expected.
+- `client_id` is unique (nullable — only set for `USER` type messages) and is the idempotency key used to dedupe retried sends.
+- A `CHECK` constraint enforces the two type shapes: `USER` requires `sender_id`, `content`, `client_id` non-null and `event` null; `EVENT` requires the opposite (`event` non-null, the other three null).
