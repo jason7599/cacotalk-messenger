@@ -18,7 +18,7 @@ public final class UserRules {
     public static final String USERNAME_REGEX_MESSAGE
             = "Username must contain only lowercase letters or digits, and at least one letter";
 
-    public static final int PASSWORD_MIN_LENGTH = 4;
+    public static final int PASSWORD_MIN_LENGTH = 6;
     public static final int PASSWORD_MAX_LENGTH = 32;
     public static final String PASSWORD_LENGTH_MESSAGE
             = "Password must be between "

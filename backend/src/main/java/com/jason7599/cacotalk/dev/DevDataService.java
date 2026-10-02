@@ -28,8 +28,7 @@ import java.util.UUID;
 public class DevDataService {
 
     private static final String DEV_USERNAME = "jason";
-    private static final String DEV_PASSWORD = "1214";
-    private static final String USER_PASSWORD = "1234";
+    private static final String USER_PASSWORD = "123456";
 
     private final PasswordEncoder passwordEncoder;
 
@@ -159,7 +158,7 @@ public class DevDataService {
             userRepository.saveAndFlush(
                     new UserEntity(
                             DEV_USERNAME,
-                            passwordEncoder.encode(DEV_PASSWORD)
+                            passwordEncoder.encode(USER_PASSWORD)
                     )
             );
             return true;
