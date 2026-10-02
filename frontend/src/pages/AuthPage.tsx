@@ -1,6 +1,6 @@
 import React, { useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { apiLogin, apiRegister } from "../features/auth/authApi";
-import cacotalkLogo from "../assets/cacotalk-logo.png";
+import cacotalkLogo from "../assets/cacotalk-logo.webp";
 import { useAuthStore } from "../features/auth/authStore";
 import { getErrorMessage } from "../shared/apiError";
 import { Button, ErrorText, cn } from "../components/ui";

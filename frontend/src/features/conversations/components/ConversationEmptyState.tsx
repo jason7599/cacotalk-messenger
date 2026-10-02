@@ -1,4 +1,4 @@
-import cacotalkLogo from "../../../assets/cacotalk-logo.png";
+import cacotalkLogo from "../../../assets/cacotalk-logo.webp";
 import { MessageSquareText } from "lucide-react";
 
 export default function ConversationEmptyState() {

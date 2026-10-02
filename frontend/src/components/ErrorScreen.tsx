@@ -1,5 +1,5 @@
 import { RotateCw, Skull } from "lucide-react";
-import cacotalkLogo from "../assets/cacotalk-logo.png";
+import cacotalkLogo from "../assets/cacotalk-logo.webp";
 import Button from "./ui/Button";
 
 type ErrorScreenProps = {

@@ -2,7 +2,7 @@ import { MessageSquare, Users, Settings, Skull } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
-import cacotalkEmblem from "../assets/cacotalk-logo.png";
+import cacotalkEmblem from "../assets/cacotalk-emblem.webp";
 import ContactList from "../features/userRelations/components/ContactList";
 import ConversationList from "../features/conversations/components/ConversationList";
 import { cn, press } from "./ui";

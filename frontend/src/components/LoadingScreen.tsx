@@ -1,4 +1,4 @@
-import cacotalkLogo from "../assets/cacotalk-logo.png";
+import cacotalkLogo from "../assets/cacotalk-logo.webp";
 
 type LoadingScreenProps = {
     eyebrow?: string;
