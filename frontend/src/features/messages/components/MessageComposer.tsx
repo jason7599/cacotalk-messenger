@@ -4,6 +4,7 @@ import { useActiveConversationStore } from "../../conversations/activeConversati
 import { useMessageSendStore } from "../messageSendStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import { IconButton } from "../../../components/ui";
+import { MESSAGE_MAX_LENGTH } from "../../../shared/constants";
 
 export default function MessageComposer() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
@@ -50,7 +51,7 @@ export default function MessageComposer() {
             return;
         }
 
-        const trimmed = content.trim();
+        const trimmed = content.trim().substring(0, MESSAGE_MAX_LENGTH);
         sendMessage(conversationId, trimmed);
 
         setContent("");
@@ -77,7 +78,7 @@ export default function MessageComposer() {
                             ref={textareaRef}
                             value={content}
                             onChange={(e) => handleChange(e.target.value)}
-                            maxLength={2000}
+                            maxLength={MESSAGE_MAX_LENGTH}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();

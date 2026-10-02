@@ -8,3 +8,5 @@ export const PASSWORD_MAX_LENGTH = 32;
 export const MAX_GROUP_MEMBERS = 100;
 
 export const SUMMARY_MEMBER_PREVIEW_COUNT = 3;
+
+export const MESSAGE_MAX_LENGTH=12;
