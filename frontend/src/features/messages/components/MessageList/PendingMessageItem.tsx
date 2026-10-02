@@ -8,7 +8,7 @@ type PendingMessageItemProps = {
 export default function PendingMessageItem({ content }: PendingMessageItemProps) {
     return (
         <div className="flex justify-end">
-            <div className="max-w-[70%]">
+            <div className="max-w-[85%] lg:max-w-[70%]">
                 <MessageBubble variant="pending" trailing={<Spinner size="sm" />}>
                     {content}
                 </MessageBubble>

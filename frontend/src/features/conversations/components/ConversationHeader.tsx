@@ -1,4 +1,4 @@
-import { Ban, Lock, X, Users, UserCog } from "lucide-react";
+import { ArrowLeft, Ban, Lock, X, Users, UserCog } from "lucide-react";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { useContactsStore } from "../../userRelations/contactsStore";
 import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
@@ -6,7 +6,7 @@ import ConversationWarning from "./ConversationWarning";
 import { useModal } from "../../../components/ModalProvider";
 import GroupMembersModal from "./GroupMembersModal";
 import { useAuthStore } from "../../auth/authStore";
-import { Avatar, IconButton } from "../../../components/ui";
+import { Avatar, IconButton, cn } from "../../../components/ui";
 import ContactActionsModal from "../../userRelations/components/ContactActionsModal";
 
 export default function ConversationHeader() {
@@ -69,12 +69,28 @@ export default function ConversationHeader() {
 
     return (
         <header className="flex shrink-0 flex-col border-b-2 border-edge bg-sunken">
-            <div className="flex items-center gap-4 px-5 py-10 short:py-4">
-                <Avatar
-                    name={displayTitle}
-                    icon={meta.type === "GROUP" ? <Users size={22} strokeWidth={2.3} /> : undefined}
-                    size="lg"
-                />
+            <div className="flex items-center gap-3 px-3 py-3 lg:gap-4 lg:px-5 lg:py-10 lg:short:py-4">
+                {/* mobile: back to the list (desktop has the close X on the right instead) */}
+                <div className="lg:hidden">
+                    <IconButton aria-label="Back to conversations" onClick={clearActiveConversation}>
+                        <ArrowLeft size={18} strokeWidth={2.5} />
+                    </IconButton>
+                </div>
+
+                <div className="lg:hidden">
+                    <Avatar
+                        name={displayTitle}
+                        icon={meta.type === "GROUP" ? <Users size={18} strokeWidth={2.3} /> : undefined}
+                    />
+                </div>
+
+                <div className="hidden lg:block">
+                    <Avatar
+                        name={displayTitle}
+                        icon={meta.type === "GROUP" ? <Users size={22} strokeWidth={2.3} /> : undefined}
+                        size="lg"
+                    />
+                </div>
 
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-black">{displayTitle}</p>
@@ -92,18 +108,24 @@ export default function ConversationHeader() {
                                             <Users size={11} strokeWidth={2.3} />
                                             GROUP // {otherMembers.length + 1} SOULS
                                         </button>
-                                        <Slash />
+                                        <span className="hidden lg:contents">
+                                            <Slash />
+                                        </span>
                                     </>
                                 )}
 
-                                <span className="min-w-0 text-muted">
-                                    CREATED BY:{" "}
-                                    <span className="font-bold text-ash">{meta.groupCreator.username}</span>
+                                {/* not enough room on phones */}
+                                <span className="hidden lg:contents">
+                                    <span className="min-w-0 text-muted">
+                                        CREATED BY:{" "}
+                                        <span className="font-bold text-ash">{meta.groupCreator.username}</span>
+                                    </span>
+
+                                    <Slash />
                                 </span>
 
-                                <Slash />
-
-                                <span className="flex items-center gap-1 text-faint">
+                                {/* phones: only show the status when it's news (sealed) */}
+                                <span className={cn("items-center gap-1 text-faint", isClosed ? "flex" : "hidden lg:flex")}>
                                     {meta.isClosed && <Lock size={10} strokeWidth={2.3} />}
                                     {meta.isClosed ? "CHANNEL SEALED" : "CHANNEL OPEN"}
                                 </span>
@@ -141,7 +163,7 @@ export default function ConversationHeader() {
                     </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-5">
+                <div className="flex shrink-0 items-center gap-2 lg:gap-5">
                     {meta.type === "GROUP" && !isClosed && (
                         <IconButton
                             size="xl"
@@ -163,14 +185,16 @@ export default function ConversationHeader() {
                         </IconButton>
                     )}
 
-                    <IconButton
-                        variant="accent"
-                        size="xl"
-                        aria-label="Close conversation"
-                        onClick={clearActiveConversation}
-                    >
-                        <X size={18} strokeWidth={2.8} />
-                    </IconButton>
+                    <div className="hidden lg:block">
+                        <IconButton
+                            variant="accent"
+                            size="xl"
+                            aria-label="Close conversation"
+                            onClick={clearActiveConversation}
+                        >
+                            <X size={18} strokeWidth={2.8} />
+                        </IconButton>
+                    </div>
                 </div>
             </div>
 

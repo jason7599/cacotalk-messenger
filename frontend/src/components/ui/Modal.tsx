@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 import { cn } from "./cn";
 import IconButton from "./IconButton";
 
+// Phones: always full width (the modal is a bottom sheet there).
 const widths = {
-    sm: "w-115 max-w-[90vw]",
-    md: "w-130 max-w-[90vw]",
-    lg: "w-180 max-w-[92vw]",
+    sm: "w-full md:w-115 md:max-w-[90vw]",
+    md: "w-full md:w-130 md:max-w-[90vw]",
+    lg: "w-full md:w-180 md:max-w-[92vw]",
 };
 
 type ModalFrameProps = {

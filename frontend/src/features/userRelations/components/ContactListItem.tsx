@@ -23,7 +23,7 @@ export default function ContactListItem({ contact }: ContactListItemProps) {
                 <p className="mt-1 text-2xs tracking-label text-faint">CONTACT // REGISTERED</p>
             </div>
 
-            <div className="flex shrink-0 gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
+            <div className="flex shrink-0 gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 touch:opacity-100">
                 <IconButton
                     variant="accent"
                     size="md"

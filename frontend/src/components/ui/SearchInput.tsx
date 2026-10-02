@@ -21,7 +21,8 @@ export default function SearchInput({ value, onChange, trailing, className, ...i
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="min-w-0 flex-1 bg-transparent py-3 text-xs outline-none"
+                // 16px on phones: iOS zooms the whole page into any input with smaller text
+                className="min-w-0 flex-1 bg-transparent py-3 text-base outline-none md:text-xs"
                 {...inputProps}
             />
 

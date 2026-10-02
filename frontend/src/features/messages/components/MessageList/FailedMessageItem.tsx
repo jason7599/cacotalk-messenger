@@ -10,7 +10,7 @@ type FailedMessageItemProps = {
 export default function FailedMessageItem({ content, onRetry, onDiscard }: FailedMessageItemProps) {
     return (
         <div className="flex flex-col items-end gap-1.5">
-            <div className="max-w-[70%]">
+            <div className="max-w-[85%] lg:max-w-[70%]">
                 <MessageBubble variant="failed">{content}</MessageBubble>
             </div>
 

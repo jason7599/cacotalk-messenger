@@ -25,7 +25,7 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                 !showSender && "-mt-2",
             )}
         >
-            <div className="flex max-w-[70%] items-start gap-2.5">
+            <div className="flex max-w-[85%] items-start gap-2.5 lg:max-w-[70%]">
                 {!isMine && (
                     showSender
                         ? <Avatar name={message.senderName} size="sm" className="mt-0.5" />

@@ -66,10 +66,17 @@
 
     /* Animations */
     --animate-hellbar: hellbar 1.15s linear infinite;
+    --animate-sheet-up: sheet-up 180ms ease-out;
 
     @keyframes hellbar {
         from { transform: translateX(-120%); }
         to { transform: translateX(420%); }
+    }
+
+    /* modals slide up from the bottom on phones */
+    @keyframes sheet-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 }
 
@@ -79,6 +86,12 @@
  * logos and list heights so everything fits. Example: "py-10 short:py-5".
  */
 @custom-variant short (@media (max-height: 900px));
+
+/*
+ * Touch-screen helper: `touch:` applies on devices that can't hover (phones, tablets).
+ * Use it for anything that is otherwise only revealed on hover: "opacity-0 group-hover:opacity-100 touch:opacity-100".
+ */
+@custom-variant touch (@media (hover: none));
 
 @layer base {
     html {

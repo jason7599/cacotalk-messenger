@@ -102,7 +102,7 @@ export default function MessageList() {
         <div className="relative min-h-0 flex-1">
             <div
                 ref={scrollRef}
-                className="h-full overflow-y-auto px-5 py-4"
+                className="h-full overflow-y-auto px-3 py-4 lg:px-5"
                 style={{ overflowAnchor: "none" }}
             >
                 <div ref={topSentinelRef} className="flex h-9 items-center justify-center py-2">

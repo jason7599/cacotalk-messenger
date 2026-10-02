@@ -64,7 +64,7 @@ export default function MessageComposer() {
     }
 
     return (
-        <div className="shrink-0 border-t-2 border-edge bg-sunken p-3">
+        <div className="shrink-0 border-t-2 border-edge bg-sunken p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {lockedReason ? (
                 <div className="flex items-center justify-center gap-2 border-2 border-edge bg-pit p-4 text-faint">
                     <Ban size={16} strokeWidth={2.3} />
@@ -87,7 +87,7 @@ export default function MessageComposer() {
                             }}
                             placeholder="WHISPER INTO THE VOID..."
                             rows={1}
-                            className="field max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto p-3 text-sm"
+                            className="field max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto p-3 text-base md:text-sm"
                         />
 
                         <IconButton
@@ -101,7 +101,7 @@ export default function MessageComposer() {
                         </IconButton>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between text-3xs tracking-label text-dim">
+                    <div className="mt-2 hidden items-center justify-between text-3xs tracking-label text-dim lg:flex">
                         <span>ENTER // SEND</span>
                         <span>SHIFT + ENTER // NEW LINE</span>
                     </div>

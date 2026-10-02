@@ -23,7 +23,9 @@ export default function ConversationPanel() {
     }
 
     return (
-        <div className="flex flex-1 h-full flex-col bg-sunken">
+        // min-w-0: without it this box grows to fit its widest content (e.g. a long
+        // group title), pushing the chat off-screen instead of letting the title truncate.
+        <div className="flex h-full min-w-0 flex-1 flex-col bg-sunken">
             {content}
         </div>
     );

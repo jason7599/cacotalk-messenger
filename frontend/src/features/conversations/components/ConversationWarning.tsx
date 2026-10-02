@@ -33,7 +33,7 @@ export default function ConversationWarning({
 
     return (
         <div className="flex flex-wrap items-stretch border-t-2 border-edge bg-pit">
-            <div className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3 lg:px-5">
                 <div className="grid h-8 w-8 shrink-0 place-items-center border border-warn-edge bg-warn-bg text-warn">
                     <ShieldAlert size={15} strokeWidth={2.4} />
                 </div>
@@ -51,7 +51,7 @@ export default function ConversationWarning({
                 </div>
             </div>
 
-            <div className="flex shrink-0 items-stretch divide-x divide-edge border-l border-edge">
+            <div className="flex w-full shrink-0 items-stretch divide-x divide-edge border-t border-edge lg:w-auto lg:border-l lg:border-t-0">
                 {!isSubjectUserBlocked && (
                     <WarningAction
                         disabled={isAddingContact}
@@ -112,7 +112,7 @@ function WarningAction({ danger = false, disabled, onClick, icon, children }: Wa
             disabled={disabled}
             onClick={onClick}
             className={cn(
-                "group flex min-w-32 items-center justify-center gap-2 px-4 py-3 text-3xs font-black tracking-caps transition-colors",
+                "group flex min-w-32 flex-1 items-center justify-center gap-2 px-4 py-3 text-3xs font-black tracking-caps transition-colors lg:flex-initial",
                 "disabled:pointer-events-none disabled:opacity-40",
                 danger
                     ? "bg-sunken text-crimson hover:bg-raised hover:text-crimson-bright"

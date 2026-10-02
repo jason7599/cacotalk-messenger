@@ -1,23 +1,24 @@
-import { MessageSquare, Users, Settings } from "lucide-react";
+import { MessageSquare, Users, Settings, Skull } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useModal } from "./ModalProvider";
 import SettingsModal from "./SettingsModal";
 import cacotalkEmblem from "../assets/cacotalk-logo.png";
 import ContactList from "../features/userRelations/components/ContactList";
 import ConversationList from "../features/conversations/components/ConversationList";
-import { useAuthStore } from "../features/auth/authStore";
-import { Avatar, cn, press } from "./ui";
+import { cn, press } from "./ui";
+import IdentityCard from "./IdentityCard";
+import SelfPanel from "./SelfPanel";
 
 export default function Sidebar() {
-    const [panel, setPanel] = useState<"contacts" | "conversations">("conversations");
+    // "self" only exists on mobile (bottom tab bar); desktop has the identity card + settings button instead.
+    const [panel, setPanel] = useState<"contacts" | "conversations" | "self">("conversations");
 
     const { openModal } = useModal();
-    const user = useAuthStore((s) => s.user!);
 
     return (
-        <aside className="flex">
-            {/* icon rail */}
-            <nav className="flex w-20 flex-col items-center border-r-2 border-edge-strong bg-sunken py-4">
+        <aside className="flex w-full flex-col lg:w-auto lg:flex-row">
+            {/* icon rail (desktop) */}
+            <nav className="hidden w-20 flex-col items-center border-r-2 border-edge-strong bg-sunken py-4 lg:flex">
                 <div className="mb-8 grid h-14 w-14 place-items-center border-2 border-edge-strong bg-panel shadow-hard-lg">
                     <img src={cacotalkEmblem} alt="" className="h-12 w-12 object-contain" />
                 </div>
@@ -49,39 +50,38 @@ export default function Sidebar() {
                 </div>
             </nav>
 
-            <section className="flex w-96 flex-col border-r-2 border-edge-strong bg-panel 2xl:w-110">
+            <section className="flex min-h-0 w-full flex-1 flex-col bg-panel lg:w-96 lg:flex-initial lg:border-r-2 lg:border-edge-strong 2xl:w-110">
                 <div className="min-h-0 flex-1">
-                    {panel === "conversations"
-                        ? <ConversationList />
-                        : <ContactList />
-                    }
+                    {panel === "conversations" && <ConversationList />}
+                    {panel === "contacts" && <ContactList />}
+                    {panel === "self" && <SelfPanel />}
                 </div>
 
-                {/* Current user */}
-                <div className="relative overflow-hidden border-b-2 border-edge-strong bg-sunken p-4">
-                    <div className="pointer-events-none absolute right-3 top-2 text-3xs font-bold tracking-caps text-edge-soft">
-                        IDENTITY // VERIFIED
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Avatar name={user.username} size="xl" tone="active">
-                            <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 border border-sunken bg-crimson-bright" />
-                        </Avatar>
-
-                        <div className="min-w-0 flex-1">
-                            <p className="text-3xs font-bold tracking-caps text-crimson">ACTIVE OPERATOR</p>
-
-                            <p className="mt-0.5 truncate text-lg font-black tracking-tight">{user.username}</p>
-
-                            <div className="mt-1 flex items-center gap-2 text-3xs tracking-label text-faint">
-                                <span>STATUS</span>
-                                <span className="h-px w-4 bg-edge" />
-                                <span className="font-bold text-muted">CONNECTED</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Current user (desktop) */}
+                <IdentityCard className="hidden lg:block" />
             </section>
+
+            {/* bottom tab bar (mobile) */}
+            <nav className="flex shrink-0 border-t-2 border-edge-strong bg-sunken pb-[env(safe-area-inset-bottom)] lg:hidden">
+                <TabButton
+                    label="TRANSMISSIONS"
+                    active={panel === "conversations"}
+                    onClick={() => setPanel("conversations")}
+                    icon={<MessageSquare size={20} strokeWidth={2.4} />}
+                />
+                <TabButton
+                    label="SOULS"
+                    active={panel === "contacts"}
+                    onClick={() => setPanel("contacts")}
+                    icon={<Users size={20} strokeWidth={2.4} />}
+                />
+                <TabButton
+                    label="SELF"
+                    active={panel === "self"}
+                    onClick={() => setPanel("self")}
+                    icon={<Skull size={20} strokeWidth={2.4} />}
+                />
+            </nav>
         </aside>
     );
 }
@@ -110,6 +110,31 @@ function NavButton({ label, active = false, onClick, children }: NavButtonProps)
         >
             {active && <span className="absolute -left-2 top-2 h-7 w-1 bg-crimson-bright" />}
             {children}
+        </button>
+    );
+}
+
+type TabButtonProps = {
+    label: string;
+    active: boolean;
+    onClick: () => void;
+    icon: ReactNode;
+};
+
+function TabButton({ label, active, onClick, icon }: TabButtonProps) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            className={cn(
+                "relative flex flex-1 flex-col items-center gap-1 pt-2.5 pb-2 text-3xs font-bold tracking-caps transition-colors",
+                active ? "bg-panel text-crimson-bright" : "text-faint",
+            )}
+        >
+            {active && <span className="absolute inset-x-6 top-0 h-0.5 bg-crimson-bright" />}
+            {icon}
+            {label}
         </button>
     );
 }
