@@ -103,7 +103,6 @@ public class MessageService {
             throw new ApiException(ApiErrorCodes.CANNOT_SEND_MESSAGE);
         }
 
-        // TODO: Consider including username in AuthUser Principal and also caching it in Redis session
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         // SAFE: given userId passed not only AuthenticationFilter, but also requireMembership, which is FK-backed.
         String username = userService.findById(userId).get().username();

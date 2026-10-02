@@ -44,7 +44,7 @@ public class SecurityConfig {
     ) {
         return http
                 .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable) // TODO: configure CSRF protection before frontend integration / production
+                .csrf(AbstractHttpConfigurer::disable) // mitigated via SameSite=Lax + strict REST semantics. See docs/devlog/016-web-security.md
                 .httpBasic(HttpBasicConfigurer::disable)
                 .formLogin(FormLoginConfigurer::disable)
 
@@ -70,15 +70,13 @@ public class SecurityConfig {
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint(ObjectMapper objectMapper) {
         return (request, response, authException) -> {
-            ApiErrorCodes code = ApiErrorCodes.UNAUTHORIZED;
-
-            response.setStatus(code.getStatus().value());
+            response.setStatus(ApiErrorCodes.UNAUTHORIZED.getStatus().value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
             objectMapper.writeValue(
                     response.getOutputStream(),
-                    new ApiErrorResponse(code)
+                    new ApiErrorResponse(ApiErrorCodes.UNAUTHORIZED)
             );
         };
     }

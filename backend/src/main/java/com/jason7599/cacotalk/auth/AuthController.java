@@ -22,6 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // dev override to false
     @Value("${app.auth.session.cookie-secure}")
     private boolean cookieSecure;
 
@@ -69,7 +70,7 @@ public class AuthController {
     ) {
         ResponseCookie cookie = ResponseCookie.from("session", token)
                 .httpOnly(true)
-                .secure(cookieSecure) // TODO: hardcode this to true on prod
+                .secure(cookieSecure)
                 .sameSite("Lax")
                 .path("/")
                 .build();

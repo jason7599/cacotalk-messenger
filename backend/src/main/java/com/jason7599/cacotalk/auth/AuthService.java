@@ -24,8 +24,8 @@ public class AuthService {
     // returns raw token, since we want automatic login after register
     @Transactional
     public String register(RegisterRequest request) {
-        // TODO: potential race condition?
-        //  It's still guarded by the database UNIQUE so worst case it delivers an internal server error
+        // potential race condition but trivial.
+        // It's still guarded by the database UNIQUE so worst case it delivers an internal server error
         if (userRepository.existsByUsername(request.username())) {
             throw new ApiException(ApiErrorCodes.USERNAME_TAKEN);
         }
