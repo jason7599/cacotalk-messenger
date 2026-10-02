@@ -1,0 +1,18 @@
+cacotalk.lol {
+	root * /usr/share/caddy
+
+	handle_path /api/* {
+		reverse_proxy backend:8080
+	}
+	handle /ws* {
+		reverse_proxy backend:8080
+	}
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+www.cacotalk.lol {
+	redir https://cacotalk.lol{uri} permanent
+}
