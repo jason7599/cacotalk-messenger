@@ -9,4 +9,4 @@ export const MAX_GROUP_MEMBERS = 100;
 
 export const SUMMARY_MEMBER_PREVIEW_COUNT = 3;
 
-export const MESSAGE_MAX_LENGTH=12;
+export const MESSAGE_MAX_LENGTH=2000;

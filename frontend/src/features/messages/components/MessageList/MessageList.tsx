@@ -14,24 +14,38 @@ import type { ChatMessage } from "../../types";
 
 const EMPTY_QUEUE: PendingMessage[] = [];
 
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
+function continuesGroup(prev: ChatMessage | undefined, next: ChatMessage | undefined, dividerBetween: boolean) {
+    if (!prev || !next || dividerBetween) return false;
+    if (prev.type !== "USER" || next.type !== "USER") return false;
+    if (prev.senderId !== next.senderId) return false;
+
+    const gap = new Date(next.createdAt).getTime() - new Date(prev.createdAt).getTime();
+    return gap <= GROUP_WINDOW_MS;
+};
+
 const MessageRow = memo(function MessageRow({
     message,
-    showUnreadDivider
+    showUnreadDivider,
+    showSender,
+    showTimestamp
 } : {
     message: ChatMessage;
     showUnreadDivider: boolean;
+    showSender: boolean;
+    showTimestamp: boolean;
 }) {
     return (
         <div data-seq={message.seq}>
             {message.type === "USER"
-                ? <UserMessageItem message={message} />
+                ? <UserMessageItem message={message} showSender={showSender} showTimestamp={showTimestamp} />
                 : <EventMessageItem message={message} />
             }
             {showUnreadDivider && <UnreadDivider />}
         </div>
     );
 });
-
 
 export default function MessageList() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
@@ -58,6 +72,7 @@ export default function MessageList() {
     const topSentinelRef = useRef<HTMLDivElement>(null);
 
     const showDivider = 0 < myLastReadSeq && myLastReadSeq < lastSeqSnapshot;
+    const hasDividerAfter = (message: ChatMessage) => showDivider && message.seq === myLastReadSeq;
 
     // This is just for detecting when the user sends a message, so that we can scroll down
     const lastOutgoingClientId = pendingMessages.at(-1)?.clientId ?? null;
@@ -97,13 +112,20 @@ export default function MessageList() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    {messages.map((message) => (
-                        <MessageRow
-                            key={message.seq}
-                            message={message}
-                            showUnreadDivider={showDivider && message.seq === myLastReadSeq}
-                        />
-                    ))}
+                    {messages.map((message, i) => {
+                        const prev = messages[i - 1];
+                        const next = messages[i + 1];
+
+                        return (
+                            <MessageRow
+                                key={message.seq}
+                                message={message}
+                                showUnreadDivider={hasDividerAfter(message)}
+                                showSender={!continuesGroup(prev, message, !!prev && hasDividerAfter(prev))}
+                                showTimestamp={!continuesGroup(message, next, hasDividerAfter(message))}
+                            />
+                        );
+                    })}
 
                     {failedMessages.length > 0 && (
                         <div className="flex flex-col gap-2">
