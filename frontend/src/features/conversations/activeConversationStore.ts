@@ -18,7 +18,7 @@ export type ActiveConversationState = {
     conversation: ActiveConversation | null;
     loadingConversationId: string | null;
 
-    setActiveConversation: (conversationId: string) => Promise<void>;
+    setActiveConversation: (conversationId: string, resync?: boolean) => Promise<void>;
     clearActiveConversation: () => void;
     openDirectConversation: (targetId: number) => Promise<void>;
     loadOlderMessages: () => Promise<void>;
@@ -105,9 +105,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         doFlush(conversationId);
     };
 
-
     // ------------------ Actual store methods ------------------ \\
-
     const onAckConfirmed = (seq: number) => {
         set((state) => {
             if (!state.conversation) return;
@@ -115,8 +113,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
-    const setActiveConversation = async (conversationId: string) => {
-        if (get().conversation?.id === conversationId && get().status !== "ERROR") {
+    const setActiveConversation = async (conversationId: string, resync = false) => {
+        if (!resync && get().conversation?.id === conversationId && get().status !== "ERROR") {
             return;
         }
 
@@ -127,12 +125,15 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
 
         const myRequestId = ++requestId;
 
-        set({
-            conversation: null,
-            status: "LOADING",
-            error: null,
-            loadingConversationId: conversationId,
-        });
+        // no loading state on resync so that the user still sees the original window
+        if (!resync) {
+            set({
+                conversation: null,
+                status: "LOADING",
+                error: null,
+                loadingConversationId: conversationId,
+            });
+        }
 
         try {
             const [

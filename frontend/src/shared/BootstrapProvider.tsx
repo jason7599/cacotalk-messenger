@@ -111,6 +111,12 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
                 useBlockedUsersStore.getState().setBlockedUsers(blockedUsers);
                 useConversationsStore.getState().setConversations(conversations);
 
+                // reconnection while conversation was open, have to catch up.
+                const active = useActiveConversationStore.getState().conversation;
+                if (isReconnect && active) {
+                    useActiveConversationStore.getState().setActiveConversation(active.id, true);
+                }
+
                 // flush buffered ws events and switch to live mode
                 wsClient.goLive(handleRealtimeEvent);
 
