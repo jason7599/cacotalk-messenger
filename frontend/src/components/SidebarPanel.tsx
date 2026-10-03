@@ -8,6 +8,7 @@ import ConversationList from "../features/conversations/components/ConversationL
 import { cn, press } from "./ui";
 import IdentityCard from "./IdentityCard";
 import SelfPanel from "./SelfPanel";
+import AboutScreen from "./AboutScreen";
 
 export default function Sidebar() {
     // "self" only exists on mobile (bottom tab bar); desktop has the identity card + settings button instead.
@@ -19,9 +20,18 @@ export default function Sidebar() {
         <aside className="flex w-full flex-col lg:w-auto lg:flex-row">
             {/* icon rail (desktop) */}
             <nav className="hidden w-20 flex-col items-center border-r-2 border-edge-strong bg-sunken py-4 lg:flex">
-                <div className="mb-8 grid h-14 w-14 place-items-center border-2 border-edge-strong bg-panel shadow-hard-lg">
+                <button
+                    type="button"
+                    onClick={() => openModal(<AboutScreen />, { bare: true })}
+                    aria-label="About CacoTalk"
+                    title="About CacoTalk"
+                    className={cn(
+                        "mb-8 grid h-14 w-14 place-items-center border-2 border-edge-strong bg-panel shadow-hard-lg transition-colors hover:border-crimson-bright",
+                        press,
+                    )}
+                >
                     <img src={cacotalkEmblem} alt="" className="h-12 w-12 object-contain" />
-                </div>
+                </button>
 
                 <div className="flex w-full flex-col gap-3 px-2">
                     <NavButton

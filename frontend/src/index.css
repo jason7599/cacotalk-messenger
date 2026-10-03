@@ -67,10 +67,30 @@
     /* Animations */
     --animate-hellbar: hellbar 1.15s linear infinite;
     --animate-sheet-up: sheet-up 180ms ease-out;
+    --animate-skull-fall: skull-fall 16s linear infinite;
+    --animate-ember-rise: ember-rise 10s ease-in infinite;
+    --animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
 
     @keyframes hellbar {
         from { transform: translateX(-120%); }
         to { transform: translateX(420%); }
+    }
+
+    /* About screen: per-element --sway / --spin / --drift are set inline */
+    @keyframes skull-fall {
+        from { transform: translate3d(0, -15vh, 0) rotate(0deg); }
+        to { transform: translate3d(var(--sway, 0px), 115vh, 0) rotate(var(--spin, 180deg)); }
+    }
+
+    @keyframes ember-rise {
+        0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+        10% { opacity: 1; }
+        100% { transform: translate3d(var(--drift, 20px), -100vh, 0) scale(0.3); opacity: 0; }
+    }
+
+    @keyframes glow-pulse {
+        0%, 100% { opacity: 0.45; transform: scale(0.92); }
+        50% { opacity: 0.85; transform: scale(1.06); }
     }
 
     /* modals slide up from the bottom on phones */

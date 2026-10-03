@@ -1,6 +1,7 @@
 export { default as ActionCard } from "./ActionCard";
 export { default as Avatar } from "./Avatar";
 export { default as Button, ConfirmButton } from "./Button";
+export { buttonClassName } from "./buttonStyles";
 export { default as CheckboxCard } from "./CheckboxCard";
 export { default as ConsequenceList } from "./ConsequenceList";
 export { default as EmptyState } from "./EmptyState";
