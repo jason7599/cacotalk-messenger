@@ -183,3 +183,23 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
         });
     }
 }));
+
+export const getUnreadCount = (conversation: ConversationSummary) =>
+    Math.max(0, (conversation.lastMessage?.seq ?? 0) - conversation.lastReadSeq)
+;
+
+/**
+ * Total unread across every conversation. Derived, not stored: whatever keeps the row badges right
+ * (WS messages, read acks, bootstrap/resync) keeps this right too.
+ * Returns a number, so subscribers only re-render when the total actually changes.
+ */
+export const useUnreadTotal = () =>
+    useConversationsStore((s) => {
+        let total = 0;
+        for (const c of Object.values(s.conversationsById)) total += getUnreadCount(c);
+        return total;
+    })
+;
+
+/** "99+" past 99, for badges that need to stay small. */
+export const formatUnreadCount = (count: number) => (count > 99 ? "99+" : String(count));

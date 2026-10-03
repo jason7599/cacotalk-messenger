@@ -302,12 +302,11 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             // find the last message with a smaller seq, and insert right after
             const insertAfter = messages.findLastIndex((m) => m.seq < message.seq);
             messages.splice(insertAfter + 1, 0, message);
-        });
 
-        const current = get().conversation;
-        if (current?.id === message.conversationId) {
-            scheduleAckFlush(current.id);
-        }
+            // optimistic ui update
+            useConversationsStore.getState().updateLastReadSeq(message.conversationId, message.seq);
+            scheduleAckFlush(state.conversation.id);
+        });
     };
 
     const leaveConversation = async () => {

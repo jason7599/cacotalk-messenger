@@ -6,6 +6,8 @@ import ErrorScreen from "../components/ErrorScreen";
 import ConnectionBanner from "../components/ConnectionBanner";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { cn } from "../components/ui";
+import { useEffect } from "react";
+import { formatUnreadCount, useUnreadTotal } from "../features/conversations/conversationsStore";
 
 export default function MainPage() {
     const { bootstrapStatus } = useBootstrap();
@@ -13,6 +15,13 @@ export default function MainPage() {
     // Phones/tablets (below lg) show one pane at a time: the list, or the open chat.
     // Desktop (lg and up) always shows both side by side.
     const isChatOpen = useActiveConversationStore((s) => s.status === "LOADING" || s.conversation !== null);
+
+    // "(3) CacoTalk" in the browser tab while anything is unread.
+    const unreadTotal = useUnreadTotal();
+    useEffect(() => {
+        document.title = unreadTotal > 0 ? `(${formatUnreadCount(unreadTotal)}) CacoTalk` : "CacoTalk";
+        return () => { document.title = "CacoTalk"; };
+    }, [unreadTotal]);
 
     if (bootstrapStatus === "LOADING") {
         return <LoadingScreen title="SUMMONING YOUR CHAOS"/>

@@ -4,6 +4,7 @@ import { useActiveConversationStore } from "../activeConversationStore";
 import type { ChatMessage, EventMessage } from "../../messages/types";
 import { useAuthStore } from "../../auth/authStore";
 import { Avatar, cn } from "../../../components/ui";
+import { formatUnreadCount, getUnreadCount } from "../conversationsStore";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
@@ -20,7 +21,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
     const lastMessagePreview = getMessagePreview(conversation.lastMessage);
     const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
-    const unreadCount = (conversation.lastMessage?.seq ?? 0) - conversation.lastReadSeq;
+    const unreadCount = getUnreadCount(conversation);
 
     const highlighted = isActive || isLoading;
 
@@ -86,7 +87,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
                         aria-label={`${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
                         className="min-w-5 border border-crimson bg-raised px-1.5 text-center text-3xs font-black leading-4 text-crimson-bright shadow-hard-xs"
                     >
-                        {unreadCount > 99 ? "99+" : unreadCount}
+                        {formatUnreadCount(unreadCount)}
                     </span>
                 )}
 

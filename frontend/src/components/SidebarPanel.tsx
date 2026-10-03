@@ -9,12 +9,14 @@ import { cn, press } from "./ui";
 import IdentityCard from "./IdentityCard";
 import SelfPanel from "./SelfPanel";
 import AboutScreen from "./AboutScreen";
+import { formatUnreadCount, useUnreadTotal } from "../features/conversations/conversationsStore";
 
 export default function Sidebar() {
     // "self" only exists on mobile (bottom tab bar); desktop has the identity card + settings button instead.
     const [panel, setPanel] = useState<"contacts" | "conversations" | "self">("conversations");
 
     const { openModal } = useModal();
+    const unreadTotal = useUnreadTotal();
 
     return (
         <aside className="flex w-full flex-col lg:w-auto lg:flex-row">
@@ -36,6 +38,7 @@ export default function Sidebar() {
                 <div className="flex w-full flex-col gap-3 px-2">
                     <NavButton
                         label="Conversations"
+                        unread={unreadTotal}
                         active={panel === "conversations"}
                         onClick={() => setPanel("conversations")}
                     >
@@ -75,6 +78,7 @@ export default function Sidebar() {
             <nav className="flex shrink-0 border-t-2 border-edge-strong bg-sunken pb-[env(safe-area-inset-bottom)] lg:hidden">
                 <TabButton
                     label="TRANSMISSIONS"
+                    unread={unreadTotal}
                     active={panel === "conversations"}
                     onClick={() => setPanel("conversations")}
                     icon={<MessageSquare size={20} strokeWidth={2.4} />}
@@ -99,16 +103,17 @@ export default function Sidebar() {
 type NavButtonProps = {
     label: string;
     active?: boolean;
+    unread?: number;
     onClick: () => void;
     children: ReactNode;
 };
 
-function NavButton({ label, active = false, onClick, children }: NavButtonProps) {
+function NavButton({ label, active = false, unread = 0, onClick, children }: NavButtonProps) {
     return (
         <button
             type="button"
             onClick={onClick}
-            aria-label={label}
+            aria-label={unread > 0 ? `${label}, ${unread} unread` : label}
             aria-pressed={active}
             className={cn(
                 "relative grid h-12 w-full place-items-center border-2 shadow-hard-md transition-colors",
@@ -120,6 +125,7 @@ function NavButton({ label, active = false, onClick, children }: NavButtonProps)
         >
             {active && <span className="absolute -left-2 top-2 h-7 w-1 bg-crimson-bright" />}
             {children}
+            {unread > 0 && <UnreadBadge count={unread} className="-right-2 -top-2" />}
         </button>
     );
 }
@@ -127,24 +133,44 @@ function NavButton({ label, active = false, onClick, children }: NavButtonProps)
 type TabButtonProps = {
     label: string;
     active: boolean;
+    unread?: number;
     onClick: () => void;
     icon: ReactNode;
 };
 
-function TabButton({ label, active, onClick, icon }: TabButtonProps) {
+function TabButton({ label, active, unread = 0, onClick, icon }: TabButtonProps) {
     return (
         <button
             type="button"
             onClick={onClick}
             aria-pressed={active}
+            aria-label={unread > 0 ? `${label}, ${unread} unread` : undefined}
             className={cn(
                 "relative flex flex-1 flex-col items-center gap-1 pt-2.5 pb-2 text-3xs font-bold tracking-caps transition-colors",
                 active ? "bg-panel text-crimson-bright" : "text-faint",
             )}
         >
             {active && <span className="absolute inset-x-6 top-0 h-0.5 bg-crimson-bright" />}
-            {icon}
+            <span className="relative grid">
+                {icon}
+                {unread > 0 && <UnreadBadge count={unread} className="-right-4 -top-2" />}
+            </span>
             {label}
         </button>
+    );
+}
+
+/** Unread total pinned to a nav corner. Solid crimson with a dark rim so it reads on active (crimson) and idle buttons alike. */
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+    return (
+        <span
+            aria-hidden="true"
+            className={cn(
+                "absolute min-w-5 border-2 border-pit bg-crimson-bright px-1 text-center text-3xs font-black leading-3.5 text-bone",
+                className,
+            )}
+        >
+            {formatUnreadCount(count)}
+        </span>
     );
 }
