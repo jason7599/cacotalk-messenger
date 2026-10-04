@@ -45,5 +45,6 @@ Bean-validation failures (`@Valid` request bodies) return the same shape under t
 | `CANNOT_REMOVE_SELF` | 400 | Cannot remove self | Remove Group Member, creator targeting self |
 | `GROUP_CLOSED` | 409 | Group closed | Invite/Leave, on an already-closed group |
 | `CANNOT_SEND_MESSAGE` | 409 | Cannot send a message in this conversation | Send Message — not a member, blocked (DIRECT), closed (GROUP), or a `clientId` collision/probe, all collapsed into this one code |
+| `RATE_LIMITED` | 429 | Rate limited | Send Message |
 
 This table is as is defined from `exceptions/ApiErrorCodes.java`.

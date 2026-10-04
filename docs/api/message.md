@@ -186,3 +186,7 @@ One combined error code covers several distinct conditions, all collapsed into t
 - The conversation is a closed GROUP.
 - The conversation is a DIRECT conversation and either party has blocked the other.
 - `clientId` already belongs to a different sender or a different conversation (genuine UUID collision, or a malicious probe for an existing `clientId`) — logged server-side as a warning, but the client gets the same `CANNOT_SEND_MESSAGE` response as the ordinary cases above.
+
+#### `429 Too Many Requests` — `RATE_LIMITED`
+The authenticated user has sent too many messages in the current rate limit window. 
+The limit is per user, shared across all of their conversations and sessions, and uses a fixed window that starts at the first message sent in it.

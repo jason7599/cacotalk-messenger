@@ -24,6 +24,7 @@ export type ApiErrorCode =
     | "GROUP_CLOSED"
 
     | "CANNOT_SEND_MESSAGE"
+    | "RATE_LIMITED"
 ;
 
 export type ApiErrorResponse = {
