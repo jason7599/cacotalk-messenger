@@ -12,6 +12,10 @@ Rest in Peace, CocaTalk.
 
 CacoTalk was rebuilt from the ground up with a stronger focus on clear documentation and maintainability — see [docs](./docs) for the design document, schema notes, full API reference, and devlogs written while building it.
 
+## Currently live at [cacotalk.lol](https://cacotalk.lol)
+
+Hobby development, so data may be reset occasionally.
+
 ## Features
 
 - Account registration/login, session-based auth (Redis-backed, `HttpOnly` cookie)
@@ -20,9 +24,11 @@ CacoTalk was rebuilt from the ground up with a stronger focus on clear documenta
 - Direct conversations
 - Group conversations with membership control
 - Realtime message delivery and conversation state sync over WebSocket
+- Automatic reconnect with state resync after connection loss
 - Per-user read tracking (unread divider, acked-read sync across a user's own open sessions)
 - Message content encrypted at rest (AES/CTR, random IV per message)
 - Per-user message rate limiting (Redis fixed window)
+- Responsive layout (desktop + mobile)
 
 See [`docs/SDD.md`](./docs/SDD.md) for the full functional scope and the main user flows, and [`docs/api`](./docs/api) for the complete API reference (REST + WebSocket).
 
@@ -60,3 +66,10 @@ docs/      Design doc, schema notes, API reference, and devlogs
 - [`docs/schema.md`](./docs/schema.md) — database schema
 - [`docs/api/`](./docs/api) — full API reference (REST endpoints, error codes, WebSocket/realtime contract)
 - [`docs/devlog/`](./docs/devlog) — devlogs written while building this, covering the reasoning behind the gnarlier decisions (concurrency control, message encryption, CORS/CSRF, etc.)
+
+
+## Acknowledgements
+
+Most of the frontend design, mobile layout and many parts of the UI were built with massive help from Claude (Anthropic).
+
+The architecture, backend, data model, and realtime/sync logic are my own.
