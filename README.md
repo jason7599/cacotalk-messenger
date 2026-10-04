@@ -4,7 +4,7 @@
 
 # CacoTalk-Messenger
 
-CacoTalk is a real-time web messenger: Spring Boot backend, React + TypeScript frontend, PostgreSQL for persistence, Redis for sessions, STOMP over WebSocket for realtime delivery.
+CacoTalk is a real-time web messenger: Spring Boot backend, React + TypeScript frontend, PostgreSQL for persistence, Redis for sessions and rate limiting, STOMP over WebSocket for realtime delivery.
 
 The spiritual successor of [CocaTalk](https://www.github.com/jason7599/cocatalk-messenger), an earlier messenger project that reached a functional state but eventually became too difficult to maintain and expand.
 
@@ -22,6 +22,7 @@ CacoTalk was rebuilt from the ground up with a stronger focus on clear documenta
 - Realtime message delivery and conversation state sync over WebSocket
 - Per-user read tracking (unread divider, acked-read sync across a user's own open sessions)
 - Message content encrypted at rest (AES/CTR, random IV per message)
+- Per-user message rate limiting (Redis fixed window)
 
 See [`docs/SDD.md`](./docs/SDD.md) for the full functional scope and the main user flows, and [`docs/api`](./docs/api) for the complete API reference (REST + WebSocket).
 
@@ -42,7 +43,7 @@ See [`docs/SDD.md`](./docs/SDD.md) for the full functional scope and the main us
 | Backend | Spring Boot 4, Java 21, Spring Data JPA, Spring Security, Flyway |
 | Frontend | React 19 + TypeScript, Zustand, Tailwind, Vite |
 | Database | PostgreSQL |
-| Cache / Sessions | Redis |
+| Sessions / Rate limiting | Redis |
 | Realtime | STOMP over WebSocket (`@stomp/stompjs` client, Spring's in-memory simple broker server-side) |
 
 ## Project Structure
