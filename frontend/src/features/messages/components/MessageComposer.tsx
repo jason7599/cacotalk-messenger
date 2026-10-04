@@ -80,10 +80,18 @@ export default function MessageComposer() {
                             onChange={(e) => handleChange(e.target.value)}
                             maxLength={MESSAGE_MAX_LENGTH}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSend();
-                                }
+                                if (e.key !== "Enter" || e.shiftKey) return;
+
+                                // Mid-composition (Korean/Japanese/Chinese IME): this Enter commits the
+                                // syllable, it's not a send. Otherwise the last character gets left behind.
+                                if (e.nativeEvent.isComposing) return;
+
+                                // Phones/tablets: Enter is a newline, the send button sends.
+                                // Same check as the `touch:` variant in index.css.
+                                if (window.matchMedia("(hover: none)").matches) return;
+
+                                e.preventDefault();
+                                handleSend();
                             }}
                             placeholder="WHISPER INTO THE VOID..."
                             rows={1}
