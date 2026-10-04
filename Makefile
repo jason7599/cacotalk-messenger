@@ -1,14 +1,23 @@
-up:
-	docker compose up -d
+# Production (run from the EC2 instance)
+PROD = docker compose -f docker-compose.prod.yml
 
-down:
-	docker compose down
+rebuild-fe:
+	$(PROD) build frontend
+	$(PROD) up -d frontend
+
+rebuild-be:
+	$(PROD) build backend
+	$(PROD) up -d backend
+
+rebuild:
+	$(PROD) build
+	$(PROD) up -d
 
 db:
-	docker compose exec postgres psql -U jux cacotalk
+	$(PROD) exec postgres sh -c 'psql -U "$$POSTGRES_USER" -d cacotalk'
 
-redis:
-	docker compose exec redis redis-cli
+ps:
+	$(PROD) ps
 
-redis-scan:
-	docker compose exec redis redis-cli SCAN 0
+logs:
+	$(PROD) logs -f
