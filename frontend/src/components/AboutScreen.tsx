@@ -234,6 +234,7 @@ export default function AboutScreen() {
                                     "design system + shared UI components",
                                     "mobile layout + responsive fixes",
                                     "reconnect banner + error screens",
+                                    "notifications: sound, popups + desktop alerts",
                                     "this very page, all of it!!!",
                                 ]}
                             />

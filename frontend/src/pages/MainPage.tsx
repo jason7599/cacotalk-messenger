@@ -7,6 +7,9 @@ import ConnectionBanner from "../components/ConnectionBanner";
 import { useActiveConversationStore } from "../features/conversations/activeConversationStore";
 import { cn } from "../components/ui";
 import { useEffect } from "react";
+import ToastStack from "../features/notifications/components/ToastStack";
+import { installAudioUnlock } from "../features/notifications/sound";
+import { useReadCatchUp } from "../features/conversations/useReadCatchUp";
 import { formatUnreadCount, useUnreadTotal } from "../features/conversations/conversationsStore";
 
 export default function MainPage() {
@@ -22,6 +25,11 @@ export default function MainPage() {
         document.title = unreadTotal > 0 ? `(${formatUnreadCount(unreadTotal)}) CacoTalk` : "CacoTalk";
         return () => { document.title = "CacoTalk"; };
     }, [unreadTotal]);
+
+    // Mark messages read when the user returns to the window, and let the notification sound play
+    // after their first click (browsers block audio before that).
+    useReadCatchUp();
+    useEffect(() => installAudioUnlock(), []);
 
     if (bootstrapStatus === "LOADING") {
         return <LoadingScreen title="SUMMONING YOUR CHAOS"/>
@@ -42,6 +50,7 @@ export default function MainPage() {
             </div>
 
             <ConnectionBanner />
+            <ToastStack />
         </div>
     )
 }

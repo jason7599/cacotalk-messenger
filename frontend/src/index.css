@@ -70,6 +70,7 @@
     --animate-skull-fall: skull-fall 16s linear infinite;
     --animate-ember-rise: ember-rise 10s ease-in infinite;
     --animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
+    --animate-toast-in: toast-in 200ms ease-out;
 
     @keyframes hellbar {
         from { transform: translateX(-120%); }
@@ -91,6 +92,12 @@
     @keyframes glow-pulse {
         0%, 100% { opacity: 0.45; transform: scale(0.92); }
         50% { opacity: 0.85; transform: scale(1.06); }
+    }
+
+    /* message popups */
+    @keyframes toast-in {
+        from { transform: translateY(8px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 
     /* modals slide up from the bottom on phones */

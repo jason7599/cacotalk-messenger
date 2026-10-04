@@ -1,3 +1,4 @@
+import type { EventData } from "./types";
 
 export function formatMessageTimestamp(timestamp: string) {
     const date = new Date(timestamp);
@@ -43,4 +44,24 @@ export function formatMessageTimestamp(timestamp: string) {
     });
 
     return `${day.toUpperCase()} // ${time}`;
+}
+
+/** One-line summary of an event message. Used by the conversation list preview and notifications. */
+export function getEventMessagePreview(event: EventData) {
+    switch (event.type) {
+        case "GROUP_CREATED":
+            return "GROUP CHANNEL ESTABLISHED";
+
+        case "MEMBERS_INVITED":
+            return "NEW BLOOD HAS ENTERED THE CHANNEL";
+
+        case "MEMBER_LEFT":
+            return "A SOUL LEFT THE CHANNEL";
+
+        case "MEMBER_REMOVED":
+            return "A SOUL WAS REMOVED";
+
+        case "GROUP_CLOSED":
+            return "CHANNEL CLOSED";
+    }
 }

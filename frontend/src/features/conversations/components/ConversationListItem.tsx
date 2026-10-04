@@ -1,10 +1,12 @@
 import { Users } from "lucide-react";
 import type { ConversationSummary } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
-import type { ChatMessage, EventMessage } from "../../messages/types";
+import type { ChatMessage } from "../../messages/types";
+import { getEventMessagePreview } from "../../messages/formatters";
 import { useAuthStore } from "../../auth/authStore";
 import { Avatar, cn } from "../../../components/ui";
 import { formatUnreadCount, getUnreadCount } from "../conversationsStore";
+import { getConversationDisplayName } from "../displayName";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
@@ -17,7 +19,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
     const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);
     const isLoading = useActiveConversationStore((s) => s.status === "LOADING" && s.loadingConversationId === conversation.id);
 
-    const displayName = getDisplayName(conversation);
+    const displayName = getConversationDisplayName(conversation);
     const lastMessagePreview = getMessagePreview(conversation.lastMessage);
     const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
@@ -104,26 +106,7 @@ function getMessagePreview(message: ChatMessage | null) {
         return "NO TRANSMISSIONS YET";
     }
 
-    return message.type === "USER" ? message.content : getEventMessagePreview(message);
-}
-
-function getEventMessagePreview(message: EventMessage) {
-    switch (message.event.type) {
-        case "GROUP_CREATED":
-            return "GROUP CHANNEL ESTABLISHED";
-
-        case "MEMBERS_INVITED":
-            return "NEW BLOOD HAS ENTERED THE CHANNEL";
-
-        case "MEMBER_LEFT":
-            return "A SOUL LEFT THE CHANNEL";
-
-        case "MEMBER_REMOVED":
-            return "A SOUL WAS REMOVED";
-
-        case "GROUP_CLOSED":
-            return "CHANNEL CLOSED";
-    }
+    return message.type === "USER" ? message.content : getEventMessagePreview(message.event);
 }
 
 function formatMessageTimestamp(timestamp: string) {
@@ -147,12 +130,4 @@ function formatMessageTimestamp(timestamp: string) {
         month: "short",
         day: "numeric",
     });
-}
-
-function getDisplayName(conversation: ConversationSummary) {
-    if (conversation.membersPreview.length === 0) {
-        return "EMPTY CHANNEL";
-    }
-
-    return conversation.membersPreview.map((m) => m.username).join(", ");
 }

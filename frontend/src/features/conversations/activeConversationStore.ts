@@ -8,6 +8,7 @@ import { immer } from "zustand/middleware/immer";
 import { useConversationsStore } from "./conversationsStore";
 import { useAuthStore } from "../auth/authStore";
 import type { UserInfo } from "../../shared/types";
+import { isAttending } from "../../shared/attention";
 
 const READ_ACK_DEBOUNCE_MS = 1500;
 
@@ -28,6 +29,7 @@ export type ActiveConversationState = {
     onMemberRemoved: (memberId: number) => void; 
     onGroupClosed: () => void;
     onAckConfirmed: (seq: number) => void; 
+    catchUpReads: () => void;
 };
 
 export const selectGroupCreator = (state: ActiveConversationState) => {
@@ -60,6 +62,12 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             return;
         }
 
+        // Window unfocused / tab hidden: the user isn't reading, so don't claim they did.
+        // catchUpReads() acks everything once they come back.
+        if (!isAttending()) {
+            return;
+        }
+
         const targetSeq = current.messages[current.messages.length - 1].seq;
         if (targetSeq <= current.ackedSeq) {
             return; // nothing new to ack
@@ -72,6 +80,9 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                 state.conversation.ackedSeq = Math.max(state.conversation.ackedSeq, targetSeq);
             }
         });
+        // ...and the conversation list too, so the unread badge clears right away
+        // (e.g. when opening a conversation), not when MARKED_AS_READ comes back.
+        useConversationsStore.getState().updateLastReadSeq(conversationId, targetSeq);
 
         // No await, and no rollback.
         // A failed/lost ack is low stakes and will self-correct on next flush or reopen
@@ -292,6 +303,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             }
 
             const messages = state.conversation.messages;
+            const prevLastSeq = messages.at(-1)?.seq; // newest message the user has seen so far
 
             const existingIndex = messages.findIndex((m) => m.seq === message.seq);
             if (existingIndex !== -1) {
@@ -303,10 +315,37 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
             const insertAfter = messages.findLastIndex((m) => m.seq < message.seq);
             messages.splice(insertAfter + 1, 0, message);
 
-            // optimistic ui update
-            useConversationsStore.getState().updateLastReadSeq(message.conversationId, message.seq);
-            scheduleAckFlush(state.conversation.id);
+            // Only counts as read if the user is actually looking.
+            // Otherwise it stays unread (badge, tab title) until catchUpReads().
+            if (isAttending()) {
+                // optimistic ui update
+                useConversationsStore.getState().updateLastReadSeq(message.conversationId, message.seq);
+                scheduleAckFlush(state.conversation.id);
+            } else if (!(message.type === "USER" && message.senderId === useAuthStore.getState().user?.userId)) {
+                // Arrived while the user is away: move the NEW WHISPERS divider to where they left off.
+                // Only the first message of an away stretch moves it. While the current divider
+                // still has unread messages below it (ackedSeq < lastSeqSnapshot), it stays put.
+                const c = state.conversation;
+                const dividerIsStale = c.ackedSeq >= c.lastSeqSnapshot;
+                if (dividerIsStale && prevLastSeq !== undefined && prevLastSeq < message.seq) {
+                    c.myLastReadSeq = prevLastSeq;
+                }
+                c.lastSeqSnapshot = Math.max(c.lastSeqSnapshot, message.seq);
+            }
         });
+    };
+
+    /**
+     * The user came back (window focused / tab visible again).
+     * Mark everything that arrived meanwhile in the open conversation as read. See useReadCatchUp.
+     */
+    const catchUpReads = () => {
+        const current = get().conversation;
+        if (!current || current.messages.length === 0 || !isAttending()) {
+            return;
+        }
+
+        flushAckNow(current.id); // also bumps the list's lastReadSeq
     };
 
     const leaveConversation = async () => {
@@ -360,6 +399,7 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         onMembersAdded,
         onMemberRemoved,
         onGroupClosed,
-        onAckConfirmed
+        onAckConfirmed,
+        catchUpReads
     };
 }));

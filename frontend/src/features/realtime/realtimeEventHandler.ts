@@ -3,6 +3,7 @@ import { useAuthStore } from "../auth/authStore";
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
 import { useMessageSendStore } from "../messages/messageSendStore";
+import { notifyIncoming } from "../notifications/notifyIncoming";
 import type { ChatMessage } from "../messages/types";
 import { useBlockedUsersStore } from "../userRelations/blockedUsersStore";
 import { useContactsStore } from "../userRelations/contactsStore";
@@ -48,6 +49,9 @@ function handleNewMessage(message: ChatMessage, clientId?: string) {
     if (useActiveConversationStore.getState().conversation?.id === message.conversationId) {
         useActiveConversationStore.getState().upsertMessage(message);
     }
+
+    // sound / popup, if warranted. Read-only, doesn't touch any unread state.
+    notifyIncoming(message);
 }
 
 function handleContactChanged(subject: UserInfo, added: boolean) {

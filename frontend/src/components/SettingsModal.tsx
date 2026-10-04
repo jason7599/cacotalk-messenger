@@ -4,7 +4,10 @@ import { useState, type ReactNode } from "react";
 import BlockedUsersModal from "../features/userRelations/components/BlockedUsersModal";
 import { useAuthStore } from "../features/auth/authStore";
 import AboutScreen from "./AboutScreen";
-import { ActionCard, ConfirmButton, ModalFrame, ModalHeader, Section, press } from "./ui";
+import { ActionCard, CheckboxCard, ConfirmButton, ModalFrame, ModalHeader, Section, press } from "./ui";
+import { useNotificationSettingsStore } from "../features/notifications/notificationSettingsStore";
+import { playMessageSound, unlockAudio } from "../features/notifications/sound";
+import { getDesktopPermission, requestDesktopPermission, type DesktopPermission } from "../features/notifications/desktopNotifications";
 
 export default function SettingsModal() {
     const logout = useAuthStore((s) => s.logout);
@@ -48,7 +51,11 @@ export default function SettingsModal() {
                     />
                 </Section>
 
-                <Section index={2} title="SESSION">
+                <Section index={2} title="SIGNALS">
+                    <NotificationSettings />
+                </Section>
+
+                <Section index={3} title="SESSION">
                     <ActionCard
                         title="TERMINATE CURRENT SESSION"
                         description="Destroy this session and return to the authentication gate."
@@ -65,7 +72,7 @@ export default function SettingsModal() {
                     </ActionCard>
                 </Section>
 
-                <Section index={3} title="ABOUT">
+                <Section index={4} title="ABOUT">
                     <SettingsLink
                         disabled={loggingOut}
                         onClick={() => openModal(<AboutScreen />, { bare: true })}
@@ -107,5 +114,60 @@ function SettingsLink({ icon, title, description, onClick, disabled }: SettingsL
 
             <ChevronRight size={18} strokeWidth={2.4} className="text-crimson group-hover:text-crimson-bright" />
         </button>
+    );
+}
+
+/** Sound + desktop alert toggles. Saved per browser. */
+function NotificationSettings() {
+    const soundEnabled = useNotificationSettingsStore((s) => s.soundEnabled);
+    const desktopEnabled = useNotificationSettingsStore((s) => s.desktopEnabled);
+    const setSoundEnabled = useNotificationSettingsStore((s) => s.setSoundEnabled);
+    const setDesktopEnabled = useNotificationSettingsStore((s) => s.setDesktopEnabled);
+
+    // Browser permission can't be subscribed to, so read it on open and after each request.
+    const [permission, setPermission] = useState<DesktopPermission>(getDesktopPermission);
+
+    function handleSound(enabled: boolean) {
+        setSoundEnabled(enabled);
+        if (enabled) {
+            // this click unlocks audio, so the preview can play right away
+            unlockAudio();
+            setTimeout(() => playMessageSound(), 50);
+        }
+    }
+
+    async function handleDesktop(enabled: boolean) {
+        if (!enabled) {
+            setDesktopEnabled(false);
+            return;
+        }
+
+        const result = permission === "granted" ? "granted" : await requestDesktopPermission();
+        setPermission(result);
+        setDesktopEnabled(result === "granted");
+    }
+
+    const desktopDescription =
+        permission === "unsupported"
+            ? "This browser can't raise desktop alerts."
+            : permission === "denied"
+                ? "Blocked by your browser. Allow notifications for this site in the browser's settings, then come back."
+                : "Pop up an alert when a transmission arrives while CacoTalk isn't focused. Only while a tab is open.";
+
+    return (
+        <div className="flex flex-col gap-2">
+            <CheckboxCard checked={soundEnabled} onChange={handleSound} title="TOLL THE BELL">
+                Play a sound when a transmission arrives in a channel you're not looking at.
+            </CheckboxCard>
+
+            <CheckboxCard
+                checked={desktopEnabled && permission === "granted"}
+                onChange={handleDesktop}
+                disabled={permission === "unsupported" || permission === "denied"}
+                title="DESKTOP ALERTS"
+            >
+                {desktopDescription}
+            </CheckboxCard>
+        </div>
     );
 }
