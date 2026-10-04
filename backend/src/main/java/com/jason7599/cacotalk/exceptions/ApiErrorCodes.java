@@ -37,7 +37,7 @@ public enum ApiErrorCodes {
     // Message
     // This includes both clientId collision/probe, and block status/closed
     CANNOT_SEND_MESSAGE(HttpStatus.CONFLICT, "Cannot send a message in this conversation"),
-
+    RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Rate limited"),
     ;
 
     private final HttpStatus status;

@@ -25,7 +25,7 @@ public class MessageEncryptionService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public MessageEncryptionService(@Value("${app.message-encryption-key}") String base64Key) {
+    public MessageEncryptionService(@Value("${app.message.encryption-key}") String base64Key) {
         byte[] keyBytes = Base64.getDecoder().decode(base64Key);
         this.secretKey = new SecretKeySpec(keyBytes, "AES");
     }

@@ -34,6 +34,8 @@ public class MessageService {
     private final MessageRepository messageRepository;
 
     private final MessageEncryptionService messageEncryptionService;
+    private final MessageRateLimiter messageRateLimiter;
+
     private final ConversationService conversationService;
     private final MembershipLookupService membershipLookupService;
 
@@ -133,6 +135,10 @@ public class MessageService {
                     messageEncryptionService.decrypt(existing.getContent()),
                     existing.getCreatedAt()
             );
+        }
+
+        if (!messageRateLimiter.tryConsume(userId)) {
+            throw new ApiException(ApiErrorCodes.RATE_LIMITED);
         }
 
         // Fails explicitly on clientId conflict.
