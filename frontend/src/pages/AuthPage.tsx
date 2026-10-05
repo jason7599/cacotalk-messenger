@@ -1,13 +1,13 @@
 import React, { useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
-import { apiLogin, apiRegister } from "../features/auth/authApi";
 import cacotalkLogo from "../assets/cacotalk-logo.webp";
-import { useAuthStore } from "../features/auth/authStore";
 import { getErrorMessage } from "../shared/apiError";
 import { Button, ErrorText, cn } from "../components/ui";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_PATTERN } from "../shared/constants";
+import { useAuthStore } from "../features/auth/authStore";
 
 export default function AuthPage() {
-    const refreshUser = useAuthStore((s) => s.refreshUser);
+    const login = useAuthStore((s) => s.login);
+    const register = useAuthStore((s) => s.register);
 
     const [isLogin, setIsLogin] = useState(true);
 
@@ -62,11 +62,10 @@ export default function AuthPage() {
 
         try {
             if (isLogin) {
-                await apiLogin({ username, password });
+                await login({ username, password });
             } else {
-                await apiRegister({ username, password });
+                await register({ username, password });
             }
-            await refreshUser();
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
