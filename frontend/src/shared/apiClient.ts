@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ApiError, type ApiErrorResponse } from "./apiError";
+import { useAuthStore } from "../features/auth/authStore";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -38,13 +39,14 @@ api.interceptors.response.use(
         // hey it's my backend defined error!
         if (axios.isAxiosError<ApiErrorResponse>(err) && err.response) {
             const data = err.response.data;
+            const apiError = new ApiError(data.code, data.message);
 
-            return Promise.reject(
-                new ApiError(
-                    data.code,
-                    data.message
-                )
-            );
+            // Any 401 means the session is gone, so redirect to auth page
+            if (ApiError.is(apiError, "UNAUTHORIZED")) {
+                useAuthStore.getState().clearSession();
+            }
+
+            return Promise.reject(apiError);
         }
 
         return Promise.reject(err);
