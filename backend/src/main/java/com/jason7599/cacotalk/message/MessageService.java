@@ -150,7 +150,7 @@ public class MessageService {
 
             replyTo = new MessageResponse.ReplyTo(
                     replyToMessage.getSeq(),
-                    replyToMessage.getReplyToSenderName(),
+                    replyToMessage.getSenderName(),
                     messageEncryptionService.decrypt(replyToMessage.getContent())
             );
         }
