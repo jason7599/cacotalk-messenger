@@ -133,6 +133,7 @@ export default function MessageList() {
                                 <FailedMessageItem
                                     key={`failed-${m.clientId}`}
                                     content={m.content}
+                                    replyTo={m.replyTo}
                                     onRetry={() => retry(conversationId, m.clientId)}
                                     onDiscard={() => discard(conversationId, m.clientId)}
                                 />
@@ -147,7 +148,7 @@ export default function MessageList() {
                     )}
 
                     {pendingMessages.map((m) => (
-                        <PendingMessageItem key={`pending-${m.clientId}`} content={m.content} />
+                        <PendingMessageItem key={`pending-${m.clientId}`} content={m.content} replyTo={m.replyTo} />
                     ))}
                 </div>
             </div>

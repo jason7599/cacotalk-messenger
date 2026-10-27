@@ -17,6 +17,7 @@ export function useStickToBottom({ containerRef, lastMessageSeq, lastOutgoingCli
     const [isNearBottom, setIsNearBottom] = useState(true);
     const prevLastMessageSeq = useRef(lastMessageSeq);
     const prevLastOutgoingClientId = useRef(lastOutgoingClientId);
+    const distanceFromBottomRef = useRef(0);
 
     const scrollToBottom = useCallback(() => {
             const el = containerRef.current;
@@ -33,6 +34,7 @@ export function useStickToBottom({ containerRef, lastMessageSeq, lastOutgoingCli
 
         const handleScroll = () => {
             const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+            distanceFromBottomRef.current = distanceFromBottom;
             setIsNearBottom(distanceFromBottom <= BOTTOM_THRESHOLD_PX);
         };
 
@@ -42,6 +44,24 @@ export function useStickToBottom({ containerRef, lastMessageSeq, lastOutgoingCli
         handleScroll();
 
         return () => el.removeEventListener("scroll", handleScroll);
+    }, [containerRef]);
+
+    // When the container itself changes height (composer grows from the reply bar or a multi-line
+    // draft, window resize, mobile keyboard), keep the same distance from the bottom.
+    // Otherwise the newest messages slide under the composer.
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        let lastHeight = el.clientHeight;
+        const observer = new ResizeObserver(() => {
+            if (el.clientHeight === lastHeight) return;
+            lastHeight = el.clientHeight;
+            el.scrollTop = el.scrollHeight - el.clientHeight - distanceFromBottomRef.current;
+        });
+
+        observer.observe(el);
+        return () => observer.disconnect();
     }, [containerRef]);
 
     // If a genuinely new last message arrives (not older messages being prepended) while

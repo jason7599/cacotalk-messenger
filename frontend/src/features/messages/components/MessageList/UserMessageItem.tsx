@@ -3,6 +3,10 @@ import { formatMessageTimestamp } from "../../formatters";
 import type { UserMessage } from "../../types";
 import { Avatar, cn } from "../../../../components/ui";
 import MessageBubble from "./MessageBubble";
+import { useActiveConversationStore } from "../../../conversations/activeConversationStore";
+import { useComposerLockedReason } from "../../useComposerLockedReason";
+import { Reply } from "lucide-react";
+import ReplyQuote from "../ReplyQuote";
 
 type UserMessageItemProps = {
     message: UserMessage;
@@ -16,10 +20,13 @@ export default function UserMessageItem({ message, showSender = true, showTimest
     const myId = useAuthStore((s) => s.user!.userId);
     const isMine = message.senderId === myId;
 
+    const setReplyingTo = useActiveConversationStore((s) => s.setReplyingTo);
+    const canReply = useComposerLockedReason() === null;
+
     return (
         <div
             className={cn(
-                "flex w-full",
+                "group flex w-full",
                 isMine ? "justify-end" : "justify-start",
                 // continued messages sit closer to the one above (list gap is 12px, this makes it 4px)
                 !showSender && "-mt-2",
@@ -40,9 +47,34 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                         </p>
                     )}
 
-                    <MessageBubble variant={isMine ? "mine" : "theirs"}>
-                        {message.content}
-                    </MessageBubble>
+                    <div className="relative">
+                        <MessageBubble
+                            variant={isMine ? "mine" : "theirs"}
+                            quote={message.replyTo && <ReplyQuote replyTo={message.replyTo} />}
+                        >
+                            {message.content}
+                        </MessageBubble>
+
+                        {canReply && (
+                            <button
+                                type="button"
+                                onClick={() => setReplyingTo({
+                                    seq: message.seq,
+                                    senderName: message.senderName,
+                                    content: message.content,
+                                })}
+                                aria-label={`Reply to ${message.senderName}`}
+                                className={cn(
+                                    "absolute top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center text-faint transition-opacity hover:text-crimson-bright focus-visible:text-crimson-bright",
+                                    "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 touch:opacity-100",
+                                    // outer side of the bubble: left of mine, right of theirs
+                                    isMine ? "right-full mr-1" : "left-full ml-1",
+                                )}
+                            >
+                                <Reply size={20} strokeWidth={2.4} />
+                            </button>
+                        )}
+                    </div>
 
                     {showTimestamp && (
                         <p className={cn("mt-1 text-3xs tracking-widest text-dim", isMine ? "mr-1 text-right" : "ml-1")}>

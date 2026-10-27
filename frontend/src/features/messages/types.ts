@@ -6,11 +6,18 @@ type MessageBase = {
     createdAt: string;
 };
 
+export type ReplyTo = {
+    seq: number;
+    senderName: string;
+    content: string;
+};
+
 export type UserMessage = MessageBase & {
     type: "USER";
     senderId: number;
     senderName: string;
     content: string;
+    replyTo: ReplyTo | null;
 };
 
 export type EventData =

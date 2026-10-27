@@ -16,19 +16,23 @@ type MessageBubbleProps = {
     variant: keyof typeof variants;
     /** Extra content after the text (e.g. a spinner). */
     trailing?: ReactNode;
+    quote?: ReactNode; // reply quote
     children: ReactNode;
 };
 
-export default function MessageBubble({ variant, trailing, children }: MessageBubbleProps) {
+export default function MessageBubble({ variant, trailing, quote, children }: MessageBubbleProps) {
     return (
         <div
             className={cn(
-                "flex items-center gap-2.5 border-2 px-4 py-3 text-sm leading-relaxed shadow-hard-md",
+                "border-2 px-4 py-3 text-sm leading-relaxed shadow-hard-md",
                 variants[variant],
             )}
         >
-            <p className="whitespace-pre-wrap wrap-break-word">{children}</p>
-            {trailing}
+            {quote && <div className="mb-2">{quote}</div>}
+            <div className="flex items-center gap-2.5">
+                <p className="whitespace-pre-wrap wrap-break-word">{children}</p>
+                {trailing}
+            </div>
         </div>
     );
 }

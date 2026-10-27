@@ -4,9 +4,11 @@ import { apiSendMessage } from "./messagesApi";
 import { getErrorMessage } from "../../shared/apiError";
 import { useActiveConversationStore } from "../conversations/activeConversationStore";
 import { useConversationsStore } from "../conversations/conversationsStore";
+import type { ReplyTo } from "./types";
 
 export type PendingMessage = {
     content: string;
+    replyTo: ReplyTo | null;
     clientId: string;
 };
 
@@ -20,7 +22,7 @@ type MessageQueue = {
 type MessageSendState = {
     queues: Record<string, MessageQueue>; // by conversationId
 
-    send: (conversationId: string, content: string, clientId?: string) => void;
+    send: (conversationId: string, content: string, replyTo: ReplyTo | null, clientId?: string) => void;
     retry: (conversationId: string, clientId: string) => void;
     discard: (conversationId: string, clientId: string) => void;
     resolveByClientId: (conversationId: string, clientId: string) => void;
@@ -61,7 +63,7 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
                 }
             }
 
-            const message = await apiSendMessage(conversationId, next.content, next.clientId);
+            const message = await apiSendMessage(conversationId, next.content, next.replyTo?.seq ?? null, next.clientId);
 
             set((state) => {
                 const q = state.queues[conversationId];
@@ -104,19 +106,20 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
         }
     };
 
-    const send = (conversationId: string, content: string, clientId: string = crypto.randomUUID()) => {
+    const send = (conversationId: string, content: string, replyTo: ReplyTo | null, clientId: string = crypto.randomUUID()) => {
         set((state) => {
             if (!state.queues[conversationId]) {
                 state.queues[conversationId] = { queue: [], failed: [], status: "READY", error: null };
             }
-            state.queues[conversationId].queue.push({ content, clientId });
+            state.queues[conversationId].queue.push({ content, replyTo, clientId });
         });
 
         process(conversationId);
     };
 
+
     const retry = (conversationId: string, clientId: string) => {
-        let content: string | undefined;
+        let msg: PendingMessage | undefined;
 
         set((state) => {
             const q = state.queues[conversationId];
@@ -125,16 +128,16 @@ export const useMessageSendStore = create<MessageSendState>()(immer((set, get) =
             const idx = q.failed.findIndex((m) => m.clientId === clientId);
             if (idx === -1) return;
 
-            content = q.failed[idx].content;
+            msg = q.failed[idx];
             q.failed.splice(idx, 1);
         });
 
-        if (content) {
+        if (msg) {
             // DEV-ONLY: "!error" always fails by design
             // So bump it to "!!error" so retry can actually succeed
             // TODO: cleanup
-            const toSend = import.meta.env.DEV && content === "!error" ? "!!error" : content;
-            send(conversationId, toSend, clientId);
+            const toSend = import.meta.env.DEV && msg.content === "!error" ? "!!error" : msg.content;
+            send(conversationId, toSend, msg.replyTo, clientId);
         }
     };
 

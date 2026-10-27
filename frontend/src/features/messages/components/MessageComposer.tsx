@@ -1,37 +1,34 @@
-import { Ban, Send } from "lucide-react";
-import { useRef, useState } from "react";
+import { Ban, Reply, Send, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useActiveConversationStore } from "../../conversations/activeConversationStore";
 import { useMessageSendStore } from "../messageSendStore";
-import { useBlockedUsersStore } from "../../userRelations/blockedUsersStore";
 import { IconButton } from "../../../components/ui";
 import { MESSAGE_MAX_LENGTH } from "../../../shared/constants";
+import { useComposerLockedReason } from "../useComposerLockedReason";
+import { toOneLine } from "./ReplyQuote";
 
 export default function MessageComposer() {
     const conversationId = useActiveConversationStore((s) => s.conversation!.id);
-    const meta = useActiveConversationStore((s) => s.conversation!.meta);
-    const otherMembers = useActiveConversationStore((s) => s.conversation!.otherMembers);
-    const sendMessage = useMessageSendStore((s) => s.send);
+    const replyingTo = useActiveConversationStore((s) => s.conversation!.replyingTo);
+    const clearReplyingTo = useActiveConversationStore((s) => s.clearReplyingTo);
 
-    const blockedByMe = useBlockedUsersStore((s) =>
-        meta.type === "DIRECT" && !!s.blockedUsersById[otherMembers[0].userId]
-    );
+    const sendMessage = useMessageSendStore((s) => s.send);
 
     const [content, setContent] = useState("");
 
-    function getLockedReason() {
-        if (meta.type === "GROUP") {
-            return meta.isClosed ? "CHANNEL SEALED // NO NEW TRANSMISSIONS" : null;
-        }
-        // blockedByMe takes precedence over blockedMe
-        if (blockedByMe) return "LINK SEVERED // YOU BANISHED THIS SOUL";
-        if (meta.blockedMe) return "LINK DENIED // THIS SOUL REJECTS YOUR SIGNAL";
-        return null;
-    }
-
-    const lockedReason = getLockedReason();
+    const lockedReason = useComposerLockedReason();
     const canSend = !lockedReason && content.trim().length > 0;
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Clicking reply on a message jumps straight into typing.
+    // Keyed on seq so picking a different message re-focuses too.
+    const replySeq = replyingTo?.seq ?? null;
+    useEffect(() => {
+        if (replySeq !== null) {
+            textareaRef.current?.focus();
+        }
+    }, [replySeq]);
 
     function resizeTextarea() {
         const textarea = textareaRef.current;
@@ -52,9 +49,10 @@ export default function MessageComposer() {
         }
 
         const trimmed = content.trim().substring(0, MESSAGE_MAX_LENGTH);
-        sendMessage(conversationId, trimmed);
+        sendMessage(conversationId, trimmed, replyingTo);
 
         setContent("");
+        clearReplyingTo();
 
         requestAnimationFrame(() => {
             if (textareaRef.current) {
@@ -73,6 +71,29 @@ export default function MessageComposer() {
             ) : (
                 // actual input bar
                 <>
+                    {replyingTo && (
+                        <div className="mb-2 flex items-center gap-2 border-2 border-edge bg-pit py-1 pl-3 pr-1">
+                            <Reply size={14} strokeWidth={2.4} className="shrink-0 text-crimson" />
+
+                            <p className="min-w-0 flex-1 truncate text-xs text-muted">
+                                <span className="font-bold tracking-label text-faint">
+                                    REPLYING TO {replyingTo.senderName}
+                                </span>
+                                <span className="mx-1.5 text-dim">//</span>
+                                {toOneLine(replyingTo.content)}
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={clearReplyingTo}
+                                aria-label="Cancel reply"
+                                className="grid h-7 w-7 shrink-0 place-items-center text-faint transition-colors hover:text-crimson-bright focus-visible:text-crimson-bright"
+                            >
+                                <X size={14} strokeWidth={2.4} />
+                            </button>
+                        </div>
+                    )}
+
                     <div className="flex items-end gap-2">
                         <textarea
                             ref={textareaRef}
@@ -80,6 +101,12 @@ export default function MessageComposer() {
                             onChange={(e) => handleChange(e.target.value)}
                             maxLength={MESSAGE_MAX_LENGTH}
                             onKeyDown={(e) => {
+                                if (e.key === "Escape" && replyingTo) {
+                                    e.preventDefault();
+                                    clearReplyingTo();
+                                    return;
+                                }
+
                                 if (e.key !== "Enter" || e.shiftKey) return;
 
                                 // Mid-composition (Korean/Japanese/Chinese IME): this Enter commits the

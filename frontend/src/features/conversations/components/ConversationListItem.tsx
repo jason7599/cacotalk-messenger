@@ -1,9 +1,7 @@
 import { Users } from "lucide-react";
-import type { ConversationSummary } from "../types";
+import type { ConversationSummary, LastMessage } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
-import type { ChatMessage } from "../../messages/types";
 import { getEventMessagePreview } from "../../messages/formatters";
-import { useAuthStore } from "../../auth/authStore";
 import { Avatar, cn } from "../../../components/ui";
 import { formatUnreadCount, getUnreadCount } from "../conversationsStore";
 import { getConversationDisplayName } from "../displayName";
@@ -13,14 +11,12 @@ type ConversationListItemProps = {
 };
 
 export default function ConversationListItem({ conversation }: ConversationListItemProps) {
-    const myId = useAuthStore((s) => s.user!.userId);
-
     const setActiveConversation = useActiveConversationStore((s) => s.setActiveConversation);
     const isActive = useActiveConversationStore((s) => s.conversation?.id === conversation.id);
     const isLoading = useActiveConversationStore((s) => s.status === "LOADING" && s.loadingConversationId === conversation.id);
 
     const displayName = getConversationDisplayName(conversation);
-    const lastMessagePreview = getMessagePreview(conversation.lastMessage);
+    const lastMessagePreview = getLastMessagePreview(conversation.lastMessage);
     const timestamp = formatMessageTimestamp(conversation.lastMessage?.createdAt ?? conversation.createdAt);
 
     const unreadCount = getUnreadCount(conversation);
@@ -36,11 +32,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
 
     let lastMessageSenderName: string | null = null;
     if (conversation.lastMessage?.type === "USER") {
-        if (conversation.lastMessage.senderId === myId) {
-            lastMessageSenderName = "YOU";
-        } else {
-            lastMessageSenderName = conversation.lastMessage.senderName;
-        }
+        lastMessageSenderName = conversation.lastMessage.senderName;
     }
 
     return (
@@ -101,7 +93,7 @@ export default function ConversationListItem({ conversation }: ConversationListI
     );
 }
 
-function getMessagePreview(message: ChatMessage | null) {
+function getLastMessagePreview(message: LastMessage | null) {
     if (!message) {
         return "NO TRANSMISSIONS YET";
     }

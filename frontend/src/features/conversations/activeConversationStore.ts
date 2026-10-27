@@ -3,7 +3,7 @@ import { apiGetConversationDetail, apiLeaveConversation, apiMarkAsRead, apiResol
 import { getErrorMessage } from "../../shared/apiError";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
-import type { ChatMessage } from "../messages/types";
+import type { ChatMessage, ReplyTo } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 import { useConversationsStore } from "./conversationsStore";
 import { useAuthStore } from "../auth/authStore";
@@ -30,6 +30,8 @@ export type ActiveConversationState = {
     onGroupClosed: () => void;
     onAckConfirmed: (seq: number) => void; 
     catchUpReads: () => void;
+    setReplyingTo: (replyTo: ReplyTo) => void;
+    clearReplyingTo: () => void;
 };
 
 export const selectGroupCreator = (state: ActiveConversationState) => {
@@ -157,6 +159,11 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
 
             if (requestId !== myRequestId) return;
 
+            // A resync of the same conversation (e.g. after a reconnect) shouldn't
+            // throw away a reply the user is in the middle of composing.
+            const current = get().conversation;
+            const carriedReply = resync && current?.id === detail.id ? current.replyingTo : null;
+
             const me = useAuthStore.getState().user!;
             
             const meta: ConversationMeta =
@@ -185,7 +192,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                     myLastReadSeq: detail.myLastReadSeq,
                     loadingOlder: false,
                     loadOlderError: null,
-                    ackedSeq: detail.myLastReadSeq
+                    ackedSeq: detail.myLastReadSeq,
+                    replyingTo: carriedReply
                 },
                 status: "READY",
                 loadingConversationId: null,
@@ -381,6 +389,21 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
                 return state;
             }
             state.conversation.meta.isClosed = true;
+            state.conversation.replyingTo = null; // composer is locked now anyway
+        });
+    };
+
+    const setReplyingTo = (replyTo: ReplyTo) => {
+        set((state) => {
+            if (!state.conversation) return;
+            state.conversation.replyingTo = replyTo;
+        });
+    };
+
+    const clearReplyingTo = () => {
+        set((state) => {
+            if (!state.conversation) return;
+            state.conversation.replyingTo = null;
         });
     };
 
@@ -400,6 +423,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         onMemberRemoved,
         onGroupClosed,
         onAckConfirmed,
-        catchUpReads
+        catchUpReads,
+        setReplyingTo,
+        clearReplyingTo
     };
 }));

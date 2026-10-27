@@ -1,5 +1,9 @@
 import type { UserInfo } from "../../shared/types";
-import type { ChatMessage } from "../messages/types";
+import type { ChatMessage, EventMessage, ReplyTo, UserMessage } from "../messages/types";
+
+export type LastMessage =
+    | Omit<UserMessage, "conversationId" | "senderId" | "replyTo">
+    | Omit<EventMessage, "conversationId">;
 
 type SummaryBase = {
     id: string;
@@ -7,7 +11,7 @@ type SummaryBase = {
     memberCount: number;
     lastReadSeq: number;
     createdAt: string;
-    lastMessage: ChatMessage | null;
+    lastMessage: LastMessage | null;
 };
 
 export type ConversationType = "DIRECT" | "GROUP";
@@ -48,4 +52,5 @@ export type ActiveConversation = {
     loadingOlder: boolean;
     loadOlderError: string | null;
     ackedSeq: number; // highest seq confirmed acked (marked as read)
+    replyingTo: ReplyTo | null;
 };
