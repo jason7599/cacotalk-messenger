@@ -11,16 +11,27 @@
   "memberCount": number,
   "groupCreatorId": number | null,
   "lastReadSeq": number,
-  "createdAt": string,
-  "lastMessage": MessageResponse | null
+  "lastMessage": {
+    "seq": number,
+    "type": "USER" | "EVENT",
+    "senderName": string | null,
+    "content": string | null,
+    "event": EventMessage | null,
+    "createdAt": string
+  } | null,
+  "createdAt": string
 }
 ```
-- `membersPreview` contains the userId and usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user.
+- `membersPreview` contains the userId and usernames of at most 3 other members, in lexicographical order. It does not include the authenticated user. For direct conversations it always has exactly 1 entry.
 - `memberCount` does not include the authenticated user. e.g., A direct conversation has a `memberCount` of 1, not 2.
 - `groupCreatorId` is only used for group conversations and is `null` for direct conversations.
 - `lastReadSeq` is the highest conversation sequence the authenticated user has read.
   - A value of 0 means no messages have been read.
-- `lastMessage` uses the standard `MessageResponse` shape defined in the [Message API documentation](./message.md). It is `null` for an empty conversation (this only applies to `GET /conversations/{conversationId}/summary` — the bootstrap list endpoint never returns empty direct conversations, see below).
+- `lastMessage` is `null` for an empty conversation (this only applies to `GET /conversations/{conversationId}/summary` — the bootstrap list endpoint never returns empty direct conversations, see below).
+  - `lastMessage` is a lightweight preview for the sidebar, not a full `MessageResponse`. It omits reply information.
+  - For `USER` messages, `senderName` and `content` are set and `event` is `null`.
+  - For `EVENT` messages, `event` is set and `senderName` and `content` are `null`.
+  - `lastMessage.createdAt` is when that message was sent; the top-level `createdAt` is when the conversation was created.
 
 
 ### `ConversationDetail`

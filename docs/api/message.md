@@ -147,13 +147,13 @@ Same as Initial Message Load above.
 
 ## Send Message
 
-Sends a user message in a conversation.
+Sends a user message in a conversation, optionally as a reply to an earlier message.
 
 The authenticated user must be a member of the conversation and must currently be allowed to send messages. This means:
 - For DIRECT conversations, the other user has not blocked the user or vice versa.
 - For GROUP conversations, the conversation is not closed.
 
-This method is idempotent, and will not create additional messages on retries (matched by `clientId`).
+This method is idempotent, and will not create additional messages on retries (matched by `clientId`). A retry returns the originally created message as-is; any differences in the retried body are ignored. Retries do not count against the rate limit.
 
 Sending a message also implicitly marks it as read for the sender (see [Mark As Read](./conversation.md#mark-as-read)) — this is why your own sent messages never show up as unread in your other open sessions.
 
@@ -166,19 +166,29 @@ POST /conversations/{conversationId}/messages
 ```
 {
   "content": string,
+  "replyToSeq": number | null,
   "clientId": UUID string
 }
 ```
-- `content` must contain between 1 and 2000 characters after trimming.
+- `content` must contain between 1 and 2000 characters after trimming. Length is counted in UTF-16 code units (the same as JavaScript's `string.length`), so some emoji count as more than one character.
+- `replyToSeq` is optional. If set, it must be the `seq` of an existing `USER` message in the same conversation. Omit it or send `null` for a normal message.
 - `clientId` should be generated per new message, and reused only when retrying the exact same attempt.
 
 ### Response
 
 #### `201 Created`
-Returns the created (or already existing, if this was a retry with a previously-used `clientId`) `MessageResponse` object. On an actual new send, a `NEW_MESSAGE` realtime event (carrying this `clientId`) is also broadcast to all members — see [realtime docs](./realtime.md#new_message).
+Returns the created (or already existing, if this was a retry with a previously-used `clientId`) `MessageResponse` object. If the message is a reply, its `replyTo` field contains a preview of the parent message. On an actual new send, a `NEW_MESSAGE` realtime event (carrying this `clientId`) is also broadcast to all members — see [realtime docs](./realtime.md#new_message).
 
 #### `400 Bad Request` — `VALIDATION_ERROR`
-`content` is invalid (empty after trimming, or over 2000 characters).
+The request body is invalid:
+- `content` is empty after trimming, or over 2000 characters.
+- `replyToSeq` is not a positive number.
+
+#### `400 Bad Request` — `CANNOT_REPLY_TO_EVENT_MESSAGE`
+`replyToSeq` points to an `EVENT` message. Only `USER` messages can be replied to.
+
+#### `404 Not Found` — `MESSAGE_NOT_FOUND`
+`replyToSeq` does not match any message in this conversation.
 
 #### `409 Conflict` — `CANNOT_SEND_MESSAGE`
 One combined error code covers several distinct conditions, all collapsed into the same response on purpose so a client (or an attacker probing `clientId`s) can't distinguish them:
