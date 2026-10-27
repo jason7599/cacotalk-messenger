@@ -7,7 +7,6 @@ import com.jason7599.cacotalk.exceptions.ApiException;
 import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.EventMessageService;
 import com.jason7599.cacotalk.message.MessageEncryptionService;
-import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.UserService;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 import com.jason7599.cacotalk.userrelation.UserRelationService;
@@ -42,27 +41,24 @@ public class ConversationService {
 
     private ConversationSummary summaryFromProjection(ConversationSummary.Projection p) {
         return new ConversationSummary(
-                p.getConversationId(),
-                p.getConversationType(),
-                p.getMembersPreview() != null
-                    ? objectMapper.readValue(p.getMembersPreview(), new TypeReference<>() {})
-                    : List.of(),
-                p.getMemberCount(),
-                p.getGroupCreatorId(),
-                p.getLastReadSeq(),
-                p.getConversationCreatedAt(),
-                p.getLastSeq() > 0 ? new MessageResponse(
-                        p.getConversationId(),
-                        p.getLastSeq(),
-                        p.getLastMessageSenderId(),
-                        p.getLastMessageSenderName(),
-                        p.getLastMessageType(),
-                        eventMessageService.decode(p.getLastMessageEvent()),
-                        p.getLastMessageContent() != null
-                                ? messageEncryptionService.decrypt(p.getLastMessageContent())
-                                : null,
-                        p.getLastMessageCreatedAt()
-                ) : null
+            p.getConversationId(),
+            p.getConversationType(),
+            p.getMembersPreview() != null
+                ? objectMapper.readValue(p.getMembersPreview(), new TypeReference<>() {})
+                : List.of(),
+            p.getMemberCount(),
+            p.getGroupCreatorId(),
+            p.getLastReadSeq(),
+            p.getLastSeq() > 0
+                ? new ConversationSummary.LastMessage(
+                    p.getLastSeq(),
+                    p.getLastMessageType(),
+                    p.getLastMessageSenderName(),
+                    messageEncryptionService.decrypt(p.getLastMessageContent()),
+                    eventMessageService.decode(p.getLastMessageEvent()),
+                    p.getLastMessageCreatedAt()
+                ) : null,
+            p.getConversationCreatedAt()
         );
     }
 

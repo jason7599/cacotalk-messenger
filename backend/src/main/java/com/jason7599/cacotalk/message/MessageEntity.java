@@ -35,5 +35,7 @@ public class MessageEntity {
     @Column(insertable = false)
     private Instant createdAt;
 
+    private Long replyToSeq;
+
     private UUID clientId;
 }

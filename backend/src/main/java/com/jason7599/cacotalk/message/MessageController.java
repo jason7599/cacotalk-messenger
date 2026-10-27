@@ -38,6 +38,12 @@ public class MessageController {
             @PathVariable UUID conversationId,
             @RequestBody @Valid SendMessageRequest request
     ) {
-        return messageService.sendUserMessage(authUser.userId(), conversationId, request.content(), request.clientId());
+        return messageService.sendUserMessage(
+                authUser.userId(),
+                conversationId,
+                request.content(),
+                request.replyToSeq(),
+                request.clientId()
+        );
     }
 }

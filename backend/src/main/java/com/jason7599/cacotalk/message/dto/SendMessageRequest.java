@@ -2,6 +2,7 @@ package com.jason7599.cacotalk.message.dto;
 
 import com.jason7599.cacotalk.message.MessageRules;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
@@ -15,6 +16,9 @@ public record SendMessageRequest(
                 message = MessageRules.MESSAGE_LENGTH_MESSAGE
         )
         String content,
+
+        @Positive(message = "Reply target must be a valid message")
+        Long replyToSeq,
 
         @NotNull(message = "Client ID cannot be null")
         UUID clientId

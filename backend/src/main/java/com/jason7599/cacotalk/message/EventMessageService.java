@@ -37,6 +37,7 @@ public class EventMessageService {
                 MessageType.EVENT.name(),
                 encode(eventMessage),
                 null,
+                null,
                 null
         );
 
@@ -47,6 +48,7 @@ public class EventMessageService {
                 null,
                 MessageType.EVENT,
                 eventMessage,
+                null,
                 null,
                 inserted.getCreatedAt()
         );

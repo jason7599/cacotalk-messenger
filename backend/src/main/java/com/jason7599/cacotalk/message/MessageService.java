@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -55,6 +56,12 @@ public class MessageService {
                 p.getContent() != null
                         ? messageEncryptionService.decrypt(p.getContent())
                         : null,
+                p.getReplyToSeq() != null
+                        ? new MessageResponse.ReplyTo(
+                                p.getReplyToSeq(),
+                                p.getReplyToSenderName(),
+                                messageEncryptionService.decrypt(p.getReplyToContent())
+                        ) : null,
                 p.getCreatedAt()
         );
     }
@@ -98,6 +105,7 @@ public class MessageService {
             long userId,
             UUID conversationId,
             String content,
+            Long replyToSeq,
             UUID clientId
     ) {
         // This also includes the membership check
@@ -105,40 +113,46 @@ public class MessageService {
             throw new ApiException(ApiErrorCodes.CANNOT_SEND_MESSAGE);
         }
 
-        @SuppressWarnings("OptionalGetWithoutIsPresent")
         // SAFE: given userId passed not only AuthenticationFilter, but also requireMembership, which is FK-backed.
-        String username = userService.findById(userId).get().username();
+        String username = userService.findById(userId).orElseThrow().username();
 
         // Idempotent, found existing by clientId
-        MessageEntity existing = messageRepository.findByClientId(clientId).orElse(null);
+        MessageResponse.Projection existing = messageRepository.getProjectionByClientId(clientId).orElse(null);
         if (existing != null) {
             // This would actually be a concerning scenario.
             // clientId collision, but the request not matching the existing message.
             // Either it's an actual, one in a GAZILLION uuid collision, or
             // it means a malicious actor is probing for existing clientIds.
             // Either way, an error is thrown so no big damage will be done
-            if (!existing.getSenderId().equals(userId) || !existing.getId().conversationId().equals(conversationId)) {
+            if (!Objects.equals(userId, existing.getSenderId()) || !conversationId.equals(existing.getConversationId())) {
                 log.warn("clientId collision: user {} submitted clientId {} already owned by sender {} in conversation {}",
-                        userId, clientId, existing.getSenderId(), existing.getId().conversationId());
+                        userId, clientId, existing.getSenderId(), existing.getConversationId());
 
                 throw new ApiException(ApiErrorCodes.CANNOT_SEND_MESSAGE);
             }
 
             // If the request matches with the existing value
-            return new MessageResponse(
-                    conversationId,
-                    existing.getId().seq(),
-                    userId,
-                    username,
-                    MessageType.USER,
-                    null,
-                    messageEncryptionService.decrypt(existing.getContent()),
-                    existing.getCreatedAt()
-            );
+            return fromProjection(existing);
         }
 
         if (!messageRateLimiter.tryConsume(userId)) {
             throw new ApiException(ApiErrorCodes.RATE_LIMITED);
+        }
+
+        MessageResponse.ReplyTo replyTo = null;
+        if (replyToSeq != null) {
+            MessageResponse.Projection replyToMessage = messageRepository.getProjection(conversationId, replyToSeq)
+                    .orElseThrow(() -> new ApiException(ApiErrorCodes.MESSAGE_NOT_FOUND));
+
+            if (replyToMessage.getType() != MessageType.USER) {
+                throw new ApiException(ApiErrorCodes.CANNOT_REPLY_TO_EVENT_MESSAGE);
+            }
+
+            replyTo = new MessageResponse.ReplyTo(
+                    replyToMessage.getSeq(),
+                    replyToMessage.getReplyToSenderName(),
+                    messageEncryptionService.decrypt(replyToMessage.getContent())
+            );
         }
 
         // Fails explicitly on clientId conflict.
@@ -150,6 +164,7 @@ public class MessageService {
                 MessageType.USER.name(),
                 null,
                 messageEncryptionService.encrypt(content),
+                replyToSeq,
                 clientId
         );
 
@@ -170,6 +185,7 @@ public class MessageService {
                 MessageType.USER,
                 null,
                 content,
+                replyTo,
                 inserted.getCreatedAt()
         );
 

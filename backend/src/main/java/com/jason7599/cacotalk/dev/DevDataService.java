@@ -136,12 +136,18 @@ public class DevDataService {
                 message = message.substring(0, 2000);
             }
 
+            Long replyToSeq = null;
+            if (seq > 1 && RANDOM.nextInt(10) == 1) {
+                replyToSeq = RANDOM.nextLong(0, seq);
+            }
+
             messageRepository.insertMessage(
                     conversationId,
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
                     MessageType.USER.name(),
                     null,
                     messageEncryptionService.encrypt(message),
+                    replyToSeq,
                     UUID.randomUUID()
             );
         }

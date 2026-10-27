@@ -1,8 +1,8 @@
 package com.jason7599.cacotalk.conversation.dto;
 
 import com.jason7599.cacotalk.conversation.ConversationType;
+import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.MessageType;
-import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.user.dto.UserResponse;
 
 import java.time.Instant;
@@ -12,18 +12,22 @@ import java.util.UUID;
 public record ConversationSummary(
         UUID id,
         ConversationType type,
-
-        List<UserResponse> membersPreview,// preview list of other users. excludes requesting user. Should be size 1 for DIRECT
-        int memberCount, // exclude user
-
-        Long groupCreatorId, // GROUP type only
-
+        List<UserResponse> membersPreview,  // preview list of members, excluding the requesting user. Should be size 1 for DIRECT
+        int memberCount,                    // exclude user
+        Long groupCreatorId,                // GROUP type only
         long lastReadSeq,
-
-        Instant createdAt,
-
-        MessageResponse lastMessage
+        LastMessage lastMessage,
+        Instant createdAt
 ) {
+    public record LastMessage(
+            long seq,
+            MessageType type,
+            String senderName,
+            String content,
+            EventMessage event,
+            Instant createdAt
+    ) {}
+
     public interface Projection {
         UUID getConversationId();
         ConversationType getConversationType();
@@ -32,12 +36,12 @@ public record ConversationSummary(
         Long getGroupCreatorId();
         long getLastSeq();
         long getLastReadSeq();
-        Instant getConversationCreatedAt();
-        Long getLastMessageSenderId();
-        String getLastMessageSenderName();
         MessageType getLastMessageType();
-        String getLastMessageEvent();
+        String getLastMessageSenderName();
         byte[] getLastMessageContent();
+        String getLastMessageEvent();
         Instant getLastMessageCreatedAt();
+        Instant getConversationCreatedAt();
+
     }
 }

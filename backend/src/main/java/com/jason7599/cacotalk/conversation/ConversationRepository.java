@@ -25,15 +25,15 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
             c.last_seq,
             me.last_read_seq,
 
-            c.created_at AS conversationCreatedAt,
-
             lm.sender_id AS lastMessageSenderId,
             lms.username AS lastMessageSenderName,
 
             lm.type AS lastMessageType,
             lm.event AS lastMessageEvent,
             lm.content AS lastMessageContent,
-            lm.created_at AS lastMessageCreatedAt
+            lm.created_at AS lastMessageCreatedAt,
+
+            c.created_at AS conversationCreatedAt
 
         FROM conversation_members me
         JOIN conversations c

@@ -50,6 +50,10 @@ public class MessageEncryptionService {
     }
 
     public String decrypt(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 

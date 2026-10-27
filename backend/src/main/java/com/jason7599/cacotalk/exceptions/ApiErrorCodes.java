@@ -37,6 +37,8 @@ public enum ApiErrorCodes {
     // Message
     // This includes both clientId collision/probe, and block status/closed
     CANNOT_SEND_MESSAGE(HttpStatus.CONFLICT, "Cannot send a message in this conversation"),
+    MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "Message not found"),
+    CANNOT_REPLY_TO_EVENT_MESSAGE(HttpStatus.BAD_REQUEST, "Cannot reply to event messages"),
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Rate limited"),
     ;
 

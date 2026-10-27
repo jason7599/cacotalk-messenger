@@ -14,8 +14,15 @@ public record MessageResponse(
         MessageType type,
         EventMessage event,
         String content,
+        ReplyTo replyTo,
         Instant createdAt
 ) {
+    public record ReplyTo(
+            long seq,
+            String senderName,
+            String content
+    ) {}
+
     public interface Projection {
         UUID getConversationId();
         long getSeq();
@@ -24,6 +31,9 @@ public record MessageResponse(
         MessageType getType();
         String getEvent(); // raw json string
         byte[] getContent();
+        Long getReplyToSeq();
+        String getReplyToSenderName();
+        byte[] getReplyToContent();
         Instant getCreatedAt();
     }
 }

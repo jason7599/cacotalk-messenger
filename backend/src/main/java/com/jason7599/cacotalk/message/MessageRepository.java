@@ -18,11 +18,17 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             m.type,
             m.event,
             m.content,
+            m.reply_to_seq,
+            rtu.username AS replyToSenderName,
+            rtm.content AS replyToContent,
             m.created_at
         FROM messages m
         LEFT JOIN users u
             ON m.sender_id = u.id
-        WHERE m.conversation_id = :conversationId
+        LEFT JOIN messages rtm
+            ON m.reply_to_seq = rtm.seq AND m.conversation_id = rtm.conversation_id
+        LEFT JOIN users rtu
+            ON rtm.sender_id = rtu.id
     """;
 
     /**
@@ -34,6 +40,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         SELECT *
         FROM ("""
             + MESSAGE_SELECT + """
+            WHERE m.conversation_id = :conversationId
                 AND m.seq > :lastReadSeq - :contextSize
             ORDER BY m.seq DESC
             LIMIT :initialLoadLimit
@@ -51,6 +58,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         SELECT *
         FROM ("""
             + MESSAGE_SELECT + """
+            WHERE m.conversation_id = :conversationId
                 AND m.seq < :beforeSeq
             ORDER BY m.seq DESC
             LIMIT :pageSize
@@ -58,6 +66,17 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
         ORDER BY x.seq ASC
     """, nativeQuery = true)
     List<MessageResponse.Projection> fetchOlderMessages(UUID conversationId, long beforeSeq, int pageSize);
+
+    @Query(value = MESSAGE_SELECT + """
+        WHERE m.client_id = :clientId
+    """, nativeQuery = true)
+    Optional<MessageResponse.Projection> getProjectionByClientId(UUID clientId);
+
+    @Query(value = MESSAGE_SELECT + """
+        WHERE m.conversation_id = :conversationId
+            AND m.seq = :seq
+    """, nativeQuery = true)
+    Optional<MessageResponse.Projection> getProjection(UUID conversationId, long seq);
 
     /**
      * Atomically increment conversations.last_seq and inserts the message.
@@ -80,6 +99,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             type,
             event,
             content,
+            reply_to_seq,
             client_id
         )
         SELECT
@@ -89,6 +109,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             :messageType,
             CAST(:eventData AS JSONB),
             :content,
+            :replyToSeq,
             :clientId
         FROM next_seq
         RETURNING *
@@ -99,8 +120,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             String messageType,
             String eventData,
             byte[] content,
+            Long replyToSeq,
             UUID clientId
     );
-
-    Optional<MessageEntity> findByClientId(UUID clientId);
 }
