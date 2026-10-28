@@ -1,9 +1,5 @@
 import type { UserInfo } from "../../shared/types";
-import type { ChatMessage, EventMessage, ReplyTo, UserMessage } from "../messages/types";
-
-export type LastMessage =
-    | Omit<UserMessage, "conversationId" | "senderId" | "replyTo">
-    | Omit<EventMessage, "conversationId">;
+import type { ChatMessage, LastMessage, ReplyTo } from "../messages/types";
 
 type SummaryBase = {
     id: string;

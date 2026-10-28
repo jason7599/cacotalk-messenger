@@ -221,7 +221,7 @@ public class MessageService {
         if (messageRepository.upsertReaction(conversationId, messageSeq, userId, type.name()) != 0) {
             realtimeEventPublisher.broadcast(
                     conversationId,
-                    new RealtimeEvent.ReactionChanged(
+                    new RealtimeEvent.ReactionSet(
                             conversationId,
                             messageSeq,
                             new MessageResponse.Reaction(

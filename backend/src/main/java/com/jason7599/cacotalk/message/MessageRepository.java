@@ -24,10 +24,16 @@ public interface MessageRepository extends JpaRepository<MessageEntity, MessageE
             rtm.content AS replyToContent,
             (
                 SELECT COALESCE (
-                    json_agg(json_build_object('userId', mr.user_id, 'reaction', mr.reaction)),
+                    json_agg(json_build_object(
+                        'userId', mr.user_id,
+                        'username', ru.username,
+                        'type', mr.reaction
+                    )),
                     '[]'
                 )
                 FROM message_reactions mr
+                JOIN users ru
+                    ON mr.user_id = ru.id
                 WHERE mr.conversation_id = m.conversation_id
                     AND mr.message_seq = m.seq
             ) AS reactions,

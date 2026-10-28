@@ -24,7 +24,12 @@ export type ApiErrorCode =
     | "GROUP_CLOSED"
 
     | "CANNOT_SEND_MESSAGE"
+    | "MESSAGE_NOT_FOUND"
+    | "CANNOT_REPLY_TO_EVENT_MESSAGE"
     | "RATE_LIMITED"
+
+    | "CANNOT_ADD_REACTION"
+    | "CANNOT_REMOVE_REACTION"
 ;
 
 export type ApiErrorResponse = {

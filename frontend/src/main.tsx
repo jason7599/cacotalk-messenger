@@ -8,6 +8,7 @@ createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<ModalProvider>
 			<App />
+
 			{import.meta.env.DEV && (
 				<div
 					aria-hidden="true"

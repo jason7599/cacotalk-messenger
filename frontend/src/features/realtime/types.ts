@@ -1,5 +1,5 @@
 import type { UserInfo } from "../../shared/types";
-import type { ChatMessage } from "../messages/types";
+import type { ChatMessage, MessageReaction } from "../messages/types";
 
 export type RealtimeEvent = 
     | { type: "NEW_MESSAGE"; message: ChatMessage; clientId?: string; }
@@ -14,4 +14,6 @@ export type RealtimeEvent =
         newMemberCount: number; }
     | { type: "GROUP_CLOSED"; conversationId: string; }
     | { type: "MARKED_AS_READ"; conversationId: string; seq: number; }
+    | { type: "REACTION_SET"; conversationId: string; messageSeq: number; reaction: MessageReaction; }
+    | { type: "REACTION_REMOVED"; conversationId: string; messageSeq: number; userId: number; }
 ;

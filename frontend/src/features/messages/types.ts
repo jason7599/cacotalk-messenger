@@ -1,4 +1,5 @@
 import type { UserInfo } from "../../shared/types";
+import type { ReactionType } from "./reactions";
 
 type MessageBase = {
     conversationId: string;
@@ -12,13 +13,26 @@ export type ReplyTo = {
     content: string;
 };
 
+export type MessageReaction = {
+    userId: number;
+    username: string;
+    type: ReactionType;
+};
+
 export type UserMessage = MessageBase & {
     type: "USER";
     senderId: number;
     senderName: string;
     content: string;
     replyTo: ReplyTo | null;
+    reactions: MessageReaction[];
 };
+
+// for conversation summary
+export type LastMessage =
+    | Omit<UserMessage, "conversationId" | "senderId" | "replyTo" | "reactions">
+    | Omit<EventMessage, "conversationId">
+;
 
 export type EventData =
     | { type: "GROUP_CREATED"; initMembers: UserInfo[] }
