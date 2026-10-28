@@ -2,13 +2,14 @@ package com.jason7599.cacotalk.message;
 
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
+public interface MessageRepository extends JpaRepository<MessageEntity, MessageEntity.Id> {
     String MESSAGE_SELECT = """
         SELECT
             m.conversation_id,
@@ -21,6 +22,15 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             m.reply_to_seq,
             rtu.username AS replyToSenderName,
             rtm.content AS replyToContent,
+            (
+                SELECT COALESCE (
+                    json_agg(json_build_object('userId', mr.user_id, 'reaction', mr.reaction)),
+                    '[]'
+                )
+                FROM message_reactions mr
+                WHERE mr.conversation_id = m.conversation_id
+                    AND mr.message_seq = m.seq
+            ) AS reactions,
             m.created_at
         FROM messages m
         LEFT JOIN users u
@@ -123,4 +133,25 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             Long replyToSeq,
             UUID clientId
     );
+
+    @Modifying
+    @Query(value = """
+        INSERT INTO message_reactions (conversation_id, message_seq, user_id, reaction)
+        SELECT :conversationId, :messageSeq, :userId, :reactionType
+        FROM messages
+        WHERE conversation_id = :conversationId AND seq = :messageSeq AND type = 'USER' -- only insert if a row with this condition is found in messages
+        ON CONFLICT (conversation_id, message_seq, user_id)
+        DO UPDATE SET reaction = EXCLUDED.reaction -- replace
+        WHERE message_reactions.reaction <> EXCLUDED.reaction -- explicitly no-op if same value, needed because whether to broadcast a reaction event depends on it
+    """, nativeQuery = true)
+    int upsertReaction(UUID conversationId, long messageSeq, long userId, String reactionType);
+
+    @Modifying
+    @Query(value = """
+        DELETE FROM message_reactions
+        WHERE conversation_id = :conversationId
+            AND message_seq = :messageSeq
+            AND user_id = :userId
+    """, nativeQuery = true)
+    int removeReaction(UUID conversationId, long messageSeq, long userId);
 }

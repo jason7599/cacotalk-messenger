@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -50,6 +51,7 @@ public class EventMessageService {
                 eventMessage,
                 null,
                 null,
+                List.of(),
                 inserted.getCreatedAt()
         );
 

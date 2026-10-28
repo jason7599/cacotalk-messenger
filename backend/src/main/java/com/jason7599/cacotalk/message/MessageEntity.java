@@ -18,8 +18,15 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MessageEntity {
 
+    @Embeddable
+    public record Id(
+        UUID conversationId,
+        long seq
+    ) {
+    }
+
     @EmbeddedId
-    private MessageId id;
+    private Id id;
 
     private Long senderId;
 

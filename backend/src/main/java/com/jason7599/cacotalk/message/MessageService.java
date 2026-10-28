@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +35,9 @@ public class MessageService {
     private static final int INITIAL_LOAD_LIMIT = 500;
 
     private final MessageRepository messageRepository;
-
     private final MessageEncryptionService messageEncryptionService;
+    private final ObjectMapper objectMapper;
+
     private final MessageRateLimiter messageRateLimiter;
 
     private final ConversationService conversationService;
@@ -62,6 +65,9 @@ public class MessageService {
                                 p.getReplyToSenderName(),
                                 messageEncryptionService.decrypt(p.getReplyToContent())
                         ) : null,
+                p.getReactions() != null
+                        ? objectMapper.readValue(p.getReactions(), new TypeReference<>() {})
+                        : List.of(),
                 p.getCreatedAt()
         );
     }
@@ -186,6 +192,7 @@ public class MessageService {
                 null,
                 content,
                 replyTo,
+                List.of(),
                 inserted.getCreatedAt()
         );
 
@@ -195,5 +202,58 @@ public class MessageService {
         );
 
         return message;
+    }
+
+    @Transactional
+    public void addReaction(
+            UUID conversationId,
+            long messageSeq,
+            long userId,
+            MessageReactionType type
+    ) {
+        // Follows the same rule as sending messages
+        // Again, TOCTOU, but the worst case scenario is trivial enough to allow, and overkill to guard against
+        if (!conversationService.canSendMessage(conversationId, userId)) {
+            throw new ApiException(ApiErrorCodes.CANNOT_ADD_REACTION);
+        }
+
+        // idempotent
+        if (messageRepository.upsertReaction(conversationId, messageSeq, userId, type.name()) != 0) {
+            realtimeEventPublisher.broadcast(
+                    conversationId,
+                    new RealtimeEvent.ReactionChanged(
+                            conversationId,
+                            messageSeq,
+                            new MessageResponse.Reaction(
+                                    userId,
+                                    userService.findById(userId).orElseThrow().username(), // SAFE
+                                    type
+                            )
+                    )
+            );
+        }
+    }
+
+    @Transactional
+    public void removeReaction(
+            UUID conversationId,
+            long messageSeq,
+            long userId
+    ) {
+        // No changes allowed whatsoever
+        if (!conversationService.canSendMessage(conversationId, userId)) {
+            throw new ApiException(ApiErrorCodes.CANNOT_REMOVE_REACTION);
+        }
+
+        if (messageRepository.removeReaction(conversationId, messageSeq, userId) != 0) {
+            realtimeEventPublisher.broadcast(
+                    conversationId,
+                    new RealtimeEvent.ReactionRemoved(
+                            conversationId,
+                            messageSeq,
+                            userId
+                    )
+            );
+        }
     }
 }

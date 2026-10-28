@@ -40,6 +40,10 @@ public enum ApiErrorCodes {
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "Message not found"),
     CANNOT_REPLY_TO_EVENT_MESSAGE(HttpStatus.BAD_REQUEST, "Cannot reply to event messages"),
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Rate limited"),
+
+    // Reactions
+    CANNOT_ADD_REACTION(HttpStatus.CONFLICT, "Cannot react to this message"),
+    CANNOT_REMOVE_REACTION(HttpStatus.CONFLICT, "Cannot remove reaction"),
     ;
 
     private final HttpStatus status;

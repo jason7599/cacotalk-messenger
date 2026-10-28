@@ -1,6 +1,7 @@
 package com.jason7599.cacotalk.message;
 
 import com.jason7599.cacotalk.auth.AuthUser;
+import com.jason7599.cacotalk.message.dto.AddReactionRequest;
 import com.jason7599.cacotalk.message.dto.MessagePage;
 import com.jason7599.cacotalk.message.dto.MessageResponse;
 import com.jason7599.cacotalk.message.dto.SendMessageRequest;
@@ -44,6 +45,36 @@ public class MessageController {
                 request.content(),
                 request.replyToSeq(),
                 request.clientId()
+        );
+    }
+
+    @PutMapping("/{messageSeq}/reaction")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setReaction(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId,
+            @PathVariable long messageSeq,
+            @RequestBody @Valid AddReactionRequest request
+    ) {
+        messageService.addReaction(
+                conversationId,
+                messageSeq,
+                authUser.userId(),
+                request.reactionType()
+        );
+    }
+
+    @DeleteMapping("/{messageSeq}/reaction")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeReaction(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable UUID conversationId,
+            @PathVariable long messageSeq
+    ) {
+        messageService.removeReaction(
+                conversationId,
+                messageSeq,
+                authUser.userId()
         );
     }
 }

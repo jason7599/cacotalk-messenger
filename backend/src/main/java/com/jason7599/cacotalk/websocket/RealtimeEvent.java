@@ -19,6 +19,8 @@ public sealed interface RealtimeEvent {
         MEMBERS_ADDED,
         GROUP_CLOSED,
         MARKED_AS_READ,
+        REACTION_CHANGED,
+        REACTION_REMOVED,
     }
 
     Type type();
@@ -91,4 +93,13 @@ public sealed interface RealtimeEvent {
     record MarkedAsRead(UUID conversationId, long seq) implements RealtimeEvent {
         @Override public Type type() { return Type.MARKED_AS_READ; }
     }
+
+    record ReactionChanged(UUID conversationId, long messageSeq, MessageResponse.Reaction reaction) implements RealtimeEvent {
+        @Override public Type type() { return Type.REACTION_CHANGED; }
+    }
+
+    record ReactionRemoved(UUID conversationId, long messageSeq, long userId) implements RealtimeEvent {
+        @Override public Type type() { return Type.REACTION_REMOVED; }
+    }
+
 }

@@ -2,8 +2,10 @@ package com.jason7599.cacotalk.message.dto;
 
 import com.jason7599.cacotalk.message.EventMessage;
 import com.jason7599.cacotalk.message.MessageType;
+import com.jason7599.cacotalk.message.MessageReactionType;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record MessageResponse(
@@ -15,8 +17,16 @@ public record MessageResponse(
         EventMessage event,
         String content,
         ReplyTo replyTo,
+        List<Reaction> reactions,
         Instant createdAt
 ) {
+    public record Reaction(
+            long userId,
+            String username,
+            MessageReactionType type
+    ) {
+    }
+
     public record ReplyTo(
             long seq,
             String senderName,
@@ -34,6 +44,7 @@ public record MessageResponse(
         Long getReplyToSeq();
         String getReplyToSenderName();
         byte[] getReplyToContent();
+        String getReactions(); // raw json array
         Instant getCreatedAt();
     }
 }
