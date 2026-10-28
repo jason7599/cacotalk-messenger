@@ -1,9 +1,7 @@
 package com.jason7599.cacotalk.dev;
 
 import com.jason7599.cacotalk.conversation.ConversationRepository;
-import com.jason7599.cacotalk.message.MessageEncryptionService;
-import com.jason7599.cacotalk.message.MessageRepository;
-import com.jason7599.cacotalk.message.MessageType;
+import com.jason7599.cacotalk.message.*;
 import com.jason7599.cacotalk.user.UserEntity;
 import com.jason7599.cacotalk.user.UserRepository;
 import com.jason7599.cacotalk.user.dto.UserResponse;
@@ -112,6 +110,11 @@ public class DevDataService {
         return created;
     }
 
+    private static final double REPLY_CHANCE = 0.1;
+    private static final int MAX_REPLY_DISTANCE = 15;       // how far away of a message can a message reply to
+    private static final double REACTION_CHANCE = 0.2;      // how often a message gets reactions at all
+    private static final double REACTOR_CHANCE = 0.4;       // each member's chance to react on such messages
+
     @Transactional
     public long seedMessages(UUID conversationId, int messageCount) {
         if (messageCount <= 0) {
@@ -125,23 +128,26 @@ public class DevDataService {
             throw new IllegalStateException("Conversation has no members");
         }
 
-        long seq = conversationRepository.findById(conversationId)
+        long startSeq = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"))
                 .getLastSeq();
+        long seq = startSeq;
+
+        final MessageReactionType[] reactionTypes = MessageReactionType.values();
 
         while (messageCount-- > 0) {
-
-            String message = ++seq + " " + DevDataFaker.message();
-            if (message.length() > 2000) {
-                message = message.substring(0, 2000);
+            String message = seq + 1 + " " + DevDataFaker.message();
+            if (message.length() > MessageRules.MESSAGE_MAX_LENGTH) {
+                message = message.substring(0, MessageRules.MESSAGE_MAX_LENGTH);
             }
 
             Long replyToSeq = null;
-            if (seq > 1 && RANDOM.nextInt(10) == 1) {
-                replyToSeq = RANDOM.nextLong(0, seq);
+            if (seq > startSeq && RANDOM.nextDouble() < REPLY_CHANCE) {
+                long from = Math.max(startSeq + 1, seq - MAX_REPLY_DISTANCE + 1);
+                replyToSeq = from + RANDOM.nextLong(seq - from + 1);
             }
 
-            messageRepository.insertMessage(
+            if (++seq != messageRepository.insertMessage(
                     conversationId,
                     memberIds.get(RANDOM.nextInt(memberIds.size())),
                     MessageType.USER.name(),
@@ -149,7 +155,22 @@ public class DevDataService {
                     messageEncryptionService.encrypt(message),
                     replyToSeq,
                     UUID.randomUUID()
-            );
+            ).getId().seq()) {
+                throw new RuntimeException("Conversation modified while seeding. Rolling back");
+            }
+
+            if (RANDOM.nextDouble() < REACTION_CHANCE) {
+                for (long memberId : memberIds) {
+                    if (RANDOM.nextDouble() < REACTOR_CHANCE) {
+                        messageRepository.upsertReaction(
+                                conversationId,
+                                seq,
+                                memberId,
+                                reactionTypes[RANDOM.nextInt(reactionTypes.length)].name()
+                        );
+                    }
+                }
+            }
         }
 
         for (long memberId : memberIds) {
