@@ -3,7 +3,7 @@ import { apiGetConversationDetail, apiLeaveConversation, apiMarkAsRead, apiResol
 import { getErrorMessage } from "../../shared/apiError";
 import { apiLoadMessages } from "../messages/messagesApi";
 import type { ActiveConversation, ConversationMeta } from "./types";
-import type { ChatMessage, ReplyTo } from "../messages/types";
+import type { ChatMessage, MessageReaction, ReplyTo } from "../messages/types";
 import { immer } from "zustand/middleware/immer";
 import { useConversationsStore } from "./conversationsStore";
 import { useAuthStore } from "../auth/authStore";
@@ -32,6 +32,8 @@ export type ActiveConversationState = {
     catchUpReads: () => void;
     setReplyingTo: (replyTo: ReplyTo) => void;
     clearReplyingTo: () => void;
+    onReactionSet: (messageSeq: number, reaction: MessageReaction) => void;
+    onReactionRemoved: (messageSeq: number, userId: number) => void;
 };
 
 export const selectGroupCreator = (state: ActiveConversationState) => {
@@ -407,6 +409,32 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         });
     };
 
+    const onReactionSet = (messageSeq: number, reaction: MessageReaction) => {
+        set((state) => {
+            const message = state.conversation?.messages.find((m) => m.seq === messageSeq);
+            // not loaded (older page not fetched yet)
+            // BE enforces reactions be set only on USER messages but lets keep the linter happy
+            if (!message || message.type !== "USER") return;
+
+            // one reaction per user: replace theirs if it exists, otherwise add
+            const i = message.reactions.findIndex((r) => r.userId === reaction.userId);
+            if (i === -1) {
+                message.reactions.push(reaction);
+            } else {
+                message.reactions[i] = reaction;
+            }
+        });
+    };
+
+    const onReactionRemoved = (messageSeq: number, userId: number) => {
+        set((state) => {
+            const message = state.conversation?.messages.find((m) => m.seq === messageSeq);
+            if (!message || message.type !== "USER") return;
+
+            message.reactions = message.reactions.filter((r) => r.userId !== userId);
+        });
+    };
+
     return {
         status: "IDLE",
         error: null,
@@ -425,6 +453,8 @@ export const useActiveConversationStore = create<ActiveConversationState>()(imme
         onAckConfirmed,
         catchUpReads,
         setReplyingTo,
-        clearReplyingTo
+        clearReplyingTo,
+        onReactionSet,
+        onReactionRemoved
     };
 }));

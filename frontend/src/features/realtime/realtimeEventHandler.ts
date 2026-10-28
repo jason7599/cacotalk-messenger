@@ -4,7 +4,7 @@ import { useActiveConversationStore } from "../conversations/activeConversationS
 import { useConversationsStore } from "../conversations/conversationsStore";
 import { useMessageSendStore } from "../messages/messageSendStore";
 import { notifyIncoming } from "../notifications/notifyIncoming";
-import type { ChatMessage } from "../messages/types";
+import type { ChatMessage, MessageReaction } from "../messages/types";
 import { useBlockedUsersStore } from "../userRelations/blockedUsersStore";
 import { useContactsStore } from "../userRelations/contactsStore";
 import type { RealtimeEvent } from "./types";
@@ -19,6 +19,8 @@ export function handleRealtimeEvent(event: RealtimeEvent) {
         case "MEMBER_REMOVED": return handleMemberRemoved(event);
         case "GROUP_CLOSED": return handleGroupClosed(event.conversationId);
         case "MARKED_AS_READ": return handleMarkedAsRead(event.conversationId, event.seq);
+        case "REACTION_SET": return handleReactionSet(event.conversationId, event.messageSeq, event.reaction);
+        case "REACTION_REMOVED": return handleReactionRemoved(event.conversationId, event.messageSeq, event.userId);
     }
 }
 
@@ -103,5 +105,17 @@ function handleMarkedAsRead(conversationId: string, seq: number) {
     useConversationsStore.getState().updateLastReadSeq(conversationId, seq);
     if (useActiveConversationStore.getState().conversation?.id === conversationId) {
         useActiveConversationStore.getState().onAckConfirmed(seq);
+    }
+}
+
+function handleReactionSet(conversationId: string, messageSeq: number, reaction: MessageReaction) {
+    if (useActiveConversationStore.getState().conversation?.id === conversationId) {
+        useActiveConversationStore.getState().onReactionSet(messageSeq, reaction);
+    }
+}
+
+function handleReactionRemoved(conversationId: string, messageSeq: number, userId: number) {
+    if (useActiveConversationStore.getState().conversation?.id === conversationId) {
+        useActiveConversationStore.getState().onReactionRemoved(messageSeq, userId);
     }
 }
