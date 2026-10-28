@@ -1,10 +1,11 @@
 import { Users } from "lucide-react";
-import type { ConversationSummary, LastMessage } from "../types";
 import { useActiveConversationStore } from "../activeConversationStore";
 import { getEventMessagePreview } from "../../messages/formatters";
 import { Avatar, cn } from "../../../components/ui";
 import { formatUnreadCount, getUnreadCount } from "../conversationsStore";
 import { getConversationDisplayName } from "../displayName";
+import type { ConversationSummary } from "../types";
+import type { LastMessage } from "../../messages/types";
 
 type ConversationListItemProps = {
     conversation: ConversationSummary;
