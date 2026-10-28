@@ -8,8 +8,9 @@ type ReactionListProps = {
     myId: number;
     onToggle: (type: ReactionType) => void;
     /** Locked conversations: still show reactions, but they can't be changed. */
-    disabled?: boolean;
-    onShowAll?: () => void;
+    disabled: boolean;
+    onShowAll: () => void;
+    align: "start" | "end";
     className?: string;
 };
 
@@ -22,7 +23,7 @@ function formatNames(names: string[]): { shown: string; more: number } {
     return { shown: names.slice(0, MAX_NAMES).join(", "), more: names.length - MAX_NAMES };
 }
 
-export default function ReactionList({ reactions, myId, onToggle, disabled, onShowAll, className }: ReactionListProps) {
+export default function ReactionList({ reactions, myId, onToggle, disabled, onShowAll, align, className }: ReactionListProps) {
     const groups = REACTION_TYPES
         .map((type, order) => ({ type, order, users: reactions.filter((r) => r.type === type) }))
         .filter((g) => g.users.length > 0)
@@ -38,7 +39,9 @@ export default function ReactionList({ reactions, myId, onToggle, disabled, onSh
         <ul
             className={cn(
                 // a tray hanging off the bottom of the bubble: boxed, tucked up under it, inset from the edge
-                "relative mx-3 -mt-px flex w-max max-w-[calc(100%-1.5rem)] flex-col divide-y divide-edge",
+                "relative -mt-px flex w-max max-w-[calc(100%-1.5rem)] flex-col divide-y divide-edge",
+                // mine: pushed to the right edge of the bubble; theirs: the left
+                align === "end" ? "ml-auto mr-3" : "mx-3",
                 "border-2 border-t-0 border-edge bg-pit shadow-hard",
                 className,
             )}
@@ -75,7 +78,7 @@ export default function ReactionList({ reactions, myId, onToggle, disabled, onSh
             })}
 
             {/* viewing is always allowed, even when the conversation is locked */}
-            {hasHidden && onShowAll && (
+            {hasHidden && (
                 <li>
                     <button
                         type="button"

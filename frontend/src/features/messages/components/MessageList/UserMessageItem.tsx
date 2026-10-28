@@ -5,7 +5,7 @@ import { useActiveConversationStore } from "../../../conversations/activeConvers
 import { formatMessageTimestamp } from "../../formatters";
 import type { UserMessage } from "../../types";
 import type { ReactionType } from "../../reactions/reactions";
-import { apiRemoveReaction, apiSetReaction } from "../../messagesApi"; // ← rename to match your helpers
+import { apiRemoveReaction, apiSetReaction } from "../../messagesApi";
 import { useComposerLockedReason } from "../../useComposerLockedReason";
 import { Avatar, cn } from "../../../../components/ui";
 import MessageBubble from "./MessageBubble";
@@ -148,6 +148,7 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                         onToggle={toggleReaction}
                         disabled={!canInteract}
                         onShowAll={() => openModal(<ReactionsModal conversationId={message.conversationId} seq={message.seq} />)}
+                        align={isMine ? "end" : "start"}
                         className={isMine ? "justify-end" : undefined}
                     />
 
