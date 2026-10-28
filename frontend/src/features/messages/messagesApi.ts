@@ -1,5 +1,5 @@
 import api from "../../shared/apiClient";
-import type { ReactionType } from "./reactions";
+import type { ReactionType } from "./reactions/reactions";
 import type { MessagePage, UserMessage } from "./types";
 
 export async function apiLoadMessages(conversationId: string, before?: number): Promise<MessagePage> {

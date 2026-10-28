@@ -1,5 +1,5 @@
 import type { UserInfo } from "../../shared/types";
-import type { ReactionType } from "./reactions";
+import type { ReactionType } from "./reactions/reactions";
 
 type MessageBase = {
     conversationId: string;

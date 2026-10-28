@@ -4,14 +4,16 @@ import { useAuthStore } from "../../../auth/authStore";
 import { useActiveConversationStore } from "../../../conversations/activeConversationStore";
 import { formatMessageTimestamp } from "../../formatters";
 import type { UserMessage } from "../../types";
-import type { ReactionType } from "../../reactions";
+import type { ReactionType } from "../../reactions/reactions";
 import { apiRemoveReaction, apiSetReaction } from "../../messagesApi"; // ← rename to match your helpers
 import { useComposerLockedReason } from "../../useComposerLockedReason";
 import { Avatar, cn } from "../../../../components/ui";
 import MessageBubble from "./MessageBubble";
 import ReplyQuote from "../ReplyQuote";
-import ReactionPicker from "../ReactionPicker";
-import ReactionPills from "../ReactionPills";
+import ReactionPicker from "../../reactions/components/ReactionPicker";
+import ReactionList from "../../reactions/components/ReactionList";
+import { useModal } from "../../../../components/ModalProvider";
+import ReactionsModal from "../../reactions/components/ReactionsModal";
 
 type UserMessageItemProps = {
     message: UserMessage;
@@ -38,6 +40,8 @@ export default function UserMessageItem({ message, showSender = true, showTimest
     const reactButtonRef = useRef<HTMLButtonElement>(null);
 
     const myReaction = message.reactions.find((r) => r.userId === myId)?.type ?? null;
+
+    const { openModal } = useModal();
 
     // same reaction again = remove it, anything else = set/replace.
     // No optimistic update: the WS event (which we receive too) updates the store.
@@ -138,11 +142,12 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                         )}
                     </div>
 
-                    <ReactionPills
+                    <ReactionList
                         reactions={message.reactions}
                         myId={myId}
                         onToggle={toggleReaction}
                         disabled={!canInteract}
+                        onShowAll={() => openModal(<ReactionsModal conversationId={message.conversationId} seq={message.seq} />)}
                         className={isMine ? "justify-end" : undefined}
                     />
 

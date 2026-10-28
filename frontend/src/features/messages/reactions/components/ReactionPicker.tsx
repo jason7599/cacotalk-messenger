@@ -1,6 +1,6 @@
 // features/messages/components/ReactionPicker.tsx
 import { useEffect, useRef, useState, type RefObject } from "react";
-import { cn } from "../../../components/ui";
+import { cn } from "../../../../components/ui";
 import { REACTIONS, REACTION_TYPES, type ReactionType } from "../reactions";
 
 type ReactionPickerProps = {
