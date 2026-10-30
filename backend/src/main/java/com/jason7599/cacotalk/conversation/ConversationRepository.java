@@ -260,7 +260,12 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
     // Since this is hashed, there is possibility that unrelated requests end up colliding
     // But it's gonna be trivial.
     @Query(value = """
-        SELECT pg_advisory_xact_lock(hashtextextended(CAST(:conversationId AS TEXT), 0))
+        SELECT pg_advisory_xact_lock(
+            hashtextextended(
+                'group_invite:' || CAST(:conversationId AS TEXT),
+                0
+            )
+        )
     """, nativeQuery = true)
     void lockGroupInvite(UUID conversationId);
 
