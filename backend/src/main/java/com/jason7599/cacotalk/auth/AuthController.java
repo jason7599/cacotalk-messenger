@@ -3,17 +3,14 @@ package com.jason7599.cacotalk.auth;
 import com.jason7599.cacotalk.auth.dto.AuthUserResponse;
 import com.jason7599.cacotalk.auth.dto.LoginRequest;
 import com.jason7599.cacotalk.auth.dto.RegisterRequest;
+import com.jason7599.cacotalk.auth.session.SessionCookies;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,10 +18,7 @@ import java.time.Duration;
 public class AuthController {
 
     private final AuthService authService;
-
-    // dev override to false
-    @Value("${app.auth.session.cookie-secure}")
-    private boolean cookieSecure;
+    private final SessionCookies sessionCookies;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,7 +27,7 @@ public class AuthController {
             HttpServletResponse response
     ) {
         String token = authService.register(request);
-        setSessionCookie(response, token);
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookies.create(token));
     }
 
     @PostMapping("/login")
@@ -43,7 +37,7 @@ public class AuthController {
             HttpServletResponse response
     ) {
         String token = authService.login(request);
-        setSessionCookie(response, token);
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookies.create(token));
     }
     
     @PostMapping("/logout")
@@ -56,37 +50,11 @@ public class AuthController {
             authService.logout(token);
         }
 
-        clearSessionCookie(response);
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookies.clear());
     }
 
     @GetMapping("/me")
     public AuthUserResponse getAuthUser(@AuthenticationPrincipal AuthUser authUser) {
         return authService.getAuthUser(authUser.userId());
-    }
-
-    private void setSessionCookie(
-            HttpServletResponse response,
-            String token
-    ) {
-        ResponseCookie cookie = ResponseCookie.from("session", token)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    }
-
-    private void clearSessionCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("session", "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(Duration.ZERO) // tells the browser to expire cookie immediately
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
