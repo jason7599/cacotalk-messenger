@@ -5,13 +5,13 @@ SERVER="cacotalk-ec2"
 REMOTE_DIR="/home/ubuntu/cacotalk-messenger"
 COMPOSE_FILE="docker-compose.prod.yml"
 
-usage() { echo "Usage: $0 [all|fe|be]" >&2; exit 1; }
+usage() { echo "Usage: $0 [all|frontend|backend]" >&2; exit 1; }
 
 [[ $# -eq 1 ]] || usage
 case "$1" in
-    all) SERVICES=(fe be) ;;
-    fe)  SERVICES=(fe) ;;
-    be)  SERVICES=(be) ;;
+    all) SERVICES=(frontend backend) ;;
+    frontend)  SERVICES=(frontend) ;;
+    backend)  SERVICES=(backend) ;;
     *)   usage ;;
 esac
 
@@ -48,7 +48,7 @@ build_be() {
     (cd backend && ./gradlew clean bootJar --no-daemon)
 }
 
-build_fe() {
+build_frontend() {
     log "Building frontend"
     (cd frontend && npm ci && npm run build)
 }
@@ -62,7 +62,7 @@ upload_be() {
     "${RSYNC[@]}" --delete backend/build/libs/ "$SERVER:$REMOTE_DIR/backend/build/libs/"
 }
 
-upload_fe() {
+upload_frontend() {
     log "Uploading frontend"
     "${SSH[@]}" "$SERVER" "mkdir -p '$REMOTE_DIR/frontend/dist'"
     "${RSYNC[@]}" frontend/Dockerfile frontend/Caddyfile "$SERVER:$REMOTE_DIR/frontend/"
