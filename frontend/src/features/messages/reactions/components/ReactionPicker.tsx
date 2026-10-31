@@ -61,6 +61,10 @@ export default function ReactionPicker({ current, onSelect, onClose, anchorRef, 
         };
     }, [anchorRef, onClose]);
 
+    useEffect(() => {
+        ref.current?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+    }, []);
+
     // geometry: reactions sit on a ring, first one at the bottom (inverted pentagram)
     const n = REACTION_TYPES.length;
     const radius = Math.max(60, Math.round((n * 44) / (2 * Math.PI)) + 6);
@@ -88,6 +92,7 @@ export default function ReactionPicker({ current, onSelect, onClose, anchorRef, 
             className={cn(
                 // centred on whatever relative box it's dropped into (the react button's wrapper)
                 "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+                "scroll-mt-2 scroll-mb-10",
                 className,
             )}
         >
