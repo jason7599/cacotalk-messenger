@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SERVER="cacotalk-ec2"
-REMOTE_DIR="/home/ubuntu/cacotalk"
+REMOTE_DIR="/home/ubuntu/cacotalk-messenger"
 COMPOSE_FILE="docker-compose.prod.yml"
 
 usage() { echo "Usage: $0 [all|fe|be]" >&2; exit 1; }
