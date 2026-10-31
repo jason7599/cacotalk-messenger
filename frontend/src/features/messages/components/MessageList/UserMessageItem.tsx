@@ -77,7 +77,7 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                         </p>
                     )}
 
-                    <div className={cn("relative w-fit", isMine && "ml-auto")}>
+                    <div className={cn("relative w-fit max-w-full", isMine && "ml-auto")}>
                         <MessageBubble
                             variant={isMine ? "mine" : "theirs"}
                             quote={message.replyTo && <ReplyQuote replyTo={message.replyTo} />}

@@ -30,7 +30,7 @@ export default function MessageBubble({ variant, trailing, quote, children }: Me
         >
             {quote && <div className="mb-2">{quote}</div>}
             <div className="flex items-center gap-2.5">
-                <p className="whitespace-pre-wrap wrap-break-word">{children}</p>
+                <p className="min-w-0 whitespace-pre-wrap wrap-break-word">{children}</p>
                 {trailing}
             </div>
         </div>
