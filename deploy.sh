@@ -43,7 +43,7 @@ fi
 
 # --- Build -------------------------------------------------------------------
 
-build_be() {
+build_backend() {
     log "Building backend"
     (cd backend && ./gradlew clean bootJar --no-daemon)
 }
@@ -55,7 +55,7 @@ build_frontend() {
 
 # --- Upload ------------------------------------------------------------------
 
-upload_be() {
+upload_backend() {
     log "Uploading backend"
     "${SSH[@]}" "$SERVER" "mkdir -p '$REMOTE_DIR/backend/build/libs'"
     "${RSYNC[@]}" backend/Dockerfile "$SERVER:$REMOTE_DIR/backend/"
