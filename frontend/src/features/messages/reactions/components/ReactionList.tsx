@@ -38,57 +38,62 @@ export default function ReactionList({ reactions, myId, onToggle, disabled, onSh
     return (
         <ul
             className={cn(
-                // a tray hanging off the bottom of the bubble: boxed, tucked up under it, inset from the edge
-                "relative -mt-px flex w-max max-w-[calc(100%-1.5rem)] flex-col divide-y divide-edge",
-                // mine: pushed to the right edge of the bubble; theirs: the left
-                align === "end" ? "ml-auto mr-3" : "mx-3",
-                "border-2 border-t-0 border-edge bg-pit shadow-hard",
+                "-mt-px flex px-3",
+                align === "end" ? "justify-end" : "justify-start",
                 className,
             )}
         >
-            {groups.map(({ type, users }) => {
-                const mine = users.some((u) => u.userId === myId);
-                const { shown, more } = formatNames(users.map((u) => u.username));
+            <ul
+                className={cn(
+                    // a tray hanging off the bottom of the bubble: boxed, tucked up under it
+                    "relative flex min-w-0 flex-col divide-y divide-edge",
+                    "border-2 border-t-0 border-edge bg-pit shadow-hard",
+                )}
+            >
+                {groups.map(({ type, users }) => {
+                    const mine = users.some((u) => u.userId === myId);
+                    const { shown, more } = formatNames(users.map((u) => u.username));
 
-                return (
-                    <li key={type}>
+                    return (
+                        <li key={type}>
+                            <button
+                                type="button"
+                                onClick={() => onToggle(type)}
+                                disabled={disabled}
+                                aria-pressed={mine}
+                                aria-label={`${type.toLowerCase()}, ${users.length}: ${users.map((u) => u.username).join(", ")}`}
+                                className={cn(
+                                    "flex w-full min-w-0 items-center gap-2 py-1 pl-1.5 pr-2.5 text-left text-xs",
+                                    // your reaction gets a crimson mark on the edge
+                                    "border-l-2",
+                                    mine ? "border-crimson-bright" : "border-transparent",
+                                    mine ? "bg-crimson-bright" : "hover:bg-crimson",
+                                    "disabled:pointer-events-none",
+                                )}
+                            >
+                                <span className="w-5 shrink-0 text-center text-sm leading-none">{REACTIONS[type]}</span>
+                                <span className="min-w-0 truncate">
+                                    <span className={mine ? "text-bone" : "text-muted"}>{shown}</span>
+                                    {more > 0 && <span className="text-faint">, and {more} more</span>}
+                                </span>
+                            </button>
+                        </li>
+                    );
+                })}
+
+                {/* viewing is always allowed, even when the conversation is locked */}
+                {hasHidden && (
+                    <li>
                         <button
                             type="button"
-                            onClick={() => onToggle(type)}
-                            disabled={disabled}
-                            aria-pressed={mine}
-                            aria-label={`${type.toLowerCase()}, ${users.length}: ${users.map((u) => u.username).join(", ")}`}
-                            className={cn(
-                                "flex w-full min-w-0 items-center gap-2 py-1 pl-1.5 pr-2.5 text-left text-xs",
-                                // your reaction gets a crimson mark on the edge
-                                "border-l-2",
-                                mine ? "border-crimson-bright" : "border-transparent",
-                                mine ? "bg-crimson-bright" : "hover:bg-crimson",
-                                "disabled:pointer-events-none",
-                            )}
+                            onClick={onShowAll}
+                            className="w-full border-l-2 border-transparent py-1 pl-1.5 pr-2.5 text-left text-3xs font-bold tracking-label text-faint hover:bg-panel hover:text-crimson-bright"
                         >
-                            <span className="w-5 shrink-0 text-center text-sm leading-none">{REACTIONS[type]}</span>
-                            <span className="min-w-0 truncate">
-                                <span className={mine ? "text-bone" : "text-muted"}>{shown}</span>
-                                {more > 0 && <span className="text-faint">, and {more} more</span>}
-                            </span>
+                            SEE ALL REACTIONS
                         </button>
                     </li>
-                );
-            })}
-
-            {/* viewing is always allowed, even when the conversation is locked */}
-            {hasHidden && (
-                <li>
-                    <button
-                        type="button"
-                        onClick={onShowAll}
-                        className="w-full border-l-2 border-transparent py-1 pl-1.5 pr-2.5 text-left text-3xs font-bold tracking-label text-faint hover:bg-panel hover:text-crimson-bright"
-                    >
-                        SEE ALL REACTIONS
-                    </button>
-                </li>
-            )}
+                )}
+            </ul>
         </ul>
     );
 }

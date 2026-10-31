@@ -149,7 +149,6 @@ export default function UserMessageItem({ message, showSender = true, showTimest
                         disabled={!canInteract}
                         onShowAll={() => openModal(<ReactionsModal conversationId={message.conversationId} seq={message.seq} />)}
                         align={isMine ? "end" : "start"}
-                        className={isMine ? "justify-end" : undefined}
                     />
 
                     {showTimestamp && (
