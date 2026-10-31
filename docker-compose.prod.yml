@@ -25,11 +25,7 @@ services:
       - redis
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: /api
-        VITE_WS_URL: wss://${PUBLIC_HOST}/ws
+    build: ./frontend
     restart: unless-stopped
     ports:
       - "80:80"
